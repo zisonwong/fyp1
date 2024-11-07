@@ -19,7 +19,6 @@
                 <!-- Doctor Search Filter -->
                 <div class="mb-6">
                     <asp:Label ID="lblDoctorSearch" runat="server" Text="Search Doctor:" CssClass="block text-gray-700 font-semibold mb-2"></asp:Label>
-                    <asp:Image ID="imgTestDoctorPhoto" runat="server" />
                     <asp:TextBox ID="txtDoctorSearch" runat="server" CssClass="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></asp:TextBox>
                     <asp:Button ID="btnSearch" runat="server" Text="Search" OnClick="btnSearch_Click" CssClass="mt-3 w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" />
                 </div>
@@ -28,7 +27,7 @@
             <!-- Right Side for Doctor Cards -->
             <div class="w-5/6 p-6 overflow-y-auto mt-20">
                 <!-- Main Doctor List -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                     <asp:Repeater ID="rptDoctors" runat="server" OnItemDataBound="rptDoctors_ItemDataBound">
                         <ItemTemplate>
                             <div class="bg-white shadow-md rounded-lg overflow-hidden border border-gray-200">

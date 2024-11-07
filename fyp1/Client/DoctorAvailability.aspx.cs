@@ -6,6 +6,7 @@ using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using System.Configuration;
 
 namespace fyp1.Client
 {
@@ -15,167 +16,142 @@ namespace fyp1.Client
         {
             if (!IsPostBack)
             {
-                LoadDepartments();
-                LoadDoctors();
-            }
-        }
+                string doctorID = Request.QueryString["doctorID"];
 
-        private void LoadDepartments()
-        {
-            ddlDepartment.DataSource = GetDepartments();
-            ddlDepartment.DataTextField = "name";
-            ddlDepartment.DataValueField = "departmentID";
-            ddlDepartment.DataBind();
-            ddlDepartment.Items.Insert(0, new ListItem("Select Department", ""));
-        }
-
-        private void LoadDoctors()
-        {
-            ddlDoctor.DataSource = GetDoctors();
-            ddlDoctor.DataTextField = "name";
-            ddlDoctor.DataValueField = "doctorID";
-            ddlDoctor.DataBind();
-            ddlDoctor.Items.Insert(0, new ListItem("Select Doctor", ""));
-        }
-
-
-        protected void btnBook_Click(object sender, EventArgs e)
-        {
-            // Logic for booking an appointment with the selected doctor.
-        }
-
-        protected void ddlDepartment_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            string selectedDeptId = ddlDepartment.SelectedValue;
-            ddlDoctor.DataSource = GetDoctorsByDepartment(selectedDeptId);
-            ddlDoctor.DataTextField = "name";
-            ddlDoctor.DataValueField = "doctorID";
-            ddlDoctor.DataBind();
-            ddlDoctor.Items.Insert(0, new ListItem("Select Doctor", ""));
-        }
-
-
-
-        protected void ddlDoctor_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            string doctorId = ddlDoctor.SelectedValue;
-            if (!string.IsNullOrEmpty(doctorId))
-            {
-                LoadAvailability(doctorId);
-            }
-        }
-
-        private void LoadAvailability(string doctorId)
-        {
-            rptAvailability.DataSource = GetDoctorAvailability(doctorId);
-            rptAvailability.DataBind();
-        }
-
-
-        private DataTable GetDoctorsByDepartment(string departmentId)
-        {
-            string query = @"SELECT doctorID, name FROM Doctor WHERE departmentID = @departmentId";
-            using (SqlConnection conn = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["connectionString"].ToString()))
-            {
-                SqlCommand cmd = new SqlCommand(query, conn);
-                cmd.Parameters.AddWithValue("@departmentId", departmentId);
-                conn.Open();
-                SqlDataReader reader = cmd.ExecuteReader();
-
-                DataTable dt = new DataTable();
-                dt.Load(reader);
-
-                return dt;
-            }
-        }
-
-        private DataTable GetDoctorAvailability(string doctorId)
-        {
-            string query = @"
-        SELECT 
-            availableDate, 
-            availableFrom, 
-            availableTo 
-        FROM Availability 
-        WHERE doctorID = @doctorId";
-            using (SqlConnection conn = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["connectionString"].ToString()))
-            {
-                SqlCommand cmd = new SqlCommand(query, conn);
-                cmd.Parameters.AddWithValue("@doctorId", doctorId);
-                conn.Open();
-                SqlDataReader reader = cmd.ExecuteReader();
-
-                DataTable dt = new DataTable();
-                dt.Load(reader);
-
-                return dt;
-            }
-        }
-
-        private DataTable GetDepartments()
-        {
-            string query = "SELECT departmentID, name FROM Department";
-            using (SqlConnection conn = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["connectionString"].ToString()))
-            {
-                SqlCommand cmd = new SqlCommand(query, conn);
-                conn.Open();
-                SqlDataReader reader = cmd.ExecuteReader();
-
-                DataTable dt = new DataTable();
-                dt.Load(reader);
-
-                return dt;
-            }
-        }
-
-
-        private DataTable GetDoctors()
-        {
-            string query = @"
-        SELECT 
-            d.doctorID, 
-            d.name, 
-            d.role, 
-            d.contactInfo, 
-            d.photo,
-            CASE 
-                WHEN a.availabilityID IS NOT NULL THEN 'Available' 
-                ELSE 'Not Available' 
-            END AS Availability,
-            dept.name AS DepartmentName
-        FROM Doctor d
-        INNER JOIN Department dept ON d.departmentID = dept.departmentID
-        LEFT JOIN Availability a ON d.doctorID = a.doctorID 
-            AND a.availableDate = CAST(GETDATE() AS DATE)";
-
-            using (SqlConnection conn = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["connectionString"].ToString()))
-            {
-                SqlCommand cmd = new SqlCommand(query, conn);
-                conn.Open();
-                SqlDataReader reader = cmd.ExecuteReader();
-
-                DataTable dt = new DataTable();
-                dt.Load(reader);
-
-                // Add a new column for ImageUrl
-                dt.Columns.Add("ImageUrl", typeof(string));
-
-                foreach (DataRow row in dt.Rows)
+                if (!string.IsNullOrEmpty(doctorID))
                 {
-                    if (row["photo"] != DBNull.Value)
+                    LoadDoctorDetails(doctorID);
+                    LoadDoctorAvailability(doctorID);
+                }
+                else
+                {
+                    // Handle if doctorID is not provided, e.g., show an error message or redirect back
+                }
+            }
+        }
+
+
+        protected void LoadDoctorDetails(string doctorID)
+        {
+            string query = "SELECT Name, Role, ContactInfo, photo FROM Doctor WHERE doctorID = @doctorID";
+            using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["connectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@doctorID", doctorID);
+
+                conn.Open();
+                SqlDataReader reader = cmd.ExecuteReader();
+
+                if (reader.Read())
+                {
+                    // Set doctor's photo
+                    Image imgDoctorPhoto = (Image)pnlDoctorDetails.FindControl("imgDoctorPhoto");
+                    if (imgDoctorPhoto != null && reader["photo"] != DBNull.Value)
                     {
-                        byte[] photoBytes = (byte[])row["photo"];
+                        // Convert photo byte array to Base64 and set ImageUrl
+                        byte[] photoBytes = (byte[])reader["photo"];
                         string base64String = Convert.ToBase64String(photoBytes);
-                        row["ImageUrl"] = "data:image/jpeg;base64," + base64String;
+                        imgDoctorPhoto.ImageUrl = "data:image/png;base64," + base64String;
                     }
-                    else
+
+                    // Set doctor's name
+                    Literal litDoctorName = (Literal)pnlDoctorDetails.FindControl("litDoctorName");
+                    if (litDoctorName != null)
                     {
-                        // Set a default image if no photo is available
-                        row["ImageUrl"] = "~/Images/default-doctor.png";
+                        litDoctorName.Text = reader["Name"].ToString();
+                    }
+
+                    // Set doctor's role
+                    Literal litDoctorRole = (Literal)pnlDoctorDetails.FindControl("litDoctorRole");
+                    if (litDoctorRole != null)
+                    {
+                        litDoctorRole.Text = reader["Role"].ToString();
+                    }
+
+                    // Set doctor's contact info
+                    Literal litDoctorContact = (Literal)pnlDoctorDetails.FindControl("litDoctorContact");
+                    if (litDoctorContact != null)
+                    {
+                        litDoctorContact.Text = reader["ContactInfo"].ToString();
                     }
                 }
 
+                reader.Close();
+            }
+        }
+
+        private DataTable GetAvailability(string doctorID)
+        {
+            string query = @"
+        SELECT availableDate, availableFrom, availableTo 
+        FROM Availability 
+        WHERE doctorID = @doctorID 
+        ORDER BY availableDate, availableFrom";
+
+            using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["connectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@doctorID", doctorID);
+
+                conn.Open();
+                SqlDataReader reader = cmd.ExecuteReader();
+
+                DataTable dt = new DataTable();
+                dt.Load(reader);
+
                 return dt;
+            }
+        }
+        protected void btnSelectTime_Click(object sender, EventArgs e)
+        {
+            string selectedDateTime = ((Button)sender).CommandArgument;
+            string doctorID = Request.QueryString["doctorID"];
+
+            // Redirect to appointment confirmation page with details
+            Response.Redirect("clientAppointment.aspx?doctorID=" + doctorID + "&dateTime=" + Server.UrlEncode(selectedDateTime));
+        }
+        protected void LoadDoctorAvailability(string doctorID)
+        {
+            string query = "SELECT availableDate, availableFrom, availableTo FROM Availability WHERE doctorID = @doctorID";
+            using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["connectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@doctorID", doctorID);
+
+                conn.Open();
+                SqlDataReader reader = cmd.ExecuteReader();
+                DataTable dt = new DataTable();
+                dt.Load(reader);
+
+                foreach (DataRow row in dt.Rows)
+                {
+                    // Check if "availableFrom" is not null
+                    if (row["availableFrom"] != DBNull.Value)
+                    {
+                        TimeSpan availableFrom = (TimeSpan)row["availableFrom"];
+                        row["availableFrom"] = availableFrom.ToString(@"hh\:mm");
+                    }
+                    else
+                    {
+                        row["availableFrom"] = "No Time Provided";
+                    }
+
+                    // Check if "availableTo" is not null
+                    if (row["availableTo"] != DBNull.Value)
+                    {
+                        TimeSpan availableTo = (TimeSpan)row["availableTo"];
+                        row["availableTo"] = availableTo.ToString(@"hh\:mm");
+                    }
+                    else
+                    {
+                        row["availableTo"] = "No Time Provided";
+                    }
+                }
+
+                rptAvailability.DataSource = dt;
+                rptAvailability.DataBind();
+
+                reader.Close();
             }
         }
 

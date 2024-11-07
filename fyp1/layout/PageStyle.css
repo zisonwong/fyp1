@@ -1,0 +1,100 @@
+﻿body {
+    background-color: #f4f7f9;
+}
+
+.content {
+    background-color: #f4f7f9;
+}
+.icon-size{
+    height:25px;
+    width:25px;
+}
+.circle-background {
+    background: #e0eafc;
+    border-radius: 50%;
+    height: 48px;
+    padding: 0.75rem;
+    width: 48px;
+}
+#sidebar.collapsed {
+    margin-left: -200px;
+}
+
+.transition {
+    transition: all 0.35s ease-in-out;
+}
+
+#moveContent.collapsed {
+    margin-left: 0;
+}
+
+.content-style {
+    width: 100%;
+    margin-left: 200px;
+}
+
+.center {
+    text-align: center;
+}
+
+#sidebarToggleButton {
+    display: none; /* Hide the button by default */
+}
+
+@media (max-width: 768px) {
+    #sidebar.collapsed {
+        margin-left: -200px !important; /* Ensure sidebar does not push content */
+    }
+
+    .content-style {
+        margin-left: 0 !important; /* Ensure content does not shift */
+    }
+
+    #sidebarToggleButton {
+        display: block; /* Show the button on smaller screens */
+    }
+    .navbar {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        background-color: white;
+    }
+}
+ul > li > a.nav-link:hover {
+    color: #2f4cdd;
+}
+ul > li > a.nav-link {
+    color: #7e7e7e;
+}
+.dropdown:hover .dropdown-menu{
+    display:block;
+}
+.dropdown-menu{
+    position:absolute;
+    right:0;
+    left:auto;
+}
+.list-group-item.active {
+    background-color: #2f4cdd !important;
+    border-color: #2f4cdd !important;
+    color:white;
+}
+.nav-bg{
+    background:white;
+}
+.text-color {
+    color:#7e7e7e;
+}
+.active {
+    background-color: #2f4cdd;
+    border-radius:5px;
+    color:white;
+}
+.changeColor{
+    color:white!important;
+}
+
+
+.Btn{
+    border-radius:6px;
+}

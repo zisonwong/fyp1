@@ -67,6 +67,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="adminHome.aspx" />
     <Content Include="App_Data\IHMS.mdf" />
     <Content Include="App_Data\IHMS_log.ldf">
       <DependentUpon>IHMS.mdf</DependentUpon>
@@ -86,6 +87,19 @@
     <Content Include="CSS\home.css" />
     <Content Include="CSS\login.css" />
     <Content Include="CSS\signup.css" />
+    <Content Include="hospitalAddDoctor.aspx" />
+    <Content Include="hospitalAddNurse.aspx" />
+    <Content Include="hospitalBranch.aspx" />
+    <Content Include="hospitalDepartment.aspx" />
+    <Content Include="hospitalDoctor.aspx" />
+    <Content Include="hospitalDoctorDetails.aspx" />
+    <Content Include="hospitalDoctorEdit.aspx" />
+    <Content Include="hospitalImg\defaultAvatar.jpg" />
+    <Content Include="hospitalImg\pngtree-young-afro-professional-doctor-png-image_13227671.png" />
+    <Content Include="hospitalMedicine.aspx" />
+    <Content Include="hospitalNurse.aspx" />
+    <Content Include="hospitalNurseDetails.aspx" />
+    <Content Include="hospitalNurseEdit.aspx" />
     <Content Include="Images\calendar.svg" />
     <Content Include="Images\right-arrow.svg" />
     <Content Include="Images\sliderImage1.jpg" />
@@ -102,9 +116,29 @@
     <Content Include="Images\sliderImage5.jpg" />
     <Content Include="Images\tabLogo.svg" />
     <Content Include="Images\doctor4.jpg" />
+    <Content Include="layout\activeSidebar.js" />
+    <Content Include="layout\bootstrap.bundle.min.js" />
+    <Content Include="layout\bootstrap.min.css" />
+    <Content Include="layout\PageStyle.css" />
+    <Content Include="layout\sidebar.js" />
+    <Content Include="layout\time.js" />
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="adminHome.aspx.cs">
+      <DependentUpon>adminHome.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="adminHome.aspx.designer.cs">
+      <DependentUpon>adminHome.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="adminSidebar.Master.cs">
+      <DependentUpon>adminSidebar.Master</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="adminSidebar.Master.designer.cs">
+      <DependentUpon>adminSidebar.Master</DependentUpon>
+    </Compile>
     <Compile Include="Client\BranchDoctorSelection.aspx.cs">
       <DependentUpon>BranchDoctorSelection.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -168,6 +202,83 @@
     <Compile Include="Client\ReviewAppointment.aspx.designer.cs">
       <DependentUpon>ReviewAppointment.aspx</DependentUpon>
     </Compile>
+    <Compile Include="hospitalAddDoctor.aspx.cs">
+      <DependentUpon>hospitalAddDoctor.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="hospitalAddDoctor.aspx.designer.cs">
+      <DependentUpon>hospitalAddDoctor.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="hospitalAddNurse.aspx.cs">
+      <DependentUpon>hospitalAddNurse.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="hospitalAddNurse.aspx.designer.cs">
+      <DependentUpon>hospitalAddNurse.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="hospitalBranch.aspx.cs">
+      <DependentUpon>hospitalBranch.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="hospitalBranch.aspx.designer.cs">
+      <DependentUpon>hospitalBranch.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="hospitalDepartment.aspx.cs">
+      <DependentUpon>hospitalDepartment.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="hospitalDepartment.aspx.designer.cs">
+      <DependentUpon>hospitalDepartment.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="hospitalDoctor.aspx.cs">
+      <DependentUpon>hospitalDoctor.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="hospitalDoctor.aspx.designer.cs">
+      <DependentUpon>hospitalDoctor.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="hospitalDoctorDetails.aspx.cs">
+      <DependentUpon>hospitalDoctorDetails.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="hospitalDoctorDetails.aspx.designer.cs">
+      <DependentUpon>hospitalDoctorDetails.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="hospitalDoctorEdit.aspx.cs">
+      <DependentUpon>hospitalDoctorEdit.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="hospitalDoctorEdit.aspx.designer.cs">
+      <DependentUpon>hospitalDoctorEdit.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="hospitalMedicine.aspx.cs">
+      <DependentUpon>hospitalMedicine.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="hospitalMedicine.aspx.designer.cs">
+      <DependentUpon>hospitalMedicine.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="hospitalNurse.aspx.cs">
+      <DependentUpon>hospitalNurse.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="hospitalNurse.aspx.designer.cs">
+      <DependentUpon>hospitalNurse.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="hospitalNurseDetails.aspx.cs">
+      <DependentUpon>hospitalNurseDetails.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="hospitalNurseDetails.aspx.designer.cs">
+      <DependentUpon>hospitalNurseDetails.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="hospitalNurseEdit.aspx.cs">
+      <DependentUpon>hospitalNurseEdit.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="hospitalNurseEdit.aspx.designer.cs">
+      <DependentUpon>hospitalNurseEdit.aspx</DependentUpon>
+    </Compile>
     <Compile Include="NavFooter.Master.cs">
       <DependentUpon>NavFooter.Master</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -179,6 +290,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="NavFooter.Master" />
+    <Content Include="adminSidebar.Master" />
     <None Include="packages.config" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>

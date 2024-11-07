@@ -64,13 +64,8 @@ namespace fyp1.Client
                         if (photoBytes.Length > 0)
                         {
                             string base64String = Convert.ToBase64String(photoBytes);
-                            System.Diagnostics.Debug.WriteLine("Base64 String: " + base64String); // Log for debugging
                             row["ImageUrl"] = "data:image/png;base64," + base64String;
-                            // Test only with one doctor's photo for debugging
-                            imgTestDoctorPhoto.ImageUrl = "data:image/png;base64," + base64String;
-
                         }
-
                     }
                     else
                     {

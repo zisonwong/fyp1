@@ -42,7 +42,7 @@ namespace fyp1.Client
             {
                 HttpOnly = true,
                 Secure = true,
-                Expires = DateTime.Now.AddDays(1)
+                Expires = DateTime.Now.AddDays(3)
             };
             HttpContext.Current.Response.Cookies.Add(usernameCookie);
         }

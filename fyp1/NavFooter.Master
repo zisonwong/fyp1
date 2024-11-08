@@ -21,7 +21,7 @@
                 <ul class="masterSidebar">
                     <li><a href="#">Test</a></li>
                     <li><a href="#">Home</a></li>
-                    <li><a href="../Appointment/clientAppointment.aspx">Book Appointment</a></li>
+                    <li><a href="../Client/clientAppointment.aspx">Book Appointment</a></li>
                     <li><a href="clientSignUp.aspx">Sign up</a></li>
                     <li><a href="clientLogin.aspx">Login</a></li>
                     <li onclick="hideSidebar()"><a class="menuLink" href="#">
@@ -34,7 +34,7 @@
                     <li><a class="closeMenuLink" href="#">
                         <img src="../Images/logo.jpg" alt="logo" class="logoImage">Trinity Medical Center</a></li>
                     <li class="hideOnMobile"><a href="#">Our Services</a></li>
-                    <li class="hideOnMobile"><a href="../Appointment/clientAppointment.aspx">Book Appointment</a></li>
+                    <li class="hideOnMobile"><a href="../Client/BranchDoctorSelection.aspx">Book Appointment</a></li>
                     <li class="hideOnMobile"><a href="clientLogin.aspx">Login</a></li>
                     <li class="masterNavMenuButton" onclick="showSidebar()"><a href="#">
                         <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="26px" fill="#5f6368">

@@ -42,13 +42,13 @@ namespace fyp1.Client
         protected global::System.Web.UI.WebControls.Literal litDoctorName;
 
         /// <summary>
-        /// litDoctorRole control.
+        /// litDoctorDepartment control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litDoctorRole;
+        protected global::System.Web.UI.WebControls.Literal litDoctorDepartment;
 
         /// <summary>
         /// litDoctorContact control.
@@ -58,6 +58,15 @@ namespace fyp1.Client
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Literal litDoctorContact;
+
+        /// <summary>
+        /// ddlAvailableDates control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList ddlAvailableDates;
 
         /// <summary>
         /// rptAvailability control.

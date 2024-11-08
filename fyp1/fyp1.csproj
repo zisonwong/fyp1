@@ -44,6 +44,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Stripe.net, Version=47.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Bin\Stripe.net.dll</HintPath>
+    </Reference>
     <Reference Include="System.Web.DynamicData" />
     <Reference Include="System.Web.Entity" />
     <Reference Include="System.Web.ApplicationServices" />
@@ -79,8 +83,8 @@
     <Content Include="Client\clientPayment.aspx" />
     <Content Include="Client\clientProfile.aspx" />
     <Content Include="Client\clientSignUp.aspx" />
+    <Content Include="Client\CreateCheckoutSession.aspx" />
     <Content Include="Client\DoctorAvailability.aspx" />
-    <Content Include="Client\ReviewAppointment.aspx" />
     <Content Include="CSS\clientAppointment.css" />
     <Content Include="CSS\clientProfile.css" />
     <Content Include="CSS\footer.css" />
@@ -188,19 +192,19 @@
     <Compile Include="Client\clientSignUp.aspx.designer.cs">
       <DependentUpon>clientSignUp.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Client\CreateCheckoutSession.aspx.cs">
+      <DependentUpon>CreateCheckoutSession.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Client\CreateCheckoutSession.aspx.designer.cs">
+      <DependentUpon>CreateCheckoutSession.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Client\DoctorAvailability.aspx.cs">
       <DependentUpon>DoctorAvailability.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Client\DoctorAvailability.aspx.designer.cs">
       <DependentUpon>DoctorAvailability.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="Client\ReviewAppointment.aspx.cs">
-      <DependentUpon>ReviewAppointment.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Client\ReviewAppointment.aspx.designer.cs">
-      <DependentUpon>ReviewAppointment.aspx</DependentUpon>
     </Compile>
     <Compile Include="hospitalAddDoctor.aspx.cs">
       <DependentUpon>hospitalAddDoctor.aspx</DependentUpon>

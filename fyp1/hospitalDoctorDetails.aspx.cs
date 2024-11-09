@@ -51,8 +51,11 @@ namespace fyp1
                     string fullName = reader["name"].ToString();
                     string[] nameParts = fullName.Split(' ');
 
-                    txtFirstName.Text = nameParts.Length > 0 ? nameParts[0] : ""; // First Name
-                    txtLastName.Text = nameParts.Length > 1 ? nameParts[nameParts.Length - 1] : ""; // Last Name (handles cases where there's only one name)
+                    // Assign the last name (the first part)
+                    txtLastName.Text = nameParts.Length > 0 ? nameParts[0] : "";
+
+                    // Join all parts (except the first one) for the first name
+                    txtFirstName.Text = nameParts.Length > 1 ? string.Join(" ", nameParts.Skip(1)) : "";
 
                     txtEmployeeId.Text = reader["doctorID"].ToString();
                     txtDateOfBirth.Text = Convert.ToDateTime(reader["DOB"]).ToString("yyyy-MM-dd");

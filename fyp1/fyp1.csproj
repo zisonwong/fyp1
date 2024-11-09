@@ -96,6 +96,7 @@
     <Content Include="hospitalBranch.aspx" />
     <Content Include="hospitalDepartment.aspx" />
     <Content Include="hospitalDoctor.aspx" />
+    <Content Include="hospitalDoctorAvailability.aspx" />
     <Content Include="hospitalDoctorDetails.aspx" />
     <Content Include="hospitalDoctorEdit.aspx" />
     <Content Include="hospitalImg\defaultAvatar.jpg" />
@@ -121,6 +122,7 @@
     <Content Include="Images\tabLogo.svg" />
     <Content Include="Images\doctor4.jpg" />
     <Content Include="layout\activeSidebar.js" />
+    <Content Include="layout\availability.js" />
     <Content Include="layout\bootstrap.bundle.min.js" />
     <Content Include="layout\bootstrap.min.css" />
     <Content Include="layout\PageStyle.css" />
@@ -240,6 +242,13 @@
     </Compile>
     <Compile Include="hospitalDoctor.aspx.designer.cs">
       <DependentUpon>hospitalDoctor.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="hospitalDoctorAvailability.aspx.cs">
+      <DependentUpon>hospitalDoctorAvailability.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="hospitalDoctorAvailability.aspx.designer.cs">
+      <DependentUpon>hospitalDoctorAvailability.aspx</DependentUpon>
     </Compile>
     <Compile Include="hospitalDoctorDetails.aspx.cs">
       <DependentUpon>hospitalDoctorDetails.aspx</DependentUpon>

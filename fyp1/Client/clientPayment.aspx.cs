@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Stripe;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data.SqlClient;
@@ -13,29 +14,95 @@ namespace fyp1.Client
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-            string paymentID = Request.QueryString["paymentID"];
-
-            if (!string.IsNullOrEmpty(paymentID))
+            if (!IsPostBack)
             {
-                // Update the appointment status to 'Paid'
-                string updateQuery = "UPDATE Appointment SET status = 'Paid' WHERE paymentID = @paymentID";
+                lblDoctorName.Text = Request.QueryString["doctorName"];
+                lblAppointmentDate.Text = Request.QueryString["appointmentDate"];
+                lblAppointmentTime.Text = Request.QueryString["appointmentTime"];
+                lblConsultationFee.Text = Request.QueryString["consultationFee"];
+            }
+        }
 
+        protected void btnConfirmPayment_Click(object sender, EventArgs e)
+        {
+
+            string paymentMethod = "";
+
+            if (radioBankTransfer.Checked)
+            {
+                paymentMethod = "Bank Transfer";
+            }
+            else if (radioCreditCard.Checked)
+            {
+                paymentMethod = "Credit Card";
+            }
+            else if (radioCash.Checked)
+            {
+                paymentMethod = "Cash";
+            }
+
+
+            using (SqlConnection connection = new SqlConnection(ConfigurationManager.ConnectionStrings["ConnectionString"].ToString()))
+            {
+                connection.Open();
+
+                string paymentID = GenerateNextPaymentID();
+                string consultationFee = lblConsultationFee.Text;
+                string appointmentID = Request.QueryString["appointmentID"];
+
+                string insertPaymentQuery = @"
+                INSERT INTO Payment (paymentID, paymentAmount, paymentMethod, paymentDate, status)
+                VALUES (@paymentID, @paymentAmount, @paymentMethod, @paymentDate, @status)";
+
+                using (SqlCommand cmd = new SqlCommand(insertPaymentQuery, connection))
+                {
+                    cmd.Parameters.AddWithValue("@paymentID", paymentID);
+                    cmd.Parameters.AddWithValue("@paymentAmount", consultationFee);
+                    cmd.Parameters.AddWithValue("@paymentMethod", paymentMethod);
+                    cmd.Parameters.AddWithValue("@paymentDate", DateTime.Now);
+                    cmd.Parameters.AddWithValue("@status", "Completed");
+
+                    cmd.ExecuteNonQuery();
+                }
+
+                string updateAppointmentQuery = "UPDATE Appointment SET paymentID = @paymentID WHERE appointmentID = @appointmentID";
+                using (SqlCommand cmd = new SqlCommand(updateAppointmentQuery, connection))
+                {
+                    cmd.Parameters.AddWithValue("@paymentID", paymentID);
+                    cmd.Parameters.AddWithValue("@appointmentID", appointmentID);
+
+                    cmd.ExecuteNonQuery();
+                }
+
+                lblMessage.Text = "Payment confirmed and saved successfully!";
+            }
+
+        }
+
+        private string GenerateNextPaymentID()
+        {
+            string nextPaymentID = "PAY0001";
+            try
+            {
                 using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["connectionString"].ToString()))
                 {
-                    SqlCommand cmd = new SqlCommand(updateQuery, conn);
-                    cmd.Parameters.AddWithValue("@paymentID", paymentID);
-
-                    try
+                    conn.Open();
+                    using (SqlCommand cmd = new SqlCommand("SELECT MAX(paymentID) FROM Payment", conn))
                     {
-                        conn.Open();
-                        cmd.ExecuteNonQuery();
-                    }
-                    catch (Exception ex)
-                    {
-                        ex.Message.ToString();
+                        object result = cmd.ExecuteScalar();
+                        if (result != DBNull.Value && result != null)
+                        {
+                            int idNumber = int.Parse(result.ToString().Substring(3)) + 1;
+                            nextPaymentID = "PAY" + idNumber.ToString("D4");
+                        }
                     }
                 }
             }
+            catch (Exception ex)
+            {
+                lblError.Text = "An error occurred while generating payment ID: " + ex.Message;
+            }
+            return nextPaymentID;
         }
     }
 }

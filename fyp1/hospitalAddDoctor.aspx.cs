@@ -95,7 +95,7 @@ namespace fyp1
             string doctorID = txtEmployeeId.Text.Trim();
             string firstName = txtFirstName.Text.Trim();
             string lastName = txtLastName.Text.Trim();
-            string fullName = firstName + " " + lastName;
+            string fullName = lastName + " " + firstName;
             string dob = txtDateOfBirth.Text.Trim();
             string icNumber = txtIc.Text.Trim();
             string gender = ddlGender.SelectedValue; // "M" or "F"

@@ -43,10 +43,15 @@ namespace fyp1
                 if (reader.Read())
                 {
                     // Split full name into first and last name
+                    // Split full name into first and last name
                     string fullName = reader["name"].ToString();
                     string[] nameParts = fullName.Split(' ');
-                    txtFirstName.Text = nameParts.Length > 0 ? nameParts[0] : ""; // First Name
-                    txtLastName.Text = nameParts.Length > 1 ? nameParts[nameParts.Length - 1] : ""; // Last Name
+
+                    // Assign the last name (the first part)
+                    txtLastName.Text = nameParts.Length > 0 ? nameParts[0] : "";
+
+                    // Join all parts (except the first one) for the first name
+                    txtFirstName.Text = nameParts.Length > 1 ? string.Join(" ", nameParts.Skip(1)) : "";
                     txtEmployeeId.Text = reader["doctorID"].ToString();
                     txtDateOfBirth.Text = Convert.ToDateTime(reader["DOB"]).ToString("yyyy-MM-dd");
                     txtIc.Text = reader["ICNumber"].ToString();
@@ -146,7 +151,7 @@ namespace fyp1
             string doctorID = txtEmployeeId.Text.Trim();
             string firstName = txtFirstName.Text.Trim();
             string lastName = txtLastName.Text.Trim();
-            string fullName = firstName + " " + lastName;
+            string fullName = lastName + " " + firstName;
             string dob = txtDateOfBirth.Text.Trim();
             string icNumber = txtIc.Text.Trim();
             string gender = ddlGender.SelectedValue; // "M" or "F"

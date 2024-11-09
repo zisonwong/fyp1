@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data.SqlClient;
+using System.Data.SqlTypes;
 using System.Drawing;
 using System.Linq;
 using System.Web;
@@ -21,6 +22,11 @@ namespace fyp1.Client
             if (!IsPostBack)
             {
 
+                string dateTime = Request.QueryString["dateTime"];
+                string decodedDateTime = Server.UrlDecode(dateTime);
+                lblDateTime.Text = decodedDateTime;
+
+
                 if (Request.Cookies["PatientID"] == null)
                 {
                     Response.Redirect("clientLogin.aspx");
@@ -39,53 +45,19 @@ namespace fyp1.Client
                     btnConfirmAppointment.Enabled = false;
                 }
 
-                string dateTimeParam = Request.QueryString["dateTime"];
+                string selectedDate = Request.QueryString["date"];
+                string fromTime = Request.QueryString["fromTime"];
+                string toTime = Request.QueryString["toTime"];
 
-                if (!string.IsNullOrEmpty(dateTimeParam))
+                // Validate and use these values as needed
+                if (!string.IsNullOrEmpty(selectedDate) && !string.IsNullOrEmpty(fromTime) && !string.IsNullOrEmpty(toTime))
                 {
-                    try
-                    {
-                        // Expected format is: "MM/dd/yyyy hh:mm tt - hh:mm tt"
-                        // Parse the date and time range directly
-                        string[] dateTimeParts = dateTimeParam.Split(new[] { " - " }, StringSplitOptions.None);
-
-                        if (dateTimeParts.Length == 2)
-                        {
-                            string datePart = dateTimeParts[0].Substring(0, 10);
-                            string fromTimeString = dateTimeParts[0].Substring(11).Trim();
-                            string toTimeString = dateTimeParts[1].Trim();
-
-                            // Parse each component, checking for validity
-                            if (DateTime.TryParseExact(datePart, "MM/dd/yyyy", null, System.Globalization.DateTimeStyles.None, out DateTime appointmentDate) &&
-                                DateTime.TryParse($"{datePart} {fromTimeString}", out fromTime) &&
-                                DateTime.TryParse($"{datePart} {toTimeString}", out toTime))
-                            {
-                                // Display formatted appointment date and time
-                                lblAppointmentDate.Text = appointmentDate.ToString("D");
-                                lblAppointmentTime.Text = $"{fromTime:hh:mm tt} - {toTime:hh:mm tt}";
-                            }
-                            else
-                            {
-                                lblError.Text = "Invalid date or time format in the query string.";
-                                btnConfirmAppointment.Enabled = false;
-                            }
-                        }
-                        else
-                        {
-                            lblError.Text = "Date and time range format is invalid. Please use 'MM/dd/yyyy hh:mm tt - hh:mm tt'.";
-                            btnConfirmAppointment.Enabled = false;
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        lblError.Text = "Unexpected error parsing appointment date and time. " + ex.Message;
-                        btnConfirmAppointment.Enabled = false;
-                    }
+                    lblAppointmentDate.Text = DateTime.Parse(selectedDate).ToString("D");
+                    lblAppointmentTime.Text = $"{fromTime} - {toTime}";
                 }
                 else
                 {
-                    lblError.Text = "No date and time provided.";
-                    btnConfirmAppointment.Enabled = false;
+                    lblError.Text = "Failed to retrieve selected appointment time.";
                 }
             }
         }
@@ -178,65 +150,36 @@ namespace fyp1.Client
 
         private void LoadAppointmentDetails()
         {
-            string dateTimeParam = Request.QueryString["dateTime"];
+            string dateParam = Request.QueryString["date"];
+            string fromTimeParam = Request.QueryString["fromTime"];
+            string toTimeParam = Request.QueryString["toTime"];
 
-            if (string.IsNullOrEmpty(dateTimeParam))
+            if (!string.IsNullOrEmpty(dateParam) && !string.IsNullOrEmpty(fromTimeParam) && !string.IsNullOrEmpty(toTimeParam))
             {
-                lblError.Text = "Appointment date and time not found.";
-                btnConfirmAppointment.Enabled = false;
-                return;
+                if (DateTime.TryParse(dateParam, out DateTime appointmentDate) &&
+                    DateTime.TryParse(dateParam + " " + fromTimeParam, out fromTime) &&
+                    DateTime.TryParse(dateParam + " " + toTimeParam, out toTime))
+                {
+                    lblAppointmentDate.Text = appointmentDate.ToString("D");
+                    lblAppointmentTime.Text = $"{fromTime:hh:mm tt} - {toTime:hh:mm tt}";
+
+                    // Save parsed times to ViewState for later use
+                    ViewState["fromTime"] = fromTime;
+                    ViewState["toTime"] = toTime;
+                }
+                else
+                {
+                    lblError.Text = "Invalid date or time format.";
+                    btnConfirmAppointment.Enabled = false;
+                }
             }
-
-            try
+            else
             {
-                string[] dateTimeParts = dateTimeParam.Split(new string[] { " - " }, StringSplitOptions.None);
-
-                if (dateTimeParts.Length != 2)
-                {
-                    lblError.Text = "Invalid appointment date and time format.";
-                    btnConfirmAppointment.Enabled = false;
-                    return;
-                }
-
-                string datePart = dateTimeParts[0].Substring(0, 10);
-                string fromTimePart = dateTimeParts[0].Substring(11).Trim();
-                string toTimePart = dateTimeParts[1].Trim();
-
-                DateTime appointmentDate;
-                if (!DateTime.TryParse(datePart, out appointmentDate))
-                {
-                    lblError.Text = "Invalid date format.";
-                    btnConfirmAppointment.Enabled = false;
-                    return;
-                }
-
-                if (!DateTime.TryParse($"{datePart} {fromTimePart}", out fromTime))
-                {
-                    lblError.Text = "Invalid 'from' time format.";
-                    btnConfirmAppointment.Enabled = false;
-                    return;
-                }
-
-                if (!DateTime.TryParse($"{datePart} {toTimePart}", out toTime))
-                {
-                    lblError.Text = "Invalid 'to' time format.";
-                    btnConfirmAppointment.Enabled = false;
-                    return;
-                }
-
-                lblAppointmentDate.Text = appointmentDate.ToString("D");
-                lblAppointmentTime.Text = $"{fromTime:hh:mm tt} - {toTime:hh:mm tt}";
-
-                // Save fromTime and toTime to ViewState
-                ViewState["fromTime"] = fromTime;
-                ViewState["toTime"] = toTime;
-            }
-            catch (Exception ex)
-            {
-                lblError.Text = "Unexpected error parsing appointment date and time. " + ex.Message;
+                lblError.Text = "Date or time parameters are missing.";
                 btnConfirmAppointment.Enabled = false;
             }
         }
+
 
 
 
@@ -244,6 +187,7 @@ namespace fyp1.Client
         {
             lblMessage.Text = "";
             lblError.Text = "";
+            decimal consultationFee = 30.00M;
 
             HttpCookie IDCookie = HttpContext.Current.Request.Cookies["PatientID"];
             string patientID = IDCookie?.Value;
@@ -251,7 +195,6 @@ namespace fyp1.Client
             string doctorID = Request.QueryString["doctorID"];
             string date = lblAppointmentDate.Text;
 
-            // Retrieve fromTime from ViewState
             if (ViewState["fromTime"] != null)
             {
                 fromTime = (DateTime)ViewState["fromTime"];
@@ -272,11 +215,11 @@ namespace fyp1.Client
             string formattedDate = DateTime.Parse(date).ToString("yyyy-MM-dd");
 
             string appointmentID = GenerateNextAppointmentID();
-            string paymentID = GenerateNextPaymentID();
+            //string paymentID = GenerateNextPaymentID();
 
             string insertQuery = @"
-    INSERT INTO Appointment (appointmentID, doctorID, patientID, date, time, paymentID, status)
-    VALUES (@appointmentID, @doctorID, @patientID, @date, @time, @paymentID, 'Pending')";
+    INSERT INTO Appointment (appointmentID, doctorID, patientID, date, time, status)
+    VALUES (@appointmentID, @doctorID, @patientID, @date, @time, 'Pending')";
 
             using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["connectionString"].ToString()))
             {
@@ -285,8 +228,8 @@ namespace fyp1.Client
                 cmd.Parameters.AddWithValue("@doctorID", doctorID);
                 cmd.Parameters.AddWithValue("@patientID", patientID);
                 cmd.Parameters.AddWithValue("@date", formattedDate);
-                cmd.Parameters.AddWithValue("@time", fromTime); // Now fromTime has a value
-                cmd.Parameters.AddWithValue("@paymentID", paymentID);
+                cmd.Parameters.AddWithValue("@time", fromTime);
+                //cmd.Parameters.AddWithValue("@paymentID", paymentID);
 
                 try
                 {
@@ -295,7 +238,8 @@ namespace fyp1.Client
 
                     if (rowsAffected > 0)
                     {
-                        Response.Redirect($"paymentPage.aspx?paymentID={paymentID}");
+
+                        Response.Redirect($"clientPayment.aspx?doctorName={lblDoctorName.Text}&appointmentDate={lblAppointmentDate.Text}&appointmentTime={lblAppointmentTime.Text}&consultationFee={consultationFee}&appointmentID={appointmentID}");
                     }
                     else
                     {
@@ -316,7 +260,7 @@ namespace fyp1.Client
 
         private string GenerateNextAppointmentID()
         {
-            string nextAppointmentID = "A0001";
+            string nextAppointmentID = "A00001";
             try
             {
                 using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["connectionString"].ToString()))
@@ -328,7 +272,7 @@ namespace fyp1.Client
                         if (result != DBNull.Value && result != null)
                         {
                             int idNumber = int.Parse(result.ToString().Substring(1)) + 1;
-                            nextAppointmentID = "A" + idNumber.ToString();
+                            nextAppointmentID = "A" + idNumber.ToString("D5");
                         }
                     }
                 }
@@ -338,32 +282,6 @@ namespace fyp1.Client
                 lblError.Text = "An error occurred while generating patient ID: " + ex.Message;
             }
             return nextAppointmentID;
-        }
-
-        private string GenerateNextPaymentID()
-        {
-            string nextPaymentID = "PAY0001";
-            try
-            {
-                using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["connectionString"].ToString()))
-                {
-                    conn.Open();
-                    using (SqlCommand cmd = new SqlCommand("SELECT MAX(paymentID) FROM Payment", conn))
-                    {
-                        object result = cmd.ExecuteScalar();
-                        if (result != DBNull.Value && result != null)
-                        {
-                            int idNumber = int.Parse(result.ToString().Substring(3)) + 1;
-                            nextPaymentID = "PAY" + idNumber.ToString("D4");
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                lblError.Text = "An error occurred while generating payment ID: " + ex.Message;
-            }
-            return nextPaymentID;
         }
 
     }

@@ -15,7 +15,6 @@
                 <asp:Label ID="lblDepartmentName" runat="server" class="mt-2 text-gray-700"></asp:Label>
             </div>
 
-            <!-- Main Content for Appointment Details -->
             <div class="col-span-1 lg:col-span-3 bg-white p-6 rounded-lg shadow-lg mt-20">
                 <h1 class="text-2xl font-bold mb-6 text-gray-800">Confirm Your Appointment </h1>
 
@@ -58,6 +57,7 @@
 
                 <!-- Success and Error Messages -->
                 <div class="mt-4">
+                    <asp:Label ID="lblDateTime" runat="server"></asp:Label>
                     <asp:Label ID="lblMessage" runat="server" CssClass="text-center text-green-600 font-semibold text-lg"></asp:Label>
                     <asp:Label ID="lblError" runat="server" CssClass="text-center text-red-600 font-semibold text-lg"></asp:Label>
                 </div>

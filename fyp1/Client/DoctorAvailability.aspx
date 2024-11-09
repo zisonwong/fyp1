@@ -34,21 +34,26 @@
                 </asp:DropDownList>
 
                 <div id="doctorAvailabilityGrid" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <asp:Repeater ID="rptAvailability" runat="server" >
+                    <asp:Repeater ID="rptAvailability" runat="server" OnItemCommand="rptAvailability_ItemCommand">
                         <ItemTemplate>
                             <div class="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition duration-300 ease-in-out">
-                                <p class="text-lg font-semibold"><%# Eval("availableDate", "{0:dddd, MMMM dd, yyyy}") %></p>
-                                <p>From: <%# Eval("availableFrom") %></p>
-                                <p>To: <%# Eval("availableTo") %></p>
+                                Date: <%# Eval("availableDate", "{0:yyyy-MM-dd}") %>
+                                <br />
+                                From: <%# Eval("availableFrom") %>
+                                <br />
+                                To: <%# Eval("availableTo") %>
+                                <br />
 
-                                <asp:Button ID="btnSelectTime" runat="server" Text="Select Time"
-                                    CssClass="bg-blue-500 text-white py-2 px-4 rounded-full mt-4"
-                                    CommandArgument='<%# Eval("availableDate") + " " + Eval("availableFrom") %>'
-                                    OnClick="btnSelectTime_Click" />
+                                <asp:Button ID="btnSelectTime" runat="server"
+                                    Text="Select Time"
+                                    CommandName="SelectTime"
+                                    CommandArgument='<%# Eval("availableDate", "{0:yyyy-MM-dd}") + "," + Eval("availableFrom") + "," + Eval("availableTo") %>' />
                             </div>
                         </ItemTemplate>
                     </asp:Repeater>
                 </div>
+
+                <asp:Label ID="lblMessage" runat="server"></asp:Label>
             </div>
         </div>
     </form>

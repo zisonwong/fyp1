@@ -65,7 +65,7 @@ namespace fyp1.Client
                     cmd.ExecuteNonQuery();
                 }
 
-                string updateAppointmentQuery = "UPDATE Appointment SET paymentID = @paymentID WHERE appointmentID = @appointmentID";
+                string updateAppointmentQuery = "UPDATE Appointment SET paymentID = @paymentID, status = 'Accepted' WHERE appointmentID = @appointmentID";
                 using (SqlCommand cmd = new SqlCommand(updateAppointmentQuery, connection))
                 {
                     cmd.Parameters.AddWithValue("@paymentID", paymentID);
@@ -73,36 +73,57 @@ namespace fyp1.Client
 
                     cmd.ExecuteNonQuery();
                 }
+                // Check and update availability status to 'Occupied'
+                string updateAvailabilityQuery = @"
+                                                    UPDATE Availability
+                                                    SET status = 'Occupied'
+                                                    WHERE availabilityID = (
+                                                        SELECT availabilityID 
+                                                        FROM Appointment 
+                                                        WHERE appointmentID = @appointmentID
+                                                    )
+                                                    AND status = 'Available'";
+
+                using (SqlCommand cmd = new SqlCommand(updateAvailabilityQuery, connection))
+                {
+                    cmd.Parameters.AddWithValue("@appointmentID", appointmentID);
+
+                    int rowsAffected = cmd.ExecuteNonQuery();
+                    if (rowsAffected == 0)
+                    {
+                        lblError.Text = "The selected time slot is already occupied.";
+                        return;
+                    }
+                }
 
                 lblMessage.Text = "Payment confirmed and saved successfully!";
             }
-
         }
 
-        private string GenerateNextPaymentID()
-        {
-            string nextPaymentID = "PAY0001";
-            try
+            private string GenerateNextPaymentID()
             {
-                using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["connectionString"].ToString()))
+                string nextPaymentID = "PAY0001";
+                try
                 {
-                    conn.Open();
-                    using (SqlCommand cmd = new SqlCommand("SELECT MAX(paymentID) FROM Payment", conn))
+                    using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["connectionString"].ToString()))
                     {
-                        object result = cmd.ExecuteScalar();
-                        if (result != DBNull.Value && result != null)
+                        conn.Open();
+                        using (SqlCommand cmd = new SqlCommand("SELECT MAX(paymentID) FROM Payment", conn))
                         {
-                            int idNumber = int.Parse(result.ToString().Substring(3)) + 1;
-                            nextPaymentID = "PAY" + idNumber.ToString("D4");
+                            object result = cmd.ExecuteScalar();
+                            if (result != DBNull.Value && result != null)
+                            {
+                                int idNumber = int.Parse(result.ToString().Substring(3)) + 1;
+                                nextPaymentID = "PAY" + idNumber.ToString("D4");
+                            }
                         }
                     }
                 }
+                catch (Exception ex)
+                {
+                    lblError.Text = "An error occurred while generating payment ID: " + ex.Message;
+                }
+                return nextPaymentID;
             }
-            catch (Exception ex)
-            {
-                lblError.Text = "An error occurred while generating payment ID: " + ex.Message;
-            }
-            return nextPaymentID;
         }
     }
-}

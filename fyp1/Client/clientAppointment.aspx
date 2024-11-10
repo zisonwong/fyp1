@@ -47,7 +47,6 @@
                         <asp:Label ID="lblAppointmentTime" runat="server"></asp:Label>
                     </p>
                 </div>
-
                 <!-- Confirmation Button -->
                 <div class="text-center">
                     <asp:Button ID="btnConfirmAppointment" runat="server" Text="Confirm Appointment"

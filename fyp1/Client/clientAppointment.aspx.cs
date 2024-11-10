@@ -21,12 +21,6 @@ namespace fyp1.Client
         {
             if (!IsPostBack)
             {
-
-                string dateTime = Request.QueryString["dateTime"];
-                string decodedDateTime = Server.UrlDecode(dateTime);
-                lblDateTime.Text = decodedDateTime;
-
-
                 if (Request.Cookies["PatientID"] == null)
                 {
                     Response.Redirect("clientLogin.aspx");
@@ -45,20 +39,6 @@ namespace fyp1.Client
                     btnConfirmAppointment.Enabled = false;
                 }
 
-                string selectedDate = Request.QueryString["date"];
-                string fromTime = Request.QueryString["fromTime"];
-                string toTime = Request.QueryString["toTime"];
-
-                // Validate and use these values as needed
-                if (!string.IsNullOrEmpty(selectedDate) && !string.IsNullOrEmpty(fromTime) && !string.IsNullOrEmpty(toTime))
-                {
-                    lblAppointmentDate.Text = DateTime.Parse(selectedDate).ToString("D");
-                    lblAppointmentTime.Text = $"{fromTime} - {toTime}";
-                }
-                else
-                {
-                    lblError.Text = "Failed to retrieve selected appointment time.";
-                }
             }
         }
 
@@ -150,35 +130,61 @@ namespace fyp1.Client
 
         private void LoadAppointmentDetails()
         {
-            string dateParam = Request.QueryString["date"];
-            string fromTimeParam = Request.QueryString["fromTime"];
-            string toTimeParam = Request.QueryString["toTime"];
+            string doctorID = Request.QueryString["doctorID"];
+            string availabilityID = Request.QueryString["availabilityID"];
 
-            if (!string.IsNullOrEmpty(dateParam) && !string.IsNullOrEmpty(fromTimeParam) && !string.IsNullOrEmpty(toTimeParam))
+            if (!string.IsNullOrEmpty(doctorID) && !string.IsNullOrEmpty(availabilityID))
             {
-                if (DateTime.TryParse(dateParam, out DateTime appointmentDate) &&
-                    DateTime.TryParse(dateParam + " " + fromTimeParam, out fromTime) &&
-                    DateTime.TryParse(dateParam + " " + toTimeParam, out toTime))
-                {
-                    lblAppointmentDate.Text = appointmentDate.ToString("D");
-                    lblAppointmentTime.Text = $"{fromTime:hh:mm tt} - {toTime:hh:mm tt}";
+                // Query to get the availability details using the availabilityID
+                string query = @"
+            SELECT availableDate, availableFrom, availableTo 
+            FROM Availability 
+            WHERE availabilityID = @availabilityID AND doctorID = @doctorID";
 
-                    // Save parsed times to ViewState for later use
-                    ViewState["fromTime"] = fromTime;
-                    ViewState["toTime"] = toTime;
-                }
-                else
+                using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["connectionString"].ToString()))
                 {
-                    lblError.Text = "Invalid date or time format.";
-                    btnConfirmAppointment.Enabled = false;
+                    SqlCommand cmd = new SqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@availabilityID", availabilityID);
+                    cmd.Parameters.AddWithValue("@doctorID", doctorID);
+
+                    conn.Open();
+                    SqlDataReader reader = cmd.ExecuteReader();
+
+                    if (reader.Read())
+                    {
+                        // Parse date and time from the database values
+                        DateTime appointmentDate = (DateTime)reader["availableDate"];
+                        TimeSpan fromTimeSpan = reader["availableFrom"] != DBNull.Value ? (TimeSpan)reader["availableFrom"] : TimeSpan.Zero;
+                        TimeSpan toTimeSpan = reader["availableTo"] != DBNull.Value ? (TimeSpan)reader["availableTo"] : TimeSpan.Zero;
+
+                        // Combine the date and time for display
+                        DateTime fromTime = appointmentDate.Add(fromTimeSpan);
+                        DateTime toTime = appointmentDate.Add(toTimeSpan);
+
+                        // Display the date and time on the labels
+                        lblAppointmentDate.Text = appointmentDate.ToString("D");
+                        lblAppointmentTime.Text = $"{fromTime:hh:mm tt} - {toTime:hh:mm tt}";
+
+                        // Save parsed times to ViewState for later use
+                        ViewState["fromTime"] = fromTime;
+                        ViewState["toTime"] = toTime;
+                    }
+                    else
+                    {
+                        lblError.Text = "The appointment details could not be retrieved.";
+                        btnConfirmAppointment.Enabled = false;
+                    }
+
+                    reader.Close();
                 }
             }
             else
             {
-                lblError.Text = "Date or time parameters are missing.";
+                lblError.Text = "Availability ID or Doctor ID is missing.";
                 btnConfirmAppointment.Enabled = false;
             }
         }
+
 
 
 
@@ -188,6 +194,7 @@ namespace fyp1.Client
             lblMessage.Text = "";
             lblError.Text = "";
             decimal consultationFee = 30.00M;
+            string availabilityID = Request.QueryString["availabilityID"];
 
             HttpCookie IDCookie = HttpContext.Current.Request.Cookies["PatientID"];
             string patientID = IDCookie?.Value;
@@ -217,19 +224,17 @@ namespace fyp1.Client
             string appointmentID = GenerateNextAppointmentID();
             //string paymentID = GenerateNextPaymentID();
 
-            string insertQuery = @"
-    INSERT INTO Appointment (appointmentID, doctorID, patientID, date, time, status)
-    VALUES (@appointmentID, @doctorID, @patientID, @date, @time, 'Pending')";
+            string query = @"
+        INSERT INTO Appointment (appointmentID, doctorID, patientID, status, availabilityID) 
+                 VALUES (@appointmentID, @doctorID, @patientID, 'Pending', @availabilityID)";
 
             using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["connectionString"].ToString()))
             {
-                SqlCommand cmd = new SqlCommand(insertQuery, conn);
+                SqlCommand cmd = new SqlCommand(query, conn);
                 cmd.Parameters.AddWithValue("@appointmentID", appointmentID);
                 cmd.Parameters.AddWithValue("@doctorID", doctorID);
                 cmd.Parameters.AddWithValue("@patientID", patientID);
-                cmd.Parameters.AddWithValue("@date", formattedDate);
-                cmd.Parameters.AddWithValue("@time", fromTime);
-                //cmd.Parameters.AddWithValue("@paymentID", paymentID);
+                cmd.Parameters.AddWithValue("@availabilityID", availabilityID);
 
                 try
                 {
@@ -252,11 +257,6 @@ namespace fyp1.Client
                 }
             }
         }
-
-
-
-
-
 
         private string GenerateNextAppointmentID()
         {

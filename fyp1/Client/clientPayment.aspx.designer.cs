@@ -123,6 +123,15 @@ namespace fyp1.Client
         protected global::System.Web.UI.HtmlControls.HtmlInputRadioButton radioCash;
 
         /// <summary>
+        /// btnConfirmPayment control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnConfirmPayment;
+
+        /// <summary>
         /// lblMessage control.
         /// </summary>
         /// <remarks>

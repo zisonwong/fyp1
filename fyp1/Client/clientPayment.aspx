@@ -72,10 +72,8 @@
                 </div>
 
                 <!-- Confirm Payment Button -->
-                <button class="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    Confirm Payment
-           
-                </button>
+                <asp:Button runat="server" ID="btnConfirmPayment" class="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500" onclick="btnConfirmPayment_Click" Text="Confirm Payment">
+                </asp:Button>
                 <!-- Success or Error Messages -->
                 <div class="mt-4 text-center">
                     <asp:Label ID="lblMessage" runat="server" CssClass="text-green-600 font-semibold"></asp:Label>
@@ -84,6 +82,5 @@
             </div>
         </div>
     </form>
-
 </body>
 </html>

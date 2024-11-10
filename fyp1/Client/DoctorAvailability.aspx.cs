@@ -34,7 +34,12 @@ namespace fyp1.Client
         // Load available dates into the dropdown list
         protected void LoadAvailableDates(string doctorID)
         {
-            string query = "SELECT DISTINCT availableDate FROM Availability WHERE doctorID = @doctorID ORDER BY availableDate";
+            string query = @"
+        SELECT DISTINCT availableDate 
+        FROM Availability 
+        WHERE doctorID = @doctorID AND status = 'Available'
+        ORDER BY availableDate";
+
             using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["connectionString"].ToString()))
             {
                 SqlCommand cmd = new SqlCommand(query, conn);
@@ -42,23 +47,29 @@ namespace fyp1.Client
 
                 conn.Open();
                 SqlDataReader reader = cmd.ExecuteReader();
+
                 ddlAvailableDates.Items.Clear();
                 ddlAvailableDates.Items.Add(new ListItem("Select Date", ""));
 
                 while (reader.Read())
                 {
                     DateTime availableDate = (DateTime)reader["availableDate"];
-                    ddlAvailableDates.Items.Add(new ListItem(availableDate.ToString("dddd, MMMM dd, yyyy"), availableDate.ToString("yyyy-MM-dd")));
+                    ddlAvailableDates.Items.Add(new ListItem(
+                        availableDate.ToString("dddd, MMMM dd, yyyy"),
+                        availableDate.ToString("yyyy-MM-dd")));
                 }
 
                 reader.Close();
             }
         }
 
+        // Load doctor's available slots based on selected date
         protected void LoadDoctorAvailability(string doctorID, DateTime? selectedDate)
         {
-            string query = @"SELECT availableDate, availableFrom, availableTo FROM Availability 
-                     WHERE doctorID = @doctorID";
+            string query = @"
+                        SELECT availabilityID, availableDate, availableFrom, availableTo 
+                        FROM Availability 
+                        WHERE doctorID = @doctorID AND status = 'Available'";
 
             if (selectedDate.HasValue)
             {
@@ -82,25 +93,17 @@ namespace fyp1.Client
 
                 foreach (DataRow row in dt.Rows)
                 {
-                    if (row["availableFrom"] != DBNull.Value)
-                    {
-                        row["availableFrom"] = ((TimeSpan)row["availableFrom"]).ToString(@"hh\:mm");
-                    }
-                    else
-                    {
-                        row["availableFrom"] = "No Time Provided";
-                    }
+                    // Format the time slots
+                    row["availableFrom"] = row["availableFrom"] != DBNull.Value
+                        ? ((TimeSpan)row["availableFrom"]).ToString(@"hh\:mm")
+                        : "No Time Provided";
 
-                    if (row["availableTo"] != DBNull.Value)
-                    {
-                        row["availableTo"] = ((TimeSpan)row["availableTo"]).ToString(@"hh\:mm");
-                    }
-                    else
-                    {
-                        row["availableTo"] = "No Time Provided";
-                    }
+                    row["availableTo"] = row["availableTo"] != DBNull.Value
+                        ? ((TimeSpan)row["availableTo"]).ToString(@"hh\:mm")
+                        : "No Time Provided";
                 }
 
+                // Bind the data to the repeater
                 rptAvailability.DataSource = dt;
                 rptAvailability.DataBind();
 
@@ -108,6 +111,7 @@ namespace fyp1.Client
             }
         }
 
+        // Event handler for date selection change
         protected void ddlAvailableDates_SelectedIndexChanged(object sender, EventArgs e)
         {
             string doctorID = Request.QueryString["doctorID"];
@@ -169,10 +173,12 @@ namespace fyp1.Client
             }
         }
 
+
         protected void btnSelectTime_Click(object sender, EventArgs e)
         {
             // Retrieve doctorID from query string
             string doctorID = Request.QueryString["doctorID"];
+            string availabilityID = Request.QueryString["availabilityID"];
 
             if (ddlAvailableDates.SelectedValue == "")
             {
@@ -186,17 +192,18 @@ namespace fyp1.Client
             string fromTime = "";
             string toTime = "";
 
+
             // Database query to retrieve availability information
-            string query = @"SELECT availableDate, availableFrom, availableTo 
+            string query = @"SELECT availableFrom, availableTo 
                      FROM Availability 
-                     WHERE doctorID = @doctorID";
+                     WHERE availabilityID = @availabilityID AND doctorID = @doctorID";
 
             // Connect to the database
             using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["connectionString"].ToString()))
             {
                 using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
-                    // Set the parameter for doctorID
+                    // Set the parameters for doctorID and selectedDate
                     cmd.Parameters.AddWithValue("@doctorID", doctorID);
                     cmd.Parameters.AddWithValue("@selectedDate", selectedDate);
 
@@ -206,51 +213,38 @@ namespace fyp1.Client
                         if (reader.Read())
                         {
                             fromTime = reader["availableFrom"] != DBNull.Value ?
-                        TimeSpan.Parse(reader["availableFrom"].ToString()).ToString(@"hh\:mm") : "N/A";
+                                TimeSpan.Parse(reader["availableFrom"].ToString()).ToString(@"hh\:mm") : "N/A";
 
                             toTime = reader["availableTo"] != DBNull.Value ?
                                 TimeSpan.Parse(reader["availableTo"].ToString()).ToString(@"hh\:mm") : "N/A";
+
+                            availabilityID = reader["availabilityID"].ToString();
                         }
                     }
                 }
             }
-            //// Format the date and time as "dd/MM/yyyy hh:mm tt - hh:mm tt"
-            //string formattedDateTime = $"{selectedDate} {fromTime} - {toTime}";
 
-            //// Redirect to appointment confirmation page with encoded query parameters
-            //Response.Redirect("clientAppointment.aspx?doctorID=" + doctorID + "&dateTime=" + Server.UrlEncode(formattedDateTime));
+            // Redirect to appointment confirmation page with encoded query parameters
             Response.Redirect("clientAppointment.aspx?doctorID=" + doctorID
-                  + "&date=" + selectedDate.ToString("yyyy-MM-dd")
-                  + "&fromTime=" + fromTime
-                  + "&toTime=" + toTime);
+                              + "&availabilityID=" + availabilityID
+                              + "&date=" + selectedDate.ToString("yyyy-MM-dd")
+                              + "&fromTime=" + fromTime
+                              + "&toTime=" + toTime);
         }
+
 
         protected void rptAvailability_ItemCommand(object source, RepeaterCommandEventArgs e)
         {
             if (e.CommandName == "SelectTime")
             {
-                // Parse the CommandArgument to get the date and time
-                string[] arguments = e.CommandArgument.ToString().Split(',');
+                string availabilityID = e.CommandArgument.ToString();
 
-                if (arguments.Length == 3)
-                {
-                    string selectedDate = arguments[0];
-                    string fromTime = arguments[1];
-                    string toTime = arguments[2];
-
-                    // Store selected date and time in ViewState or redirect with query parameters
-                    ViewState["selectedDate"] = selectedDate;
-                    ViewState["fromTime"] = fromTime;
-                    ViewState["toTime"] = toTime;
-
-                    // Redirect to the clientAppointment page with the selected date and time as query parameters
-                    string doctorID = Request.QueryString["doctorID"];
-                    Response.Redirect("clientAppointment.aspx?doctorID=" + doctorID
-                        + "&date=" + selectedDate
-                        + "&fromTime=" + fromTime
-                        + "&toTime=" + toTime);
-                }
+                // Store the selected availabilityID for use in redirection
+                string doctorID = Request.QueryString["doctorID"];
+                Response.Redirect("clientAppointment.aspx?doctorID=" + doctorID
+                    + "&availabilityID=" + availabilityID);
             }
         }
+
     }
 }

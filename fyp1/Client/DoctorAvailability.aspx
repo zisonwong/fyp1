@@ -36,23 +36,22 @@
                 <div id="doctorAvailabilityGrid" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <asp:Repeater ID="rptAvailability" runat="server" OnItemCommand="rptAvailability_ItemCommand">
                         <ItemTemplate>
-                            <div class="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition duration-300 ease-in-out">
-                                Date: <%# Eval("availableDate", "{0:yyyy-MM-dd}") %>
+                            <div class="col-span-1 bg-white p-6 rounded-lg shadow-lg">
+                                Date: <%# Eval("availableDate", "{0:dd-MM-yyyy}") %>
                                 <br />
-                                From: <%# Eval("availableFrom") %>
+                                From: <%# Convert.ToDateTime("00:00").Add((TimeSpan)Eval("availableFrom")).ToString("hh:mm tt") %>
                                 <br />
-                                To: <%# Eval("availableTo") %>
+                                To: <%# Convert.ToDateTime("00:00").Add((TimeSpan)Eval("availableTo")).ToString("hh:mm tt") %>
                                 <br />
 
                                 <asp:Button ID="btnSelectTime" runat="server"
-                                    Text="Select Time"
+                                    Text="Select Time" CssClass="bg-blue-500 text-white py-2 px-6 rounded-full hover:bg-blue-600"
                                     CommandName="SelectTime"
-                                    CommandArgument='<%# Eval("availableDate", "{0:yyyy-MM-dd}") + "," + Eval("availableFrom") + "," + Eval("availableTo") %>' />
+                                    CommandArgument='<%# Eval("availabilityID") %>' />
                             </div>
                         </ItemTemplate>
                     </asp:Repeater>
                 </div>
-
                 <asp:Label ID="lblMessage" runat="server"></asp:Label>
             </div>
         </div>

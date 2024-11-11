@@ -120,6 +120,7 @@
     <Content Include="hospitalNurse.aspx" />
     <Content Include="hospitalNurseDetails.aspx" />
     <Content Include="hospitalNurseEdit.aspx" />
+    <Content Include="hospitalStaffLogin.aspx" />
     <Content Include="Images\calendar.svg" />
     <Content Include="Images\right-arrow.svg" />
     <Content Include="Images\sliderImage1.jpg" />
@@ -299,6 +300,13 @@
     </Compile>
     <Compile Include="hospitalNurseEdit.aspx.designer.cs">
       <DependentUpon>hospitalNurseEdit.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="hospitalStaffLogin.aspx.cs">
+      <DependentUpon>hospitalStaffLogin.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="hospitalStaffLogin.aspx.designer.cs">
+      <DependentUpon>hospitalStaffLogin.aspx</DependentUpon>
     </Compile>
     <Compile Include="NavFooter.Master.cs">
       <DependentUpon>NavFooter.Master</DependentUpon>

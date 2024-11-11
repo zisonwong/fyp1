@@ -80,9 +80,9 @@
              </a>
                     </li>
                     <li class="nav-item">
-                        <a href="staffCustomerDetails.aspx" class="nav-link text-black" style="display: flex; align-items: center;">
+                        <a href="hospitalDoctorAvailability.aspx" class="nav-link text-black" style="display: flex; align-items: center;">
                             <i class="lni lni-user me-3"></i>
-                            Report
+                            Availability
 </a>
                     </li>
 

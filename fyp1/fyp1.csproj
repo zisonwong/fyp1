@@ -87,7 +87,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="adminHome.aspx" />
+    <Content Include="Admin\adminHome.aspx" />
     <Content Include="App_Data\IHMS.mdf" />
     <Content Include="App_Data\IHMS_log.ldf">
       <DependentUpon>IHMS.mdf</DependentUpon>
@@ -106,21 +106,25 @@
     <Content Include="CSS\home.css" />
     <Content Include="CSS\login.css" />
     <Content Include="CSS\signup.css" />
-    <Content Include="hospitalAddDoctor.aspx" />
-    <Content Include="hospitalAddNurse.aspx" />
-    <Content Include="hospitalBranch.aspx" />
-    <Content Include="hospitalDepartment.aspx" />
-    <Content Include="hospitalDoctor.aspx" />
-    <Content Include="hospitalDoctorAvailability.aspx" />
-    <Content Include="hospitalDoctorDetails.aspx" />
-    <Content Include="hospitalDoctorEdit.aspx" />
+    <Content Include="Admin\hospitalAddDoctor.aspx" />
+    <Content Include="Admin\hospitalAddNurse.aspx" />
+    <Content Include="Admin\hospitalAppointment.aspx" />
+    <Content Include="Admin\hospitalAppointmentDetails.aspx" />
+    <Content Include="Admin\hospitalBranch.aspx" />
+    <Content Include="Admin\hospitalDepartment.aspx" />
+    <Content Include="Admin\hospitalDoctor.aspx" />
+    <Content Include="Admin\hospitalDoctorAvailability.aspx" />
+    <Content Include="Admin\hospitalDoctorDetails.aspx" />
+    <Content Include="Admin\hospitalDoctorEdit.aspx" />
     <Content Include="hospitalImg\defaultAvatar.jpg" />
     <Content Include="hospitalImg\pngtree-young-afro-professional-doctor-png-image_13227671.png" />
-    <Content Include="hospitalMedicine.aspx" />
-    <Content Include="hospitalNurse.aspx" />
-    <Content Include="hospitalNurseDetails.aspx" />
-    <Content Include="hospitalNurseEdit.aspx" />
-    <Content Include="hospitalStaffLogin.aspx" />
+    <Content Include="Admin\hospitalMedicine.aspx" />
+    <Content Include="Admin\hospitalNurse.aspx" />
+    <Content Include="Admin\hospitalNurseDetails.aspx" />
+    <Content Include="Admin\hospitalNurseEdit.aspx" />
+    <Content Include="Admin\hospitalPatient.aspx" />
+    <Content Include="Admin\hospitalPatientDetails.aspx" />
+    <Content Include="Admin\hospitalStaffLogin.aspx" />
     <Content Include="Images\calendar.svg" />
     <Content Include="Images\right-arrow.svg" />
     <Content Include="Images\sliderImage1.jpg" />
@@ -147,18 +151,18 @@
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="adminHome.aspx.cs">
+    <Compile Include="Admin\adminHome.aspx.cs">
       <DependentUpon>adminHome.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="adminHome.aspx.designer.cs">
+    <Compile Include="Admin\adminHome.aspx.designer.cs">
       <DependentUpon>adminHome.aspx</DependentUpon>
     </Compile>
-    <Compile Include="adminSidebar.Master.cs">
+    <Compile Include="Admin\adminSidebar.Master.cs">
       <DependentUpon>adminSidebar.Master</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="adminSidebar.Master.designer.cs">
+    <Compile Include="Admin\adminSidebar.Master.designer.cs">
       <DependentUpon>adminSidebar.Master</DependentUpon>
     </Compile>
     <Compile Include="Client\BranchDoctorSelection.aspx.cs">
@@ -217,95 +221,123 @@
     <Compile Include="Client\DoctorAvailability.aspx.designer.cs">
       <DependentUpon>DoctorAvailability.aspx</DependentUpon>
     </Compile>
-    <Compile Include="hospitalAddDoctor.aspx.cs">
+    <Compile Include="Admin\hospitalAddDoctor.aspx.cs">
       <DependentUpon>hospitalAddDoctor.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="hospitalAddDoctor.aspx.designer.cs">
+    <Compile Include="Admin\hospitalAddDoctor.aspx.designer.cs">
       <DependentUpon>hospitalAddDoctor.aspx</DependentUpon>
     </Compile>
-    <Compile Include="hospitalAddNurse.aspx.cs">
+    <Compile Include="Admin\hospitalAddNurse.aspx.cs">
       <DependentUpon>hospitalAddNurse.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="hospitalAddNurse.aspx.designer.cs">
+    <Compile Include="Admin\hospitalAddNurse.aspx.designer.cs">
       <DependentUpon>hospitalAddNurse.aspx</DependentUpon>
     </Compile>
-    <Compile Include="hospitalBranch.aspx.cs">
+    <Compile Include="Admin\hospitalAppointment.aspx.cs">
+      <DependentUpon>hospitalAppointment.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\hospitalAppointment.aspx.designer.cs">
+      <DependentUpon>hospitalAppointment.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\hospitalAppointmentDetails.aspx.cs">
+      <DependentUpon>hospitalAppointmentDetails.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\hospitalAppointmentDetails.aspx.designer.cs">
+      <DependentUpon>hospitalAppointmentDetails.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\hospitalBranch.aspx.cs">
       <DependentUpon>hospitalBranch.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="hospitalBranch.aspx.designer.cs">
+    <Compile Include="Admin\hospitalBranch.aspx.designer.cs">
       <DependentUpon>hospitalBranch.aspx</DependentUpon>
     </Compile>
-    <Compile Include="hospitalDepartment.aspx.cs">
+    <Compile Include="Admin\hospitalDepartment.aspx.cs">
       <DependentUpon>hospitalDepartment.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="hospitalDepartment.aspx.designer.cs">
+    <Compile Include="Admin\hospitalDepartment.aspx.designer.cs">
       <DependentUpon>hospitalDepartment.aspx</DependentUpon>
     </Compile>
-    <Compile Include="hospitalDoctor.aspx.cs">
+    <Compile Include="Admin\hospitalDoctor.aspx.cs">
       <DependentUpon>hospitalDoctor.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="hospitalDoctor.aspx.designer.cs">
+    <Compile Include="Admin\hospitalDoctor.aspx.designer.cs">
       <DependentUpon>hospitalDoctor.aspx</DependentUpon>
     </Compile>
-    <Compile Include="hospitalDoctorAvailability.aspx.cs">
+    <Compile Include="Admin\hospitalDoctorAvailability.aspx.cs">
       <DependentUpon>hospitalDoctorAvailability.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="hospitalDoctorAvailability.aspx.designer.cs">
+    <Compile Include="Admin\hospitalDoctorAvailability.aspx.designer.cs">
       <DependentUpon>hospitalDoctorAvailability.aspx</DependentUpon>
     </Compile>
-    <Compile Include="hospitalDoctorDetails.aspx.cs">
+    <Compile Include="Admin\hospitalDoctorDetails.aspx.cs">
       <DependentUpon>hospitalDoctorDetails.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="hospitalDoctorDetails.aspx.designer.cs">
+    <Compile Include="Admin\hospitalDoctorDetails.aspx.designer.cs">
       <DependentUpon>hospitalDoctorDetails.aspx</DependentUpon>
     </Compile>
-    <Compile Include="hospitalDoctorEdit.aspx.cs">
+    <Compile Include="Admin\hospitalDoctorEdit.aspx.cs">
       <DependentUpon>hospitalDoctorEdit.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="hospitalDoctorEdit.aspx.designer.cs">
+    <Compile Include="Admin\hospitalDoctorEdit.aspx.designer.cs">
       <DependentUpon>hospitalDoctorEdit.aspx</DependentUpon>
     </Compile>
-    <Compile Include="hospitalMedicine.aspx.cs">
+    <Compile Include="Admin\hospitalMedicine.aspx.cs">
       <DependentUpon>hospitalMedicine.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="hospitalMedicine.aspx.designer.cs">
+    <Compile Include="Admin\hospitalMedicine.aspx.designer.cs">
       <DependentUpon>hospitalMedicine.aspx</DependentUpon>
     </Compile>
-    <Compile Include="hospitalNurse.aspx.cs">
+    <Compile Include="Admin\hospitalNurse.aspx.cs">
       <DependentUpon>hospitalNurse.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="hospitalNurse.aspx.designer.cs">
+    <Compile Include="Admin\hospitalNurse.aspx.designer.cs">
       <DependentUpon>hospitalNurse.aspx</DependentUpon>
     </Compile>
-    <Compile Include="hospitalNurseDetails.aspx.cs">
+    <Compile Include="Admin\hospitalNurseDetails.aspx.cs">
       <DependentUpon>hospitalNurseDetails.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="hospitalNurseDetails.aspx.designer.cs">
+    <Compile Include="Admin\hospitalNurseDetails.aspx.designer.cs">
       <DependentUpon>hospitalNurseDetails.aspx</DependentUpon>
     </Compile>
-    <Compile Include="hospitalNurseEdit.aspx.cs">
+    <Compile Include="Admin\hospitalNurseEdit.aspx.cs">
       <DependentUpon>hospitalNurseEdit.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="hospitalNurseEdit.aspx.designer.cs">
+    <Compile Include="Admin\hospitalNurseEdit.aspx.designer.cs">
       <DependentUpon>hospitalNurseEdit.aspx</DependentUpon>
     </Compile>
-    <Compile Include="hospitalStaffLogin.aspx.cs">
+    <Compile Include="Admin\hospitalPatient.aspx.cs">
+      <DependentUpon>hospitalPatient.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\hospitalPatient.aspx.designer.cs">
+      <DependentUpon>hospitalPatient.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\hospitalPatientDetails.aspx.cs">
+      <DependentUpon>hospitalPatientDetails.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\hospitalPatientDetails.aspx.designer.cs">
+      <DependentUpon>hospitalPatientDetails.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\hospitalStaffLogin.aspx.cs">
       <DependentUpon>hospitalStaffLogin.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="hospitalStaffLogin.aspx.designer.cs">
+    <Compile Include="Admin\hospitalStaffLogin.aspx.designer.cs">
       <DependentUpon>hospitalStaffLogin.aspx</DependentUpon>
     </Compile>
     <Compile Include="NavFooter.Master.cs">
@@ -319,7 +351,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="NavFooter.Master" />
-    <Content Include="adminSidebar.Master" />
+    <Content Include="Admin\adminSidebar.Master" />
     <None Include="packages.config" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>

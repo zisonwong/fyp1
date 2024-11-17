@@ -72,15 +72,25 @@
                 </div>
 
                 <!-- Confirm Payment Button -->
-                <asp:Button runat="server" ID="btnConfirmPayment" class="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500" onclick="btnConfirmPayment_Click" Text="Confirm Payment">
-                </asp:Button>
+                <asp:Button runat="server" ID="btnConfirmPayment" class="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500" OnClick="btnConfirmPayment_Click" Text="Confirm Payment"></asp:Button>
                 <!-- Success or Error Messages -->
                 <div class="mt-4 text-center">
-                    <asp:Label ID="lblMessage" runat="server" CssClass="text-green-600 font-semibold"></asp:Label>
+
                     <asp:Label ID="lblError" runat="server" CssClass="text-red-600 font-semibold"></asp:Label>
+
+                    <!-- Payment Success Modal -->
+                    <asp:Panel ID="paymentSuccessModal" runat="server" CssClass="fixed inset-0 flex items-center justify-center">
+                        <div class="bg-white w-1/3 p-8 rounded-lg shadow-lg text-center">
+                            <h3 class="text-lg font-semibold mb-4">Payment Successful</h3>
+                            <p class="text-gray-600 mb-6">Your payment has been confirmed and saved successfully!</p>
+                            <div class="flex justify-center space-x-4">
+                                <asp:Button ID="btnGoToProfile" runat="server" Text="Go to Profile" CssClass="px-4 py-2 bg-blue-600 text-white font-medium rounded hover:bg-blue-700 transition" OnClick="GoToProfile" />
+                                <asp:Button ID="btnCloseModal" runat="server" Text="Close" CssClass="px-4 py-2 bg-gray-200 text-gray-700 font-medium rounded hover:bg-gray-300 transition" OnClick="CloseModal" />
+                            </div>
+                        </div>
+                    </asp:Panel>
                 </div>
             </div>
-        </div>
     </form>
 </body>
 </html>

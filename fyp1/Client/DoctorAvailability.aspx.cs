@@ -22,11 +22,7 @@ namespace fyp1.Client
                 {
                     LoadDoctorDetails(doctorID);
                     LoadAvailableDates(doctorID);
-                    LoadDoctorAvailability(doctorID, null); // Initially load all dates
-                }
-                else
-                {
-
+                    LoadDoctorAvailability(doctorID, null);
                 }
             }
         }
@@ -47,7 +43,6 @@ namespace fyp1.Client
 
                 conn.Open();
                 SqlDataReader reader = cmd.ExecuteReader();
-
                 ddlAvailableDates.Items.Clear();
                 ddlAvailableDates.Items.Add(new ListItem("Select Date", ""));
 
@@ -58,7 +53,6 @@ namespace fyp1.Client
                         availableDate.ToString("dddd, MMMM dd, yyyy"),
                         availableDate.ToString("yyyy-MM-dd")));
                 }
-
                 reader.Close();
             }
         }
@@ -172,8 +166,6 @@ namespace fyp1.Client
                 reader.Close();
             }
         }
-
-
         protected void btnSelectTime_Click(object sender, EventArgs e)
         {
             // Retrieve doctorID from query string
@@ -188,22 +180,17 @@ namespace fyp1.Client
 
             DateTime selectedDate = DateTime.Parse(ddlAvailableDates.SelectedValue);
 
-            // Define variables for date, fromTime, and toTime
             string fromTime = "";
             string toTime = "";
 
-
-            // Database query to retrieve availability information
             string query = @"SELECT availableFrom, availableTo 
                      FROM Availability 
                      WHERE availabilityID = @availabilityID AND doctorID = @doctorID";
 
-            // Connect to the database
             using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["connectionString"].ToString()))
             {
                 using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
-                    // Set the parameters for doctorID and selectedDate
                     cmd.Parameters.AddWithValue("@doctorID", doctorID);
                     cmd.Parameters.AddWithValue("@selectedDate", selectedDate);
 
@@ -223,16 +210,12 @@ namespace fyp1.Client
                     }
                 }
             }
-
-            // Redirect to appointment confirmation page with encoded query parameters
             Response.Redirect("clientAppointment.aspx?doctorID=" + doctorID
                               + "&availabilityID=" + availabilityID
                               + "&date=" + selectedDate.ToString("yyyy-MM-dd")
                               + "&fromTime=" + fromTime
                               + "&toTime=" + toTime);
         }
-
-
         protected void rptAvailability_ItemCommand(object source, RepeaterCommandEventArgs e)
         {
             if (e.CommandName == "SelectTime")

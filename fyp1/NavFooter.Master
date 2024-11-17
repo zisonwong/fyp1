@@ -20,7 +20,7 @@
             <nav>
                 <ul class="masterSidebar">
                     <li><a href="#">Test</a></li>
-                    <li><a href="#">Home</a></li>
+                    <li><a href="../Client/clientHome.aspx">Home</a></li>
                     <li><a href="../Client/clientAppointment.aspx">Book Appointment</a></li>
                     <li><a href="clientSignUp.aspx">Sign up</a></li>
                     <li><a href="clientLogin.aspx">Login</a></li>
@@ -31,7 +31,7 @@
 
                 </ul>
                 <ul class="masterNav">
-                    <li><a class="closeMenuLink" href="#">
+                    <li><a class="closeMenuLink" href="../Client/clientHome.aspx">
                         <img src="../Images/logo.jpg" alt="logo" class="logoImage">Trinity Medical Center</a></li>
                     <li class="hideOnMobile"><a href="#">Our Services</a></li>
                     <li class="hideOnMobile"><a href="../Client/BranchDoctorSelection.aspx">Book Appointment</a></li>

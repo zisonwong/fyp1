@@ -14,27 +14,18 @@ namespace fyp1.Client
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-
-            string sessionID = Request.QueryString["sessionID"];
-
-            if (!string.IsNullOrEmpty(sessionID))
-            {
-                LoadChatHistory(sessionID);
-            }
-
             if (!IsPostBack)
             {
+                string sessionID = Request.QueryString["sessionID"];
+
+                if (!string.IsNullOrEmpty(sessionID))
+                {
+                    LoadChatHistory(sessionID);
+                }
+
                 LoadDoctorList();
             }
         }
-
-        //private string GetPatientIDFromCookie()
-        //{
-        //    Retrieve patient ID from cookie
-        //   var patientCookie = Request.Cookies["PatientID"];
-        //    return patientCookie?.Value ?? string.Empty;
-        //}
-
         private void LoadDoctorList()
         {
             string patientID = Request.Cookies["PatientID"]?.Value;
@@ -53,8 +44,6 @@ namespace fyp1.Client
                 SqlDataReader reader = cmd.ExecuteReader();
                 DataTable dt = new DataTable();
                 dt.Load(reader);
-
-                // Adding a new column to store image URLs
                 dt.Columns.Add("ImageUrl", typeof(string));
 
                 foreach (DataRow row in dt.Rows)
@@ -70,34 +59,20 @@ namespace fyp1.Client
                     }
                     else
                     {
-                        // Default placeholder image URL
                         row["ImageUrl"] = ResolveUrl("~/Images/doctor1.jpg");
                     }
                 }
-
                 RepeaterDoctorList.DataSource = dt;
                 RepeaterDoctorList.DataBind();
             }
         }
-
         protected void DoctorSelected(object source, RepeaterCommandEventArgs e)
         {
             string doctorID = (string)e.CommandArgument;
             string sessionID = GetChatSessionID(doctorID);
             LoadChatHistory(sessionID);
-
-            if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)
-            {
-                Image imgDoctorPhoto = (Image)e.Item.FindControl("imgDoctorPhoto");
-                DataRowView row = (DataRowView)e.Item.DataItem;
-
-                // Log to confirm ImageUrl is correctly set
-                System.Diagnostics.Debug.WriteLine("ImageUrl: " + row["ImageUrl"].ToString());
-
-                imgDoctorPhoto.ImageUrl = row["ImageUrl"].ToString();
-            }
+            Response.Redirect($"clientChat.aspx?sessionID={sessionID}" + "&doctorID=" + doctorID);
         }
-
         private string GetChatSessionID(string doctorID)
         {
             string patientID = Request.Cookies["PatientID"]?.Value;
@@ -113,7 +88,6 @@ namespace fyp1.Client
                 conn.Open();
                 sessionID = cmd.ExecuteScalar()?.ToString();
             }
-
             return sessionID;
         }
 
@@ -123,35 +97,52 @@ namespace fyp1.Client
 
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
-                string query = "SELECT sender, content, timestamp FROM Message WHERE sessionID = @sessionID ORDER BY timestamp";
+                string query = @"SELECT 
+                                m.sender, 
+                                m.content, 
+                                m.timestamp, 
+                                CASE 
+                                    WHEN d.doctorID IS NOT NULL THEN 'doctor'
+                                    WHEN p.patientID IS NOT NULL THEN 'patient'
+                                    ELSE 'unknown'
+                                END AS senderRole
+                            FROM Message m
+                            LEFT JOIN Doctor d ON m.sender = d.name
+                            LEFT JOIN Patient p ON m.sender = p.name
+                            WHERE m.sessionID = @sessionID
+                            ORDER BY m.timestamp";
                 SqlCommand cmd = new SqlCommand(query, conn);
                 cmd.Parameters.AddWithValue("@sessionID", sessionID);
                 conn.Open();
+
                 SqlDataReader reader = cmd.ExecuteReader();
 
                 var messages = new List<dynamic>();
 
                 while (reader.Read())
                 {
+                    string senderRole = reader["senderRole"].ToString();
+                    string alignmentClass = senderRole.Equals("doctor", StringComparison.OrdinalIgnoreCase)
+                                            ? "text-left"
+                                            : "text-right";
+                    string messageClass = senderRole.Equals("doctor", StringComparison.OrdinalIgnoreCase)
+                                          ? "bg-blue-100"
+                                          : "bg-green-100";
+
                     messages.Add(new
                     {
                         sender = reader["sender"].ToString(),
                         content = reader["content"].ToString(),
-                        messageClass = reader["sender"].ToString() == "patient" ? "bg-blue-100" : "bg-green-100"
+                        messageClass = messageClass,
+                        alignmentClass = alignmentClass,
+                        timestamp = Convert.ToDateTime(reader["timestamp"]).ToString("g") // Format timestamp if needed
                     });
                 }
-
                 RepeaterMessages.DataSource = messages;
                 RepeaterMessages.DataBind();
             }
         }
-
         protected void btnSend_Click(object sender, EventArgs e)
-        {
-            SendMessage();
-        }
-
-        protected void SendMessage()
         {
             string sessionID = Request.QueryString["sessionID"];
             string content = txtMessage.Text.Trim();
@@ -175,12 +166,12 @@ namespace fyp1.Client
 
                     cmd.ExecuteNonQuery();
                 }
-
-                txtMessage.Text = "";
+                txtMessage.Text = string.Empty;
                 LoadChatHistory(sessionID);
             }
         }
 
+        [System.Web.Services.WebMethod]
         public static string GetMessages(string sessionID)
         {
             string connectionString = ConfigurationManager.ConnectionStrings["connectionString"].ConnectionString;
@@ -189,7 +180,7 @@ namespace fyp1.Client
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 conn.Open();
-                string query = "SELECT * FROM Message WHERE sessionID = @sessionID ORDER BY timestamp";
+                string query = "SELECT sender, content, timestamp FROM Message WHERE sessionID = @sessionID ORDER BY timestamp";
                 SqlCommand cmd = new SqlCommand(query, conn);
                 cmd.Parameters.AddWithValue("@sessionID", sessionID);
                 SqlDataReader reader = cmd.ExecuteReader();
@@ -199,12 +190,19 @@ namespace fyp1.Client
                     string sender = reader["sender"].ToString();
                     string messageContent = reader["content"].ToString();
                     string messageClass = sender == "patient" ? "bg-blue-100" : "bg-green-100";
-                    messages += $"<div class='flex {messageClass} p-3 rounded-lg mb-2'><div class='flex-1'>{messageContent}</div>                             <div class='text-sm text-gray-500'>{sender}</div></div>";
+                    string alignmentClass = sender == "patient" ? "text-right" : "text-left";
+
+                    messages += $"<div class='flex {alignmentClass} mb-2'>" +
+                                $"<div class='flex-1 {messageClass} p-3 rounded-lg max-w-md'>" +
+                                $"<div>{messageContent}</div>" +
+                                $"<div class='text-sm text-gray-500'>{reader["timestamp"]}</div>" +
+                                $"</div></div>";
                 }
             }
 
             return messages;
         }
+       
 
         private string GenerateNextMessageID()
         {

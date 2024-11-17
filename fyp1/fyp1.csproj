@@ -23,11 +23,6 @@
     <UseGlobalApplicationHostFile />
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
-<<<<<<< Updated upstream
-    <_MigrateToProjectGuid>89a806fb-cde8-45df-89ac-c8145fc6529f</_MigrateToProjectGuid>
-=======
-    <_MigrateToProjectGuid>24890ca4-7cd5-4d4b-9e18-2c971d230137</_MigrateToProjectGuid>
->>>>>>> Stashed changes
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -215,7 +210,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="adminHome.aspx" />
+    <Content Include="Admin\adminHome.aspx" />
     <Content Include="App_Data\IHMS.mdf" />
     <Content Include="App_Data\IHMS_log.ldf">
       <DependentUpon>IHMS.mdf</DependentUpon>
@@ -235,21 +230,27 @@
     <Content Include="CSS\home.css" />
     <Content Include="CSS\login.css" />
     <Content Include="CSS\signup.css" />
-    <Content Include="hospitalAddDoctor.aspx" />
-    <Content Include="hospitalAddNurse.aspx" />
-    <Content Include="hospitalBranch.aspx" />
-    <Content Include="hospitalDepartment.aspx" />
-    <Content Include="hospitalDoctor.aspx" />
-    <Content Include="hospitalDoctorAvailability.aspx" />
-    <Content Include="hospitalDoctorDetails.aspx" />
-    <Content Include="hospitalDoctorEdit.aspx" />
+    <Content Include="Admin\hospitalAddDoctor.aspx" />
+    <Content Include="Admin\hospitalAddNurse.aspx" />
+    <Content Include="Admin\hospitalAppointment.aspx" />
+    <Content Include="Admin\hospitalAppointmentDetails.aspx" />
+    <Content Include="Admin\hospitalBranch.aspx" />
+    <Content Include="Admin\hospitalDepartment.aspx" />
+    <Content Include="Admin\hospitalDoctor.aspx" />
+    <Content Include="Admin\hospitalDoctorAvailability.aspx" />
+    <Content Include="Admin\hospitalDoctorDetails.aspx" />
+    <Content Include="Admin\hospitalDoctorEdit.aspx" />
     <Content Include="hospitalImg\defaultAvatar.jpg" />
     <Content Include="hospitalImg\pngtree-young-afro-professional-doctor-png-image_13227671.png" />
-    <Content Include="hospitalMedicine.aspx" />
-    <Content Include="hospitalNurse.aspx" />
-    <Content Include="hospitalNurseDetails.aspx" />
-    <Content Include="hospitalNurseEdit.aspx" />
-    <Content Include="ILLink\ILLink.Descriptors.LibraryBuild.xml" />
+
+    <Content Include="Admin\hospitalMedicine.aspx" />
+    <Content Include="Admin\hospitalNurse.aspx" />
+    <Content Include="Admin\hospitalNurseDetails.aspx" />
+    <Content Include="Admin\hospitalNurseEdit.aspx" />
+    <Content Include="Admin\hospitalPatient.aspx" />
+    <Content Include="Admin\hospitalPatientDetails.aspx" />
+    <Content Include="Admin\hospitalStaffLogin.aspx" />
+
     <Content Include="Images\calendar.svg" />
     <Content Include="Images\right-arrow.svg" />
     <Content Include="Images\sliderImage1.jpg" />
@@ -347,18 +348,18 @@
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="adminHome.aspx.cs">
+    <Compile Include="Admin\adminHome.aspx.cs">
       <DependentUpon>adminHome.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="adminHome.aspx.designer.cs">
+    <Compile Include="Admin\adminHome.aspx.designer.cs">
       <DependentUpon>adminHome.aspx</DependentUpon>
     </Compile>
-    <Compile Include="adminSidebar.Master.cs">
+    <Compile Include="Admin\adminSidebar.Master.cs">
       <DependentUpon>adminSidebar.Master</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="adminSidebar.Master.designer.cs">
+    <Compile Include="Admin\adminSidebar.Master.designer.cs">
       <DependentUpon>adminSidebar.Master</DependentUpon>
     </Compile>
     <Compile Include="Client\BranchDoctorSelection.aspx.cs">
@@ -424,89 +425,124 @@
     <Compile Include="Client\DoctorAvailability.aspx.designer.cs">
       <DependentUpon>DoctorAvailability.aspx</DependentUpon>
     </Compile>
-    <Compile Include="hospitalAddDoctor.aspx.cs">
+    <Compile Include="Admin\hospitalAddDoctor.aspx.cs">
       <DependentUpon>hospitalAddDoctor.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="hospitalAddDoctor.aspx.designer.cs">
+    <Compile Include="Admin\hospitalAddDoctor.aspx.designer.cs">
       <DependentUpon>hospitalAddDoctor.aspx</DependentUpon>
     </Compile>
-    <Compile Include="hospitalAddNurse.aspx.cs">
+    <Compile Include="Admin\hospitalAddNurse.aspx.cs">
       <DependentUpon>hospitalAddNurse.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="hospitalAddNurse.aspx.designer.cs">
+    <Compile Include="Admin\hospitalAddNurse.aspx.designer.cs">
       <DependentUpon>hospitalAddNurse.aspx</DependentUpon>
     </Compile>
-    <Compile Include="hospitalBranch.aspx.cs">
+    <Compile Include="Admin\hospitalAppointment.aspx.cs">
+      <DependentUpon>hospitalAppointment.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\hospitalAppointment.aspx.designer.cs">
+      <DependentUpon>hospitalAppointment.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\hospitalAppointmentDetails.aspx.cs">
+      <DependentUpon>hospitalAppointmentDetails.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\hospitalAppointmentDetails.aspx.designer.cs">
+      <DependentUpon>hospitalAppointmentDetails.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\hospitalBranch.aspx.cs">
       <DependentUpon>hospitalBranch.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="hospitalBranch.aspx.designer.cs">
+    <Compile Include="Admin\hospitalBranch.aspx.designer.cs">
       <DependentUpon>hospitalBranch.aspx</DependentUpon>
     </Compile>
-    <Compile Include="hospitalDepartment.aspx.cs">
+    <Compile Include="Admin\hospitalDepartment.aspx.cs">
       <DependentUpon>hospitalDepartment.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="hospitalDepartment.aspx.designer.cs">
+    <Compile Include="Admin\hospitalDepartment.aspx.designer.cs">
       <DependentUpon>hospitalDepartment.aspx</DependentUpon>
     </Compile>
-    <Compile Include="hospitalDoctor.aspx.cs">
+    <Compile Include="Admin\hospitalDoctor.aspx.cs">
       <DependentUpon>hospitalDoctor.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="hospitalDoctor.aspx.designer.cs">
+    <Compile Include="Admin\hospitalDoctor.aspx.designer.cs">
       <DependentUpon>hospitalDoctor.aspx</DependentUpon>
     </Compile>
-    <Compile Include="hospitalDoctorAvailability.aspx.cs">
+    <Compile Include="Admin\hospitalDoctorAvailability.aspx.cs">
       <DependentUpon>hospitalDoctorAvailability.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="hospitalDoctorAvailability.aspx.designer.cs">
+    <Compile Include="Admin\hospitalDoctorAvailability.aspx.designer.cs">
       <DependentUpon>hospitalDoctorAvailability.aspx</DependentUpon>
     </Compile>
-    <Compile Include="hospitalDoctorDetails.aspx.cs">
+    <Compile Include="Admin\hospitalDoctorDetails.aspx.cs">
       <DependentUpon>hospitalDoctorDetails.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="hospitalDoctorDetails.aspx.designer.cs">
+    <Compile Include="Admin\hospitalDoctorDetails.aspx.designer.cs">
       <DependentUpon>hospitalDoctorDetails.aspx</DependentUpon>
     </Compile>
-    <Compile Include="hospitalDoctorEdit.aspx.cs">
+    <Compile Include="Admin\hospitalDoctorEdit.aspx.cs">
       <DependentUpon>hospitalDoctorEdit.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="hospitalDoctorEdit.aspx.designer.cs">
+    <Compile Include="Admin\hospitalDoctorEdit.aspx.designer.cs">
       <DependentUpon>hospitalDoctorEdit.aspx</DependentUpon>
     </Compile>
-    <Compile Include="hospitalMedicine.aspx.cs">
+    <Compile Include="Admin\hospitalMedicine.aspx.cs">
       <DependentUpon>hospitalMedicine.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="hospitalMedicine.aspx.designer.cs">
+    <Compile Include="Admin\hospitalMedicine.aspx.designer.cs">
       <DependentUpon>hospitalMedicine.aspx</DependentUpon>
     </Compile>
-    <Compile Include="hospitalNurse.aspx.cs">
+    <Compile Include="Admin\hospitalNurse.aspx.cs">
       <DependentUpon>hospitalNurse.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="hospitalNurse.aspx.designer.cs">
+    <Compile Include="Admin\hospitalNurse.aspx.designer.cs">
       <DependentUpon>hospitalNurse.aspx</DependentUpon>
     </Compile>
-    <Compile Include="hospitalNurseDetails.aspx.cs">
+    <Compile Include="Admin\hospitalNurseDetails.aspx.cs">
       <DependentUpon>hospitalNurseDetails.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="hospitalNurseDetails.aspx.designer.cs">
+    <Compile Include="Admin\hospitalNurseDetails.aspx.designer.cs">
       <DependentUpon>hospitalNurseDetails.aspx</DependentUpon>
     </Compile>
-    <Compile Include="hospitalNurseEdit.aspx.cs">
+    <Compile Include="Admin\hospitalNurseEdit.aspx.cs">
       <DependentUpon>hospitalNurseEdit.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="hospitalNurseEdit.aspx.designer.cs">
+    <Compile Include="Admin\hospitalNurseEdit.aspx.designer.cs">
       <DependentUpon>hospitalNurseEdit.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\hospitalPatient.aspx.cs">
+      <DependentUpon>hospitalPatient.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\hospitalPatient.aspx.designer.cs">
+      <DependentUpon>hospitalPatient.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\hospitalPatientDetails.aspx.cs">
+      <DependentUpon>hospitalPatientDetails.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\hospitalPatientDetails.aspx.designer.cs">
+      <DependentUpon>hospitalPatientDetails.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\hospitalStaffLogin.aspx.cs">
+      <DependentUpon>hospitalStaffLogin.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\hospitalStaffLogin.aspx.designer.cs">
+      <DependentUpon>hospitalStaffLogin.aspx</DependentUpon>
     </Compile>
     <Compile Include="NavFooter.Master.cs">
       <DependentUpon>NavFooter.Master</DependentUpon>
@@ -519,80 +555,8 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="NavFooter.Master" />
-    <Content Include="adminSidebar.Master" />
-    <Content Include="libman.json" />
-    <Content Include="lib\microsoft\signalr\dist\browser\signalr.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\browser\signalr.min.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\cjs\AbortController.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\cjs\AccessTokenHttpClient.js.map" />
-    <Content Include="lib\microsoft\signalr\package.json" />
-    <Content Include="lib\microsoft\signalr\README.md" />
-    <Content Include="lib\microsoft\signalr\dist\cjs\DefaultHttpClient.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\cjs\DefaultReconnectPolicy.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\cjs\Errors.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\cjs\FetchHttpClient.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\cjs\HandshakeProtocol.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\cjs\HeaderNames.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\cjs\HttpClient.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\cjs\HttpConnection.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\cjs\HubConnection.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\cjs\HubConnectionBuilder.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\cjs\IConnection.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\cjs\IHttpConnectionOptions.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\cjs\IHubProtocol.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\cjs\ILogger.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\cjs\IRetryPolicy.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\cjs\IStatefulReconnectOptions.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\cjs\ITransport.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\cjs\JsonHubProtocol.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\cjs\Loggers.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\cjs\LongPollingTransport.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\cjs\MessageBuffer.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\cjs\Polyfills.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\cjs\ServerSentEventsTransport.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\cjs\Stream.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\cjs\Subject.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\cjs\browser-index.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\cjs\TextMessageFormat.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\cjs\Utils.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\cjs\WebSocketTransport.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\cjs\XhrHttpClient.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\cjs\index.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\esm\AbortController.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\esm\AccessTokenHttpClient.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\esm\DefaultHttpClient.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\esm\DefaultReconnectPolicy.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\esm\Errors.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\esm\FetchHttpClient.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\esm\HandshakeProtocol.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\esm\HeaderNames.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\esm\HttpClient.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\esm\HttpConnection.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\esm\HubConnection.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\esm\HubConnectionBuilder.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\esm\IConnection.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\esm\IHttpConnectionOptions.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\esm\IHubProtocol.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\esm\ILogger.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\esm\IRetryPolicy.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\esm\IStatefulReconnectOptions.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\esm\ITransport.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\esm\JsonHubProtocol.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\esm\Loggers.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\esm\LongPollingTransport.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\esm\MessageBuffer.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\esm\Polyfills.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\esm\ServerSentEventsTransport.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\esm\Stream.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\esm\Subject.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\esm\TextMessageFormat.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\esm\Utils.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\esm\browser-index.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\esm\WebSocketTransport.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\esm\XhrHttpClient.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\esm\index.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\webworker\signalr.js.map" />
-    <Content Include="lib\microsoft\signalr\dist\webworker\signalr.min.js.map" />
+    <Content Include="Admin\adminSidebar.Master" />
+
     <None Include="packages.config" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>

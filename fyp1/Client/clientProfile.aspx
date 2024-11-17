@@ -31,14 +31,14 @@
             padding-left: 5px;
         }
 
-            .tab-link:hover {
-                color: #3182ce;
-                background-color: #e2e8f0;
-            }
+        .tab-link:hover {
+            color: #3182ce;
+            background-color: #e2e8f0;
+        }
 
-            .tab-link:focus {
-                outline: none;
-            }
+        .tab-link:focus {
+            outline: none;
+        }
 
         .logout-btn {
             background: none;
@@ -85,7 +85,7 @@
 
         .label {
             width: 150px;
-            color: #4a5568; /* text-gray-700 */
+            color: #4a5568;
             font-weight: 500;
         }
 
@@ -111,14 +111,12 @@
                     <div class="space-y-4">
                         <asp:Button ID="btnProfile" Text="Profile Management" CssClass="tab-link text-left w-full px-4 py-2 hover:bg-blue-200 transition ease-in-out duration-200" OnClientClick="showTab('panelProfile', this); return false;" CausesValidation="false" runat="server" />
                         <asp:Button ID="btnAppointment" Text="Appointment Scheduling" CssClass="tab-link text-left w-full px-4 py-2 hover:bg-blue-200 transition ease-in-out duration-200" OnClientClick="showTab('panelAppointment', this); return false;" CausesValidation="false" runat="server" />
-                        <asp:Button ID="btnInsurance" Text="Insurance" CssClass="tab-link text-left w-full px-4 py-2 hover:bg-blue-200 transition ease-in-out duration-200" OnClientClick="showTab('panelInsurance', this); return false;" CausesValidation="false" runat="server" />
                         <asp:Button ID="btnEmergency" Text="Emergency Contact" CssClass="tab-link text-left w-full px-4 py-2 hover:bg-blue-200 transition ease-in-out duration-200" OnClientClick="showTab('panelEmergency', this); return false;" CausesValidation="false" runat="server" />
                         <asp:Button ID="btnPayment" Text="Payment" CssClass="tab-link text-left w-full px-4 py-2 hover:bg-blue-200 transition ease-in-out duration-200" OnClientClick="showTab('panelPayment', this); return false;" CausesValidation="false" runat="server" />
                         <asp:Button ID="btnSettings" Text="Settings" CssClass="tab-link text-left w-full px-4 py-2 hover:bg-blue-200 transition ease-in-out duration-200" OnClientClick="showTab('panelSettings', this); return false;" CausesValidation="false" runat="server" />
 
                         <asp:Button ID="btnLogout" Text="Logout" CssClass="logout-btn text-left w-full px-4 py-2 hover:text-red-600 transition ease-in-out duration-200" OnClick="signOutBtn_Click" runat="server" />
                     </div>
-
                 </aside>
             </aside>
 
@@ -130,93 +128,83 @@
                         <div class="flex items-center mb-6">
                             <h3 class="text-2xl font-semibold text-gray-800">Profile Management</h3>
                         </div>
-
                         <div class="bg-white shadow-md rounded-lg p-6">
+                            <!-- Name Field -->
                             <div class="mb-4">
                                 <label class="font-bold text-gray-700" for="txtName">Name:</label>
-                                <asp:TextBox ID="txtName" runat="server" ReadOnly="true" CssClass="border rounded w-full p-2 text-gray-600" />
+                                <asp:TextBox ID="txtName" runat="server" CssClass="border rounded w-full p-2 text-gray-600" ReadOnly="true" />
                             </div>
+                            <!-- Date of Birth Field -->
                             <div class="mb-4">
                                 <label class="font-bold text-gray-700" for="txtDOB">Date of Birth:</label>
                                 <asp:TextBox ID="txtDOB" runat="server" ReadOnly="true" CssClass="border rounded w-full p-2 text-gray-600" />
                             </div>
+                            <!-- Email Field -->
                             <div class="mb-4">
                                 <label class="font-bold text-gray-700" for="txtEmail">Email:</label>
-                                <asp:TextBox ID="txtEmail" runat="server" ReadOnly="true" CssClass="border rounded w-full p-2 text-gray-600" />
+                                <asp:TextBox ID="txtEmail" runat="server" CssClass="border rounded w-full p-2 text-gray-600" ReadOnly="true" />
                             </div>
+                            <!-- Phone Field -->
                             <div class="mb-4">
                                 <label class="font-bold text-gray-700" for="txtPhone">Phone:</label>
-                                <asp:TextBox ID="txtPhone" runat="server" ReadOnly="true" CssClass="border rounded w-full p-2 text-gray-600" />
+                                <asp:TextBox ID="txtPhone" runat="server" CssClass="border rounded w-full p-2 text-gray-600" ReadOnly="true" />
                             </div>
+                            <!-- Blood Type Field -->
                             <div class="mb-4">
                                 <label class="font-bold text-gray-700" for="txtBloodType">Blood Type:</label>
-                                <asp:TextBox ID="txtBloodType" runat="server" ReadOnly="true" CssClass="border rounded w-full p-2 text-gray-600" />
+                                <asp:TextBox ID="txtBloodType" runat="server" CssClass="border rounded w-full p-2 text-gray-600" ReadOnly="true" />
                             </div>
-                        </div>
+                            <!-- Edit, Save, and Cancel Buttons -->
+                            <div class="text-right mt-4">
+                                <asp:Button ID="btnEdit" runat="server" Text="Edit" CssClass="bg-blue-500 text-white py-2 px-4 rounded" OnClick="btnEdit_Click" />
+                                <asp:Button ID="btnSave" runat="server" Text="Save" CssClass="bg-green-500 text-white py-2 px-4 rounded hidden" OnClick="btnSave_Click" />
+                                <asp:Button ID="btnCancel" runat="server" Text="Cancel" CssClass="bg-gray-500 text-white py-2 px-4 rounded hidden" OnClick="btnCancel_Click" />
+                            </div>
+                            </div>
                     </asp:Panel>
-
                     <!-- Appointment Scheduling Panel -->
-                    <asp:Panel ID="panelAppointment" runat="server" CssClass="tab-content hidden">
+                    <asp:Panel ID="panelAppointment" runat="server" CssClass="tab-content hidden bg-white shadow-md rounded-lg p-6 mb-8">
                         <div class="flex items-center mb-6">
-                            <h3 class="text-2xl font-semibold text-gray-800">Appointment Scheduling</h3>
+                            <h3 class="text-3xl font-bold text-gray-800 mb-2">Appointment Scheduling</h3>
                         </div>
-                        <asp:GridView ID="gridAppointment" runat="server" AutoGenerateColumns="false" CssClass="table-auto w-full">
+                        <asp:GridView ID="gridAppointment" runat="server" AutoGenerateColumns="false" CssClass="table-auto w-full border border-gray-200 rounded-lg">
                             <Columns>
-                                <asp:BoundField DataField="AppointmentID" HeaderText="Appointment ID" />
-                                <asp:BoundField DataField="DoctorName" HeaderText="Doctor Name" />
-                                <asp:BoundField DataField="Date" HeaderText="Date" DataFormatString="{0:MM/dd/yyyy}" />
-                                <asp:BoundField DataField="Time" HeaderText="Time" />
-                                <asp:BoundField DataField="Status" HeaderText="Status" />
+                                <asp:BoundField DataField="AppointmentID" HeaderText="Appointment ID" HeaderStyle-CssClass="px-4 py-2 bg-gray-100 text-left font-semibold" ItemStyle-CssClass="px-4 py-2" />
+                                <asp:BoundField DataField="Name" HeaderText="Doctor Name" HeaderStyle-CssClass="px-4 py-2 bg-gray-100 text-left font-semibold" ItemStyle-CssClass="px-4 py-2" />
+                                <asp:BoundField DataField="AppointmentDate" HeaderText="Date" DataFormatString="{0:dd/MM/yyyy}" HeaderStyle-CssClass="px-4 py-2 bg-gray-100 text-left font-semibold" ItemStyle-CssClass="px-4 py-2" />
+                                <asp:BoundField DataField="StartTime" HeaderText="Time" HeaderStyle-CssClass="px-4 py-2 bg-gray-100 text-left font-semibold" ItemStyle-CssClass="px-4 py-2" />
+                                <asp:BoundField DataField="Status" HeaderText="Status" HeaderStyle-CssClass="px-4 py-2 bg-gray-100 text-left font-semibold" ItemStyle-CssClass="px-4 py-2" />
                             </Columns>
                         </asp:GridView>
                     </asp:Panel>
-
-                    <!-- Insurance Panel -->
-                    <asp:Panel ID="panelInsurance" runat="server" CssClass="tab-content hidden">
-                        <div class="flex items-center mb-6">
-                            <h3 class="text-2xl font-semibold text-gray-800">Insurance</h3>
-                        </div>
-                        <asp:GridView ID="gridInsurance" runat="server" AutoGenerateColumns="false" CssClass="table-auto w-full">
-                            <Columns>
-                                <asp:BoundField DataField="PolicyID" HeaderText="Policy ID" />
-                                <asp:BoundField DataField="ProviderName" HeaderText="Provider Name" />
-                                <asp:BoundField DataField="PolicyType" HeaderText="Policy Type" />
-                                <asp:BoundField DataField="ExpirationDate" HeaderText="Expiration Date" DataFormatString="{0:MM/dd/yyyy}" />
-                            </Columns>
-                        </asp:GridView>
-                    </asp:Panel>
-
                     <!-- Emergency Contact Panel -->
-                    <asp:Panel ID="panelEmergency" runat="server" CssClass="tab-content hidden">
+                    <asp:Panel ID="panelEmergency" runat="server" CssClass="tab-content hidden bg-white shadow-md rounded-lg p-6 mb-8">
                         <div class="flex items-center mb-6">
-                            <h3 class="text-2xl font-semibold text-gray-800">Emergency Contact</h3>
+                            <h3 class="text-3xl font-bold text-gray-800 mb-2">Emergency Contact</h3>
                         </div>
-                        <asp:GridView ID="gridEmergency" runat="server" AutoGenerateColumns="false" CssClass="table-auto w-full">
+                        <asp:GridView ID="gridEmergency" runat="server" AutoGenerateColumns="false" CssClass="table-auto w-full border border-gray-200 rounded-lg">
                             <Columns>
-                                <asp:BoundField DataField="ContactName" HeaderText="Contact Name" />
-                                <asp:BoundField DataField="Relationship" HeaderText="Relationship" />
-                                <asp:BoundField DataField="Phone" HeaderText="Phone" />
-                                <asp:BoundField DataField="Email" HeaderText="Email" />
+                                <asp:BoundField DataField="ContactName" HeaderText="Contact Name" HeaderStyle-CssClass="px-4 py-2 bg-gray-100 text-left font-semibold" ItemStyle-CssClass="px-4 py-2" />
+                                <asp:BoundField DataField="Relationship" HeaderText="Relationship" HeaderStyle-CssClass="px-4 py-2 bg-gray-100 text-left font-semibold" ItemStyle-CssClass="px-4 py-2" />
+                                <asp:BoundField DataField="Phone" HeaderText="Phone" HeaderStyle-CssClass="px-4 py-2 bg-gray-100 text-left font-semibold" ItemStyle-CssClass="px-4 py-2" />
+                                <asp:BoundField DataField="Email" HeaderText="Email" HeaderStyle-CssClass="px-4 py-2 bg-gray-100 text-left font-semibold" ItemStyle-CssClass="px-4 py-2" />
                             </Columns>
                         </asp:GridView>
                     </asp:Panel>
-
                     <!-- Payment Panel -->
-                    <asp:Panel ID="panelPayment" runat="server" CssClass="tab-content hidden">
+                    <asp:Panel ID="panelPayment" runat="server" CssClass="tab-content hidden bg-white shadow-md rounded-lg p-6 mb-8">
                         <div class="flex items-center mb-6">
-                            <h3 class="text-2xl font-semibold text-gray-800">Payment</h3>
+                            <h3 class="text-3xl font-bold text-gray-800 mb-2">Payment</h3>
                         </div>
-                        <asp:GridView ID="gridPayment" runat="server" AutoGenerateColumns="false" CssClass="table-auto w-full">
+                        <asp:GridView ID="gridPayment" runat="server" AutoGenerateColumns="false" CssClass="table-auto w-full border border-gray-200 rounded-lg">
                             <Columns>
-                                <asp:BoundField DataField="PaymentID" HeaderText="Payment ID" />
-                                <asp:BoundField DataField="Amount" HeaderText="Amount" DataFormatString="{0:C}" />
-                                <asp:BoundField DataField="Date" HeaderText="Date" DataFormatString="{0:MM/dd/yyyy}" />
-                                <asp:BoundField DataField="PaymentMethod" HeaderText="Payment Method" />
-                                <asp:BoundField DataField="Status" HeaderText="Status" />
+                                <asp:BoundField DataField="PaymentID" HeaderText="Payment ID" HeaderStyle-CssClass="px-4 py-2 bg-gray-100 text-left font-semibold" ItemStyle-CssClass="px-4 py-2" />
+                                <asp:BoundField DataField="PaymentAmount" HeaderText="Amount" DataFormatString="{0:C}" HeaderStyle-CssClass="px-4 py-2 bg-gray-100 text-left font-semibold" ItemStyle-CssClass="px-4 py-2" />
+                                <asp:BoundField DataField="PaymentDate" HeaderText="Date" DataFormatString="{0:MM/dd/yyyy}" HeaderStyle-CssClass="px-4 py-2 bg-gray-100 text-left font-semibold" ItemStyle-CssClass="px-4 py-2" />
+                                <asp:BoundField DataField="PaymentMethod" HeaderText="Payment Method" HeaderStyle-CssClass="px-4 py-2 bg-gray-100 text-left font-semibold" ItemStyle-CssClass="px-4 py-2" />
                             </Columns>
                         </asp:GridView>
                     </asp:Panel>
-
                     <!-- Settings Panel -->
                     <asp:Panel ID="panelSettings" runat="server" CssClass="tab-content hidden">
                         <div class="settings-panel p-6 bg-gray-100 min-h-screen">
@@ -231,7 +219,6 @@
                                         CssClass="text-blue-600 underline cursor-pointer hover:text-blue-800 transition duration-200"
                                         OnClientClick="toggleModal('changePasswordModal'); return false;" />
                                 </div>
-
                                 <!-- Notifications Card -->
                                 <div class="bg-white rounded-lg shadow-lg p-5">
                                     <h3 class="text-xl font-semibold text-gray-800 mb-4">Notifications</h3>
@@ -240,7 +227,6 @@
                                         CssClass="text-blue-600 underline cursor-pointer hover:text-blue-800 transition duration-200"
                                         OnClientClick="toggleModal('notificationModal'); return false;" />
                                 </div>
-
                                 <!-- Privacy Settings Card -->
                                 <div class="bg-white rounded-lg shadow-lg p-5">
                                     <h3 class="text-xl font-semibold text-gray-800 mb-4">Privacy Settings</h3>
@@ -250,12 +236,9 @@
                                         OnClientClick="toggleModal('privacyModal'); return false;" />
                                 </div>
                             </div>
-
                             <asp:FileUpload ID="fileUploadProfile" runat="server" CssClass="mt-4" />
                             <asp:Button ID="btnUpload" runat="server" Text="Upload Profile Picture" OnClick="btnUpload_Click" CssClass="bg-blue-500 text-white px-4 py-2 mt-2 rounded w-1/4" />
                         </div>
-
-
                         <!-- Change Password Modal -->
                         <div id="changePasswordModal" class="fixed inset-0 hidden bg-gray-900 bg-opacity-50 flex items-center justify-center">
                             <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
@@ -280,34 +263,28 @@
                         <div id="notificationModal" class="fixed inset-0 hidden bg-gray-900 bg-opacity-50 flex items-center justify-center">
                             <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
                                 <h3 class="text-2xl font-semibold text-gray-800 mb-4">Notification Settings</h3>
-
                                 <div class="form-row">
                                     <asp:Label ID="lblEmailNotifications" runat="server" Text="Email Notifications:" CssClass="label"></asp:Label>
                                     <asp:CheckBox ID="chkEmailNotifications" runat="server" CssClass="checkbox" />
                                 </div>
-
                                 <div class="form-row">
                                     <asp:Label ID="lblSMSNotifications" runat="server" Text="SMS Notifications:" CssClass="label"></asp:Label>
                                     <asp:CheckBox ID="chkSMSNotifications" runat="server" CssClass="checkbox" />
                                 </div>
-
                                 <div class="form-row">
                                     <asp:Label ID="lblPushNotifications" runat="server" Text="Push Notifications:" CssClass="label"></asp:Label>
                                     <asp:CheckBox ID="chkPushNotifications" runat="server" CssClass="checkbox" />
                                 </div>
-
                                 <div class="flex justify-end mt-6">
                                     <button type="button" class="px-4 py-2 bg-gray-500 text-white rounded mr-2" onclick="toggleModal('notificationModal')">Cancel</button>
                                     <asp:Button ID="btnSubmitNotificationSettings" runat="server" Text="Save" CssClass="px-4 py-2 bg-blue-600 text-white rounded" OnClick="btnNotificationSettings_Click" />
                                 </div>
                             </div>
                         </div>
-
                         <!-- Privacy Settings Modal -->
                         <div id="privacyModal" class="fixed inset-0 hidden bg-gray-900 bg-opacity-50 flex items-center justify-center">
                             <div class="bg-white rounded-lg shadow-lg p-8 w-full max-w-lg">
                                 <h3 class="text-2xl font-semibold text-gray-800 mb-6">Privacy Settings</h3>
-
                                 <!-- Profile Visibility Dropdown -->
                                 <div class="mb-4">
                                     <asp:Label ID="lblProfileVisibility" runat="server" Text="Profile Visibility:" CssClass="block text-gray-700 font-medium mb-2"></asp:Label>
@@ -317,19 +294,16 @@
                                         <asp:ListItem Text="Friends Only" Value="FriendsOnly"></asp:ListItem>
                                     </asp:DropDownList>
                                 </div>
-
                                 <!-- Data Sharing Checkbox -->
                                 <div class="flex items-center mb-4">
                                     <asp:Label ID="lblDataSharing" runat="server" Text="Data Sharing:" CssClass="text-gray-700 font-medium w-40"></asp:Label>
                                     <asp:CheckBox ID="chkDataSharing" runat="server" Text="Allow data sharing with third-party services" CssClass="ml-2 text-gray-600" />
                                 </div>
-
                                 <!-- Ad Preferences Checkbox -->
                                 <div class="flex items-center mb-4">
                                     <asp:Label ID="lblAdPreferences" runat="server" Text="Ad Preferences:" CssClass="text-gray-700 font-medium w-40"></asp:Label>
                                     <asp:CheckBox ID="chkAdPreferences" runat="server" Text="Personalized Ads" CssClass="ml-2 text-gray-600" />
                                 </div>
-
                                 <!-- Action Buttons -->
                                 <div class="flex justify-end mt-6">
                                     <button type="button" class="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500 mr-2" onclick="toggleModal('privacyModal')">Cancel</button>
@@ -337,15 +311,11 @@
                                 </div>
                             </div>
                         </div>
-
-
                         <asp:Label ID="lblErrorMessage" runat="server"></asp:Label>
                     </asp:Panel>
                 </div>
             </main>
-
         </div>
-
     </form>
 
     <script>

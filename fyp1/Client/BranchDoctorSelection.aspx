@@ -68,6 +68,8 @@
                         </asp:Repeater>
                     </div>
                 </asp:Panel>
+
+                <asp:Label ID="lblError" runat="server"></asp:Label>
             </div>
         </div>
     </form>

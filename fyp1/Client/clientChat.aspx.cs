@@ -68,11 +68,20 @@ namespace fyp1.Client
         }
         protected void DoctorSelected(object source, RepeaterCommandEventArgs e)
         {
-            string doctorID = (string)e.CommandArgument;
-            string sessionID = GetChatSessionID(doctorID);
-            LoadChatHistory(sessionID);
-            Response.Redirect($"clientChat.aspx?sessionID={sessionID}" + "&doctorID=" + doctorID);
+            if (e.CommandName == "SelectDoctor")
+            {
+                string doctorID = e.CommandArgument.ToString();
+                Response.Write($"Doctor Selected: {doctorID}"); // Debug output
+
+                string sessionID = GetChatSessionID(doctorID);
+                LoadChatHistory(sessionID);
+
+                // Redirect to ensure proper state
+                Response.Redirect($"clientChat.aspx?sessionID={sessionID}&doctorID={doctorID}");
+            }
         }
+
+
         private string GetChatSessionID(string doctorID)
         {
             string patientID = Request.Cookies["PatientID"]?.Value;
@@ -110,7 +119,7 @@ namespace fyp1.Client
                             LEFT JOIN Doctor d ON m.sender = d.name
                             LEFT JOIN Patient p ON m.sender = p.name
                             WHERE m.sessionID = @sessionID
-                            ORDER BY m.timestamp";
+                            ORDER BY m.timestamp DESC";
                 SqlCommand cmd = new SqlCommand(query, conn);
                 cmd.Parameters.AddWithValue("@sessionID", sessionID);
                 conn.Open();
@@ -166,12 +175,13 @@ namespace fyp1.Client
 
                     cmd.ExecuteNonQuery();
                 }
-                txtMessage.Text = string.Empty;
+
+                TimerRefresh_Tick(sender, e);
                 LoadChatHistory(sessionID);
             }
+            ScriptManager.RegisterStartupScript(this, this.GetType(), "ClearMessageBox", "document.getElementById('" + txtMessage.ClientID + "').value = '';", true);
         }
 
-        [System.Web.Services.WebMethod]
         public static string GetMessages(string sessionID)
         {
             string connectionString = ConfigurationManager.ConnectionStrings["connectionString"].ConnectionString;
@@ -202,7 +212,46 @@ namespace fyp1.Client
 
             return messages;
         }
-       
+
+        protected void TimerRefresh_Tick(object sender, EventArgs e)
+        {
+            string sessionID = Request.QueryString["sessionID"];
+            HttpCookie patientCookie = Request.Cookies["Username"];
+            string patientUsername = patientCookie.Value;
+
+            if (!string.IsNullOrEmpty(sessionID) && !string.IsNullOrEmpty(patientUsername))
+            {
+                string connectionString = ConfigurationManager.ConnectionStrings["connectionString"].ConnectionString;
+
+                string query = @"
+            SELECT Content, Timestamp, 
+                   CASE WHEN Sender = @Username THEN 'text-right' ELSE 'text-left' END AS AlignmentClass, 
+                   CASE WHEN Sender = @Username THEN 'bg-green-100' ELSE 'bg-blue-100' END AS MessageClass 
+            FROM Message
+            WHERE SessionID = @SessionID
+            ORDER BY Timestamp DESC";
+
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@SessionID", sessionID);
+                    cmd.Parameters.AddWithValue("@Username", patientUsername);
+
+                    conn.Open();
+
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        DataTable dt = new DataTable();
+                        dt.Load(reader);
+                        DataView dv = dt.DefaultView;
+
+                        RepeaterMessages.DataSource = dv;
+                        RepeaterMessages.DataBind();
+                    }
+                }
+            }
+            LoadDoctorList();
+        }
 
         private string GenerateNextMessageID()
         {
@@ -228,5 +277,6 @@ namespace fyp1.Client
             }
             return nextAppointmentID;
         }
+
     }
 }

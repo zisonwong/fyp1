@@ -27,16 +27,18 @@ namespace fyp1.Client
                 Response.Redirect("clientLogin.aspx");
             }
 
+
+
             if (!IsPostBack)
             {
                 ShowTabContent(ActiveTab);
-
+                SetFieldsReadOnly(true);
                 LoadProfileData();
-                //LoadAppointmentData();
-                //LoadInsuranceData();
-                //LoadEmergencyContactData();
-                //LoadPaymentData();
+                LoadAppointmentData();
+                LoadEmergencyContactData();
+                LoadPaymentData();
                 //LoadSettingsData();
+                
                 lblErrorMessage.Text = "";
             }
         }
@@ -52,7 +54,6 @@ namespace fyp1.Client
         {
             panelProfile.CssClass = "tab-content hidden";
             panelAppointment.CssClass = "tab-content hidden";
-            panelInsurance.CssClass = "tab-content hidden";
             panelEmergency.CssClass = "tab-content hidden";
             panelPayment.CssClass = "tab-content hidden";
             panelSettings.CssClass = "tab-content hidden";
@@ -64,9 +65,6 @@ namespace fyp1.Client
                     break;
                 case "appointment":
                     panelAppointment.CssClass = "tab-content";
-                    break;
-                case "insurance":
-                    panelInsurance.CssClass = "tab-content";
                     break;
                 case "emergency":
                     panelEmergency.CssClass = "tab-content";
@@ -87,6 +85,8 @@ namespace fyp1.Client
 
         private void SaveSettings(string email, string phone, bool emailNotifications, bool smsNotifications, bool showProfile, bool dataSharing)
         {
+            HttpCookie IDCookie = HttpContext.Current.Request.Cookies["PatientID"];
+            string patientID = IDCookie.Value;
             // Code to save the settings in the database
             // Example query for updating user settings
             string query = "UPDATE Users SET Email = @Email, Phone = @Phone, EmailNotifications = @EmailNotifications, SmsNotifications = @SmsNotifications, ShowProfile = @ShowProfile, DataSharing = @DataSharing WHERE PatientID = @PatientID";
@@ -101,7 +101,7 @@ namespace fyp1.Client
                     cmd.Parameters.AddWithValue("@SmsNotifications", smsNotifications);
                     cmd.Parameters.AddWithValue("@ShowProfile", showProfile);
                     cmd.Parameters.AddWithValue("@DataSharing", dataSharing);
-                    cmd.Parameters.AddWithValue("@PatientID", "P1001");
+                    cmd.Parameters.AddWithValue("@PatientID", patientID);
 
                     con.Open();
                     cmd.ExecuteNonQuery();
@@ -121,7 +121,7 @@ namespace fyp1.Client
                 using (SqlCommand cmd = new SqlCommand(query, con))
                 {
                     cmd.Parameters.AddWithValue("@PatientID", patientID);
-                    con.Open(); 
+                    con.Open();
                     using (SqlDataReader reader = cmd.ExecuteReader())
                     {
                         if (reader.Read())
@@ -169,8 +169,10 @@ namespace fyp1.Client
             signOut();
         }
 
-        private void LoadPatientData(string patientID)
+        private void LoadPatientData()
         {
+            HttpCookie IDCookie = HttpContext.Current.Request.Cookies["PatientID"];
+            string patientID = IDCookie.Value;
             string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
             using (SqlConnection con = new SqlConnection(connectionString))
             {
@@ -185,7 +187,7 @@ namespace fyp1.Client
                         if (reader.Read())
                         {
                             txtName.Text = reader["name"].ToString();
-                            txtDOB.Text = Convert.ToDateTime(reader["DOB"]).ToString("yyyy-MM-dd");
+                            txtDOB.Text = Convert.ToDateTime(reader["DOB"]).ToString("dd-MM-yyyy");
                             txtEmail.Text = reader["email"].ToString();
                             txtPhone.Text = reader["contactInfo"].ToString();
                             txtBloodType.Text = reader["bloodtype"].ToString();
@@ -221,7 +223,7 @@ namespace fyp1.Client
                         cmd.ExecuteNonQuery();
                     }
                 }
-                LoadPatientData(patientID);
+                LoadPatientData();
             }
         }
 
@@ -387,6 +389,151 @@ namespace fyp1.Client
                     lblErrorMessage.Text = rowsAffected > 0 ? "Privacy settings updated successfully!" : "Error updating privacy settings!";
                 }
             }
+        }
+        private void LoadAppointmentData()
+        {
+            HttpCookie IDCookie = HttpContext.Current.Request.Cookies["PatientID"];
+            string patientID = IDCookie.Value;
+            string query = @"SELECT 
+                                a.appointmentID,
+                                d.name,
+                                av.availableDate AS AppointmentDate,
+                                av.availableFrom AS StartTime,
+                                av.availableTo AS EndTime,
+                                a.status,
+                                pm.paymentAmount,
+                                pm.paymentDate,
+                                pm.paymentMethod
+                            FROM 
+                                Appointment a
+                            JOIN 
+                                Doctor d ON a.doctorID = d.doctorID
+                            JOIN 
+                                Availability av ON a.availabilityID = av.availabilityID
+                            LEFT JOIN 
+                                Payment pm ON a.paymentID = pm.paymentID
+                            WHERE 
+                                patientID = @patientID";
+
+            using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ConnectionString"].ToString()))
+            using (SqlCommand cmd = new SqlCommand(query, conn))
+            {
+                cmd.Parameters.AddWithValue("@patientID", patientID);
+                SqlDataAdapter adapter = new SqlDataAdapter(cmd);
+                DataTable dt = new DataTable();
+                adapter.Fill(dt);
+
+                gridAppointment.DataSource = dt;
+                gridAppointment.DataBind();
+            }
+        }
+
+        private void LoadEmergencyContactData()
+        {
+            HttpCookie IDCookie = HttpContext.Current.Request.Cookies["PatientID"];
+            string patientID = IDCookie.Value;
+            string query = "SELECT ContactName, Relationship, Phone, Email FROM EmergencyContact WHERE patientID = @patientID";
+
+            using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ConnectionString"].ToString()))
+            using (SqlCommand cmd = new SqlCommand(query, conn))
+            {
+                cmd.Parameters.AddWithValue("@patientID", patientID);
+                SqlDataAdapter adapter = new SqlDataAdapter(cmd);
+                DataTable dt = new DataTable();
+                adapter.Fill(dt);
+
+                gridEmergency.DataSource = dt;
+                gridEmergency.DataBind();
+            }
+        }
+
+        private void LoadPaymentData()
+        {
+            HttpCookie IDCookie = HttpContext.Current.Request.Cookies["PatientID"];
+            string patientID = IDCookie.Value;
+            string query = @"SELECT 
+                            p.paymentID,
+                            p.paymentAmount,
+                            p.paymentMethod,
+                            p.paymentDate
+                        FROM
+                            Payment p
+                        JOIN
+                            Appointment a ON p.paymentID = a.paymentID
+                        WHERE
+                            a.patientID = @patientID";
+            using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ConnectionString"].ToString()))
+            using (SqlCommand cmd = new SqlCommand(query, conn))
+            {
+                cmd.Parameters.AddWithValue("@patientID", patientID);
+                SqlDataAdapter adapter = new SqlDataAdapter(cmd);
+                DataTable dt = new DataTable();
+                adapter.Fill(dt);
+
+                gridPayment.DataSource = dt;
+                gridPayment.DataBind();
+            }
+        }
+
+        protected void btnEdit_Click(object sender, EventArgs e)
+        {
+            SetFieldsReadOnly(false); 
+            btnEdit.CssClass = "hidden"; 
+            btnSave.CssClass = "visible"; 
+            btnCancel.CssClass = "visible"; 
+        }
+
+        protected void btnSave_Click(object sender, EventArgs e)
+        {
+            string patientID = Session["patientID"]?.ToString();
+
+            if (!string.IsNullOrEmpty(patientID))
+            {
+                using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString))
+                {
+                    string query = "UPDATE Patient SET name = @name, DOB = @dob, email = @email, " +
+                                   "contactInfo = @contactInfo, bloodtype = @bloodtype WHERE patientID = @patientID";
+
+                    SqlCommand cmd = new SqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@name", txtName.Text);
+                    cmd.Parameters.AddWithValue("@dob", Convert.ToDateTime(txtDOB.Text));
+                    cmd.Parameters.AddWithValue("@email", txtEmail.Text);
+                    cmd.Parameters.AddWithValue("@contactInfo", txtPhone.Text);
+                    cmd.Parameters.AddWithValue("@bloodtype", txtBloodType.Text);
+                    cmd.Parameters.AddWithValue("@patientID", patientID);
+
+                    conn.Open();
+                    cmd.ExecuteNonQuery();
+                    conn.Close();
+                }
+
+                // After saving, revert to read-only mode
+                SetFieldsReadOnly(true);
+                btnEdit.CssClass = "visible";
+                btnSave.CssClass = "hidden";
+                btnCancel.CssClass = "hidden";
+
+                // Optionally, show a success message
+                Response.Write("<script>alert('Profile updated successfully!');</script>");
+            }
+        }
+
+        protected void btnCancel_Click(object sender, EventArgs e)
+        {
+            LoadProfileData();
+            SetFieldsReadOnly(true); 
+            btnEdit.CssClass = "visible";
+            btnSave.CssClass = "hidden";
+            btnCancel.CssClass = "hidden";
+        }
+
+        private void SetFieldsReadOnly(bool isReadOnly)
+        {
+            txtName.ReadOnly = isReadOnly;
+            txtDOB.ReadOnly = isReadOnly;
+            txtEmail.ReadOnly = isReadOnly;
+            txtPhone.ReadOnly = isReadOnly;
+            txtBloodType.ReadOnly = isReadOnly;
         }
     }
 }

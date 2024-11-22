@@ -142,7 +142,88 @@ namespace fyp1.Client
         protected void btnChatOnline_Click(object sender, EventArgs e)
         {
             string doctorID = ((Button)sender).CommandArgument;
-            Response.Redirect("ChatSession.aspx?doctorID=" + doctorID);
+            HttpCookie IDCookie = HttpContext.Current.Request.Cookies["PatientID"];
+            string patientID = IDCookie.Value;
+            string sessionID;
+
+            sessionID = GetExistingSessionID(doctorID);
+
+            if (sessionID == null)
+            {
+                sessionID = CreateNewChatSession(doctorID);
+            }
+
+            Response.Redirect("clientChat.aspx?sessionID=" + sessionID + "&doctorID=" + doctorID);
+        }
+
+        private string GetExistingSessionID(string doctorID)
+        {
+            HttpCookie IDCookie = HttpContext.Current.Request.Cookies["PatientID"];
+            string patientID = IDCookie.Value;
+
+            string connectionString = ConfigurationManager.ConnectionStrings["connectionString"].ConnectionString;
+            string query = "SELECT sessionID FROM ChatSession WHERE patientID = @patientID AND doctorID = @doctorID";
+
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                SqlCommand cmd = new SqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@patientID", patientID);
+                cmd.Parameters.AddWithValue("@doctorID", doctorID);
+
+                conn.Open();
+                object result = cmd.ExecuteScalar();
+                return result != null ? result.ToString() : null;
+            }
+        }
+
+        private string CreateNewChatSession(string doctorID)
+        {
+            string connectionString = ConfigurationManager.ConnectionStrings["connectionString"].ConnectionString;
+            string sessionID = GenerateNextSessionID();
+            DateTime startTime = DateTime.Now;
+            HttpCookie IDCookie = HttpContext.Current.Request.Cookies["PatientID"];
+            string patientID = IDCookie.Value;
+
+            string query = "INSERT INTO ChatSession (sessionID, patientID, doctorID) VALUES (@sessionID, @patientID, @doctorID)";
+
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                SqlCommand cmd = new SqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@sessionID", sessionID);
+                cmd.Parameters.AddWithValue("@patientID", patientID);
+                cmd.Parameters.AddWithValue("@doctorID", doctorID);
+
+                conn.Open();
+                cmd.ExecuteNonQuery();
+            }
+
+            return sessionID;
+        }
+
+        private string GenerateNextSessionID()
+        {
+            string nextAppointmentID = "S00001";
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["connectionString"].ToString()))
+                {
+                    conn.Open();
+                    using (SqlCommand cmd = new SqlCommand("SELECT MAX(sessionID) FROM ChatSession", conn))
+                    {
+                        object result = cmd.ExecuteScalar();
+                        if (result != DBNull.Value && result != null)
+                        {
+                            int idNumber = int.Parse(result.ToString().Substring(1)) + 1;
+                            nextAppointmentID = "S" + idNumber.ToString("D5");
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                lblError.Text = "An error occurred while generating Session ID: " + ex.Message;
+            }
+            return nextAppointmentID;
         }
     }
 }

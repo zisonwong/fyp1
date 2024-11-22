@@ -20,6 +20,8 @@ namespace fyp1.Client
                 lblAppointmentDate.Text = Request.QueryString["appointmentDate"];
                 lblAppointmentTime.Text = Request.QueryString["appointmentTime"];
                 lblConsultationFee.Text = Request.QueryString["consultationFee"];
+
+                paymentSuccessModal.Visible = false;
             }
         }
 
@@ -96,34 +98,49 @@ namespace fyp1.Client
                     }
                 }
 
-                lblMessage.Text = "Payment confirmed and saved successfully!";
+                ShowPaymentSuccessModal();
             }
         }
 
-            private string GenerateNextPaymentID()
+        private string GenerateNextPaymentID()
+        {
+            string nextPaymentID = "PAY0001";
+            try
             {
-                string nextPaymentID = "PAY0001";
-                try
+                using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["connectionString"].ToString()))
                 {
-                    using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["connectionString"].ToString()))
+                    conn.Open();
+                    using (SqlCommand cmd = new SqlCommand("SELECT MAX(paymentID) FROM Payment", conn))
                     {
-                        conn.Open();
-                        using (SqlCommand cmd = new SqlCommand("SELECT MAX(paymentID) FROM Payment", conn))
+                        object result = cmd.ExecuteScalar();
+                        if (result != DBNull.Value && result != null)
                         {
-                            object result = cmd.ExecuteScalar();
-                            if (result != DBNull.Value && result != null)
-                            {
-                                int idNumber = int.Parse(result.ToString().Substring(3)) + 1;
-                                nextPaymentID = "PAY" + idNumber.ToString("D4");
-                            }
+                            int idNumber = int.Parse(result.ToString().Substring(3)) + 1;
+                            nextPaymentID = "PAY" + idNumber.ToString("D4");
                         }
                     }
                 }
-                catch (Exception ex)
-                {
-                    lblError.Text = "An error occurred while generating payment ID: " + ex.Message;
-                }
-                return nextPaymentID;
             }
+            catch (Exception ex)
+            {
+                lblError.Text = "An error occurred while generating payment ID: " + ex.Message;
+            }
+            return nextPaymentID;
         }
+        private void ShowPaymentSuccessModal()
+        {
+            paymentSuccessModal.Visible = true;
+        }
+
+        protected void GoToProfile(object sender, EventArgs e)
+        {
+            Response.Redirect("clientProfile.aspx");
+        }
+
+        protected void CloseModal(object sender, EventArgs e)
+        {
+            paymentSuccessModal.Visible = false;
+        }
+
     }
+}

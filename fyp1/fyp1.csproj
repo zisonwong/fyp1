@@ -576,7 +576,7 @@
     </Compile>
     <Compile Include="Client\EmergencyPage.aspx.designer.cs">
       <DependentUpon>EmergencyPage.aspx</DependentUpon>
-
+    </Compile>
     <Compile Include="Admin\hospitalRecordDetails.aspx.cs">
       <DependentUpon>hospitalRecordDetails.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>

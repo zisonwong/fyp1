@@ -26,6 +26,10 @@ namespace fyp1.Client
             {
                 Response.Redirect("clientLogin.aspx");
             }
+            else
+            {
+                Response.Redirect("clientProfile.aspx");
+            }
 
 
 
@@ -81,33 +85,6 @@ namespace fyp1.Client
         protected string TabCssClass(string tabName)
         {
             return tabName == ActiveTab ? "tab-link block w-full text-left px-4 py-2 rounded bg-blue-100" : "tab-link block w-full text-left px-4 py-2 rounded hover:bg-blue-100";
-        }
-
-        private void SaveSettings(string email, string phone, bool emailNotifications, bool smsNotifications, bool showProfile, bool dataSharing)
-        {
-            HttpCookie IDCookie = HttpContext.Current.Request.Cookies["PatientID"];
-            string patientID = IDCookie.Value;
-            // Code to save the settings in the database
-            // Example query for updating user settings
-            string query = "UPDATE Users SET Email = @Email, Phone = @Phone, EmailNotifications = @EmailNotifications, SmsNotifications = @SmsNotifications, ShowProfile = @ShowProfile, DataSharing = @DataSharing WHERE PatientID = @PatientID";
-
-            using (SqlConnection con = new SqlConnection(ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString))
-            {
-                using (SqlCommand cmd = new SqlCommand(query, con))
-                {
-                    cmd.Parameters.AddWithValue("@Email", email);
-                    cmd.Parameters.AddWithValue("@contactInfo", phone);
-                    cmd.Parameters.AddWithValue("@EmailNotifications", emailNotifications);
-                    cmd.Parameters.AddWithValue("@SmsNotifications", smsNotifications);
-                    cmd.Parameters.AddWithValue("@ShowProfile", showProfile);
-                    cmd.Parameters.AddWithValue("@DataSharing", dataSharing);
-                    cmd.Parameters.AddWithValue("@PatientID", patientID);
-
-                    con.Open();
-                    cmd.ExecuteNonQuery();
-                    con.Close();
-                }
-            }
         }
 
         private void LoadProfileData()

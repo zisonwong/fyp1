@@ -22,7 +22,7 @@
                             OnItemCommand="lvAppointment_ItemCommand"
                             ID="lvAppointment" runat="server">
                             <LayoutTemplate>
-                                <table class="table table-responsive-md">
+                                <table class="table table-responsive-md table-hover">
                                     <thead>
                                         <tr>
                                             <th>

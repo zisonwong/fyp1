@@ -97,7 +97,7 @@ ul > li > a.nav-link {
     color: #7e7e7e;
 }
 
-.active {
+.activate {
     background-color: #2f4cdd;
     border-radius: 5px;
     color: white;
@@ -236,4 +236,15 @@ ul > li > a.nav-link {
     font-weight: bold;
 }
 
+.fit{
+    width:fit-content;
+    border-radius:8px;
+}
 
+.resize{
+    resize:none;
+}
+
+.height{
+    height:100px;
+}

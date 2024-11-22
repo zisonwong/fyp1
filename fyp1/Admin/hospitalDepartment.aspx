@@ -43,7 +43,7 @@
                             OnItemUpdating="lvDepartment_ItemUpdating"
                             ID="lvDepartment" runat="server">
                             <LayoutTemplate>
-                                <table class="table table-responsive-md">
+                                <table class="table table-responsive-md table-hover">
                                     <thead>
                                         <tr>
                                             <th>

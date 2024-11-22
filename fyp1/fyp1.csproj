@@ -227,6 +227,7 @@
     <Content Include="Client\clientProfile.aspx" />
     <Content Include="Client\clientSignUp.aspx" />
     <Content Include="Client\DoctorAvailability.aspx" />
+    <Content Include="Client\EmergencyPage.aspx" />
     <Content Include="CSS\clientAppointment.css" />
     <Content Include="CSS\clientProfile.css" />
     <Content Include="CSS\footer.css" />
@@ -245,7 +246,6 @@
     <Content Include="Admin\hospitalDoctorEdit.aspx" />
     <Content Include="hospitalImg\defaultAvatar.jpg" />
     <Content Include="hospitalImg\pngtree-young-afro-professional-doctor-png-image_13227671.png" />
-
     <Content Include="Admin\hospitalMedicine.aspx" />
     <Content Include="Admin\hospitalNurse.aspx" />
     <Content Include="Admin\hospitalNurseDetails.aspx" />
@@ -253,10 +253,8 @@
     <Content Include="Admin\hospitalPatient.aspx" />
     <Content Include="Admin\hospitalPatientDetails.aspx" />
     <Content Include="Admin\hospitalStaffLogin.aspx" />
+
     <Content Include="Admin\hospitalRecordDetails.aspx" />
-
-
-
     <Content Include="Images\calendar.svg" />
     <Content Include="Images\right-arrow.svg" />
     <Content Include="Images\sliderImage1.jpg" />
@@ -571,6 +569,14 @@
     <Compile Include="Admin\hospitalStaffLogin.aspx.designer.cs">
       <DependentUpon>hospitalStaffLogin.aspx</DependentUpon>
     </Compile>
+
+    <Compile Include="Client\EmergencyPage.aspx.cs">
+      <DependentUpon>EmergencyPage.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Client\EmergencyPage.aspx.designer.cs">
+      <DependentUpon>EmergencyPage.aspx</DependentUpon>
+
     <Compile Include="Admin\hospitalRecordDetails.aspx.cs">
       <DependentUpon>hospitalRecordDetails.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -590,7 +596,6 @@
   <ItemGroup>
     <Content Include="NavFooter.Master" />
     <Content Include="Admin\adminSidebar.Master" />
-
     <None Include="packages.config" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>

@@ -135,7 +135,6 @@ namespace fyp1.Client
 
             if (!string.IsNullOrEmpty(doctorID) && !string.IsNullOrEmpty(availabilityID))
             {
-                // Query to get the availability details using the availabilityID
                 string query = @"
             SELECT availableDate, availableFrom, availableTo 
             FROM Availability 
@@ -184,11 +183,6 @@ namespace fyp1.Client
                 btnConfirmAppointment.Enabled = false;
             }
         }
-
-
-
-
-
         protected void btnConfirmAppointment_Click(object sender, EventArgs e)
         {
             lblMessage.Text = "";

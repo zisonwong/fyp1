@@ -11,7 +11,7 @@
             <div class="hero-text">
                 <h1>Welcome to Our Hospital</h1>
                 <p>Providing compassionate care and the latest medical advancements</p>
-                <a href="#appointments" class="btn type1">Hover Me
+                <a href="BranchDoctorSelection.aspx" class="btn type1">Hover Me
                 <tb>
                     &rarr;</a>
             </div>
@@ -20,7 +20,6 @@
         <section id="services">
             <h2>Our Main Services</h2>
             <div class="servicesList">
-
                 <div class="service-card">
                     <div class="card-inner">
                         <div class="card-front">
@@ -68,7 +67,6 @@
                         </div>
                     </div>
                 </div>
-
             </div>
         </section>
 

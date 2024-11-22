@@ -52,7 +52,7 @@
                             OnItemEditing="lvBranch_ItemEditing"
                             OnDataBound="lvBranch_DataBound">
                             <LayoutTemplate>
-                                <table class="table table-responsive-md">
+                                <table class="table table-responsive-md table-hover">
                                     <thead>
                                         <tr>
                                             <th>

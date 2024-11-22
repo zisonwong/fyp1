@@ -136,7 +136,7 @@
                     </asp:UpdatePanel>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
                     <asp:LinkButton ID="btnSave" CssClass="btn btn-primary" OnClick="btnSave_Click" runat="server">Save</asp:LinkButton>
                 </div>
             </div>

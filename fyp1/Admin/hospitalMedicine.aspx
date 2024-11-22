@@ -42,7 +42,7 @@
                             OnItemDataBound="lvMedicine_ItemDataBound"
                             ID="lvMedicine" runat="server">
                             <LayoutTemplate>
-                                <table class="table table-responsive-md">
+                                <table class="table table-responsive-md table-hover">
                                     <thead>
                                         <tr>
                                             <th>

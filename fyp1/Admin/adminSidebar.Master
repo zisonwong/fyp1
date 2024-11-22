@@ -97,6 +97,18 @@
                             Patient
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a href="hospitalMedicalRecord.aspx" class="nav-link text-black" style="display: flex; align-items: center;">
+                            <i class="lni lni-user me-3"></i>
+                            Record
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="hospitalAddPrescription.aspx" class="nav-link text-black" style="display: flex; align-items: center;">
+                            <i class="lni lni-user me-3"></i>
+                            Prescription
+                        </a>
+                    </li>
                 </ul>
             </div>
             <div id="moveContent" class="main content-style transition">

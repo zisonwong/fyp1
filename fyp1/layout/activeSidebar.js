@@ -11,7 +11,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
         // Compare the link's pathname without query parameters
         if (link.pathname === currentPageUrl) {
             // Add the active class to the link
-            link.classList.add('active');
+            link.classList.add('activate');
             link.classList.add('changeColor');
         }
     });

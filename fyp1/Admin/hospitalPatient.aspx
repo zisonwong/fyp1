@@ -27,7 +27,7 @@
                                 OnItemCanceling="lvPatient_ItemCanceling"
                                 ID="lvPatient" runat="server">
                                 <LayoutTemplate>
-                                    <table class="table table-responsive-md">
+                                    <table class="table table-responsive-md table-hover">
                                         <thead>
                                             <tr>
                                                 <th>

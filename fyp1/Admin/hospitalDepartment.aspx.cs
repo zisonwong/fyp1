@@ -195,32 +195,50 @@ namespace fyp1.Admin
         {
             if (e.Item.ItemType == ListViewItemType.DataItem)
             {
-                // Find the DropDownList and bind the branches
-                DropDownList ddlAssignToBranch = (DropDownList)e.Item.FindControl("ddlEditAssignToBranch");
-                if (ddlAssignToBranch != null)
+                // Get the current item's data
+                ListViewDataItem dataItem = (ListViewDataItem)e.Item;
+                DataRowView rowView = dataItem.DataItem as DataRowView;
+
+                DropDownList ddlEditAssignToBranch = e.Item.FindControl("ddlEditAssignToBranch") as DropDownList;
+                if (ddlEditAssignToBranch != null)
                 {
-                    ddlAssignToBranch.DataSource = GetAllBranches(); // Call the method to get branch data
-                    ddlAssignToBranch.DataValueField = "branchID";   // Value to be used
-                    ddlAssignToBranch.DataTextField = "BranchName";  // Text to display
-                    ddlAssignToBranch.DataBind();
-                    // Get the current data item as Department and set the selected value of the DropDownList
-                    Department department = e.Item.DataItem as Department;
-                    if (department != null)
+                    // Bind branches to dropdown
+                    ddlEditAssignToBranch.DataSource = GetAllBranches();
+                    ddlEditAssignToBranch.DataValueField = "branchID";
+                    ddlEditAssignToBranch.DataTextField = "BranchName";
+                    ddlEditAssignToBranch.DataBind();
+
+                    // Set the selected value based on the current item's branchID
+                    string currentBranchID = null;
+                    if (rowView != null)
                     {
-                        ddlAssignToBranch.SelectedValue = department.BranchID;
+                        currentBranchID = rowView["branchID"].ToString();
+                    }
+                    else if (e.Item.DataItem is Department dept)
+                    {
+                        currentBranchID = dept.BranchID;
+                    }
+
+                    if (!string.IsNullOrEmpty(currentBranchID))
+                    {
+                        ListItem item = ddlEditAssignToBranch.Items.FindByValue(currentBranchID);
+                        if (item != null)
+                        {
+                            ddlEditAssignToBranch.SelectedValue = currentBranchID;
+                        }
                     }
                 }
             }
             else if (e.Item.ItemType == ListViewItemType.InsertItem)
             {
-                DropDownList ddlAssignToBranch = (DropDownList)e.Item.FindControl("ddlAssignToBranch");
+                DropDownList ddlAssignToBranch = e.Item.FindControl("ddlAssignToBranch") as DropDownList;
                 if (ddlAssignToBranch != null)
                 {
-                    ddlAssignToBranch.DataSource = GetAllBranches(); // Call the method to get branch data
-                    ddlAssignToBranch.DataValueField = "branchID";   // Value to be used
-                    ddlAssignToBranch.DataTextField = "BranchName";  // Text to display
+                    ddlAssignToBranch.DataSource = GetAllBranches();
+                    ddlAssignToBranch.DataValueField = "branchID";
+                    ddlAssignToBranch.DataTextField = "BranchName";
                     ddlAssignToBranch.DataBind();
-                    ddlAssignToBranch.Items.Insert(0, new ListItem("--Select Branch--", "")); // Optional default item
+                    ddlAssignToBranch.Items.Insert(0, new ListItem("--Select Branch--", ""));
                 }
             }
         }
@@ -335,13 +353,12 @@ namespace fyp1.Admin
             string selectBranchID = ViewState["SelectedBranch"] as string;
             if (!string.IsNullOrEmpty(searchTerm))
             {
-                LoadFilteredData(searchTerm); // Load filtered data using the search term
+                LoadDataWithFilters(searchTerm, selectBranchID);
             }
             else
             {
                 LoadDepartmentData(); // Load all data if no search term
             }
-            LoadDataWithFilters(searchTerm, selectBranchID);
 
             DropDownList ddlEditAssignToBranch = lvDepartment.EditItem.FindControl("ddlEditAssignToBranch") as DropDownList;
             if (ddlEditAssignToBranch != null)

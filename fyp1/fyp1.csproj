@@ -211,6 +211,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Admin\adminHome.aspx" />
+    <Content Include="Admin\hospitalAddMedicalRecord.aspx" />
+    <Content Include="Admin\hospitalAddPrescription.aspx" />
+    <Content Include="Admin\hospitalMedicalRecord.aspx" />
     <Content Include="App_Data\IHMS.mdf" />
     <Content Include="App_Data\IHMS_log.ldf">
       <DependentUpon>IHMS.mdf</DependentUpon>
@@ -250,6 +253,9 @@
     <Content Include="Admin\hospitalPatient.aspx" />
     <Content Include="Admin\hospitalPatientDetails.aspx" />
     <Content Include="Admin\hospitalStaffLogin.aspx" />
+    <Content Include="Admin\hospitalRecordDetails.aspx" />
+
+
 
     <Content Include="Images\calendar.svg" />
     <Content Include="Images\right-arrow.svg" />
@@ -361,6 +367,27 @@
     </Compile>
     <Compile Include="Admin\adminSidebar.Master.designer.cs">
       <DependentUpon>adminSidebar.Master</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\hospitalAddMedicalRecord.aspx.cs">
+      <DependentUpon>hospitalAddMedicalRecord.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\hospitalAddMedicalRecord.aspx.designer.cs">
+      <DependentUpon>hospitalAddMedicalRecord.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\hospitalAddPrescription.aspx.cs">
+      <DependentUpon>hospitalAddPrescription.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\hospitalAddPrescription.aspx.designer.cs">
+      <DependentUpon>hospitalAddPrescription.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\hospitalMedicalRecord.aspx.cs">
+      <DependentUpon>hospitalMedicalRecord.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\hospitalMedicalRecord.aspx.designer.cs">
+      <DependentUpon>hospitalMedicalRecord.aspx</DependentUpon>
     </Compile>
     <Compile Include="Client\BranchDoctorSelection.aspx.cs">
       <DependentUpon>BranchDoctorSelection.aspx</DependentUpon>
@@ -543,6 +570,13 @@
     </Compile>
     <Compile Include="Admin\hospitalStaffLogin.aspx.designer.cs">
       <DependentUpon>hospitalStaffLogin.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\hospitalRecordDetails.aspx.cs">
+      <DependentUpon>hospitalRecordDetails.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\hospitalRecordDetails.aspx.designer.cs">
+      <DependentUpon>hospitalRecordDetails.aspx</DependentUpon>
     </Compile>
     <Compile Include="NavFooter.Master.cs">
       <DependentUpon>NavFooter.Master</DependentUpon>

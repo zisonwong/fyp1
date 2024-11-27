@@ -116,7 +116,7 @@
             <h2>Patient Resources</h2>
             <ul>
                 <li class="resource-item">
-                    <a href="clientProfile.aspx">
+                    <a href="../Client/clientProfile.aspx">
                         <div class="resource-content">
                             <h3>Patient Portal</h3>
                             <p>Access your medical records and manage your appointments online.</p>

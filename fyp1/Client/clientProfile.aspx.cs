@@ -25,12 +25,8 @@ namespace fyp1.Client
             if (Request.Cookies["Username"] == null)
             {
                 Response.Redirect("clientLogin.aspx");
+                return;
             }
-            else
-            {
-                Response.Redirect("clientProfile.aspx");
-            }
-
 
 
             if (!IsPostBack)

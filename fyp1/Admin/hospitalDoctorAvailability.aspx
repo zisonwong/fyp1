@@ -8,7 +8,7 @@
     <script src="../layout/availability.js"></script>
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
-    <div class="container mt-5">
+    <div class="container mt-5 container">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2>Working Hours</h2>
             <div class="d-flex align-items-center">

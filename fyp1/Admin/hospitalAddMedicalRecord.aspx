@@ -5,7 +5,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
-    <main class="content">
+    <main class="content container">
         <div class="col-xxl-12 col-lg-12">
             <div class="d-flex mb-2">
                 <div class="me-auto">

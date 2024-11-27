@@ -213,6 +213,7 @@
     <Content Include="Admin\adminHome.aspx" />
     <Content Include="Admin\hospitalAddMedicalRecord.aspx" />
     <Content Include="Admin\hospitalAddPrescription.aspx" />
+    <Content Include="Admin\hospitalDoctorChat.aspx" />
     <Content Include="Admin\hospitalMedicalRecord.aspx" />
     <Content Include="App_Data\IHMS.mdf" />
     <Content Include="App_Data\IHMS_log.ldf">
@@ -253,7 +254,6 @@
     <Content Include="Admin\hospitalPatient.aspx" />
     <Content Include="Admin\hospitalPatientDetails.aspx" />
     <Content Include="Admin\hospitalStaffLogin.aspx" />
-
     <Content Include="Admin\hospitalRecordDetails.aspx" />
     <Content Include="Images\calendar.svg" />
     <Content Include="Images\right-arrow.svg" />
@@ -379,6 +379,13 @@
     </Compile>
     <Compile Include="Admin\hospitalAddPrescription.aspx.designer.cs">
       <DependentUpon>hospitalAddPrescription.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\hospitalDoctorChat.aspx.cs">
+      <DependentUpon>hospitalDoctorChat.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\hospitalDoctorChat.aspx.designer.cs">
+      <DependentUpon>hospitalDoctorChat.aspx</DependentUpon>
     </Compile>
     <Compile Include="Admin\hospitalMedicalRecord.aspx.cs">
       <DependentUpon>hospitalMedicalRecord.aspx</DependentUpon>
@@ -569,7 +576,6 @@
     <Compile Include="Admin\hospitalStaffLogin.aspx.designer.cs">
       <DependentUpon>hospitalStaffLogin.aspx</DependentUpon>
     </Compile>
-
     <Compile Include="Client\EmergencyPage.aspx.cs">
       <DependentUpon>EmergencyPage.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>

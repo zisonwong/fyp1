@@ -32,6 +32,7 @@ namespace fyp1.Admin
                 // Set cookies and redirect
 
                 SetIDCookie(doctorID);
+                SetEmailCookie(loginInput);
                 Response.Redirect("~/Admin/adminHome.aspx");
             }
             else
@@ -48,6 +49,17 @@ namespace fyp1.Admin
                 Expires = DateTime.Now.AddDays(1)
             };
             HttpContext.Current.Response.Cookies.Add(IDCookie);
+        }
+
+        public void SetEmailCookie(string email)
+        {
+            HttpCookie emailCookie = new HttpCookie("Email", email)
+            {
+                HttpOnly = true,
+                Secure = true,
+                Expires = DateTime.Now.AddDays(3)
+            };
+            HttpContext.Current.Response.Cookies.Add(emailCookie);
         }
         private bool IsValidUser(string loginInput, string password, out string doctorID)
         {

@@ -4,7 +4,7 @@
     <link href="../layout/PageStyle.css" rel="stylesheet" />
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
-    <main class="content">
+    <main class="content container">
         <div class="col-xxl-12 col-lg-12">
             <div class="d-flex">
                 <div class="me-auto">

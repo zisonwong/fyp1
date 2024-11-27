@@ -109,6 +109,12 @@
                             Prescription
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a href="hospitalDoctorChat.aspx" class="nav-link text-black" style="display: flex; align-items: center;">
+                            <i class="lni lni-user me-3"></i>
+                            Chat
+                        </a>
+                    </li>
                 </ul>
             </div>
             <div id="moveContent" class="main content-style transition">
@@ -165,7 +171,7 @@
                             </div>
                         </ContentTemplate>
                     </asp:UpdatePanel>
-                    <div class="container pt-4">
+                    <div class="pt-4">
                         <asp:ContentPlaceHolder ID="ContentPlaceHolder1" runat="server"></asp:ContentPlaceHolder>
                     </div>
                 </div>

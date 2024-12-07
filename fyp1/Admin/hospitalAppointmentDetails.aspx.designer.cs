@@ -42,13 +42,22 @@ namespace fyp1.Admin
         protected global::System.Web.UI.WebControls.Label txtDoctorPhone;
 
         /// <summary>
-        /// txtDoctorDepartment control.
+        /// iconDoctorGender control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label txtDoctorDepartment;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl iconDoctorGender;
+
+        /// <summary>
+        /// txtDoctorGender control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label txtDoctorGender;
 
         /// <summary>
         /// txtPatientName control.

@@ -16,7 +16,10 @@
                                 <asp:Label ID="lblPatientName" runat="server" Text="Name"></asp:Label></h4>
                             <h6 class="card-subtitle mt-2">
                                 <asp:Label ID="lblPatientEmail" runat="server" Text="Email"></asp:Label></h6>
+                             <% if (Session["Role"].ToString() == "Doctor")
+                            { %>
                             <asp:LinkButton CssClass="mt-2 btn btn-primary" ID="btnSendMsg" runat="server">Send Message</asp:LinkButton>
+                             <% } %>
                         </div>
                     </div>
                 </div>

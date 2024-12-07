@@ -141,13 +141,22 @@ namespace fyp1.Admin
         protected global::System.Web.UI.WebControls.TextBox txtPassword;
 
         /// <summary>
-        /// ddlDepartmentId control.
+        /// ddlPrimaryDepartment control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlDepartmentId;
+        protected global::System.Web.UI.WebControls.DropDownList ddlPrimaryDepartment;
+
+        /// <summary>
+        /// ddlSecondaryDepartment control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList ddlSecondaryDepartment;
 
         /// <summary>
         /// txtRole control.

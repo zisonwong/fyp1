@@ -39,31 +39,35 @@ namespace fyp1.Admin
         {
             List<Department> departments = new List<Department>();
             string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
+
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 try
                 {
                     conn.Open();
                     string selectQuery = @"
-                        SELECT 
-                            d.departmentID, 
-                            d.name AS DepartmentName, 
-                            d.branchID, 
-                            b.name AS BranchName, 
-                            COUNT(DISTINCT dr.doctorID) AS TotalDoctors
-                        FROM Department d
-                        LEFT JOIN Branch b ON d.branchID = b.branchID
-                        LEFT JOIN Doctor dr ON d.departmentID = dr.departmentID
-                        GROUP BY d.departmentID, d.name, d.branchID, b.name";
+                SELECT 
+                    d.departmentID, 
+                    d.name AS name, 
+                    d.branchID, 
+                    b.name AS BranchName, 
+                    COUNT(DISTINCT dd.doctorID) AS TotalDoctors
+                FROM Department d
+                LEFT JOIN Branch b ON d.branchID = b.branchID
+                LEFT JOIN DoctorDepartment dd ON d.departmentID = dd.departmentID
+                LEFT JOIN Doctor dr ON dd.doctorID = dr.doctorID
+                WHERE d.status = 'Activated'
+                GROUP BY d.departmentID, d.name, d.branchID, b.name";
 
                     SqlCommand cmd = new SqlCommand(selectQuery, conn);
                     SqlDataReader reader = cmd.ExecuteReader();
+
                     while (reader.Read())
                     {
                         var department = new Department
                         {
                             DepartmentID = reader["departmentID"].ToString(),
-                            Name = reader["DepartmentName"].ToString(),
+                            Name = reader["name"].ToString(),
                             BranchID = reader["branchID"].ToString(),
                             BranchName = reader["BranchName"].ToString(),
                             TotalDoctors = reader["TotalDoctors"] != DBNull.Value ? (int)reader["TotalDoctors"] : 0
@@ -76,9 +80,11 @@ namespace fyp1.Admin
                     System.Diagnostics.Debug.WriteLine("Error loading data: " + ex.Message);
                 }
             }
+
             lvDepartment.DataSource = departments;
             lvDepartment.DataBind();
         }
+
         // Modified method to filter DataTable for Departments
         private DataTable FilterDepartmentDataTable(DataTable dataTable, string searchTerm)
         {
@@ -103,14 +109,14 @@ namespace fyp1.Admin
         // Modified method to load filtered data for Departments
         private void LoadFilteredData(string searchTerm)
         {
-            // Construct the query to join Department table with Branch and count the number of Doctors
             string query = @"
-    SELECT d.departmentID, d.branchID, d.name,
-           b.name as BranchName, COUNT(dr.doctorID) as TotalDoctors
-    FROM Department d
-    LEFT JOIN Branch b ON d.branchID = b.branchID
-    LEFT JOIN Doctor dr ON d.departmentID = dr.departmentID
-    WHERE 1=1";
+                    SELECT d.departmentID, d.name AS name, d.branchID, 
+                    b.name AS BranchName, COUNT(dr.doctorID) AS TotalDoctors
+                    FROM Department d
+                    LEFT JOIN Branch b ON d.branchID = b.branchID
+                    LEFT JOIN DoctorDepartment dd ON d.departmentID = dd.departmentID
+                    LEFT JOIN Doctor dr ON dd.doctorID = dr.doctorID
+                    WHERE d.status = 'Activated'";
             // Initialize the SQL parameters list
             var parameters = new List<SqlParameter>();
             // Filter based on search term
@@ -163,12 +169,10 @@ namespace fyp1.Admin
             if (ddlAssignToBranch != null)
             {
                 ddlAssignToBranch.DataSource = GetAllBranches(); // Call your method to get the branches
-                ddlAssignToBranch.DataValueField = "BranchId"; // Assuming "BranchId" is the column name in your data
-                ddlAssignToBranch.DataTextField = "BranchId"; 
+                ddlAssignToBranch.DataValueField = "BranchId"; 
+                ddlAssignToBranch.DataTextField = "BranchName"; 
                 ddlAssignToBranch.DataBind();
 
-                // Optionally, insert a default "All Branches" item
-                // ddlAssignToBranch.Items.Insert(0, new ListItem("All Branches", "-1"));
                 // Set the initial label text based on the first item in the dropdown
                 if (ddlAssignToBranch.Items.Count > 0)
                 {
@@ -177,14 +181,14 @@ namespace fyp1.Admin
                     DataRow[] branchRows = branches.Select($"BranchID = '{selectedBranchID}'");
 
                     ListViewItem item = (ListViewItem)ddlAssignToBranch.NamingContainer;
-                    Label lblBranchName = item.FindControl("lblBranchName") as Label;
+                    Label lblBranchID = item.FindControl("lblBranchID") as Label;
                     if (branchRows.Length > 0)
                     {
-                        lblBranchName.Text = branchRows[0]["BranchName"].ToString();
+                        lblBranchID.Text = branchRows[0]["BranchId"].ToString();
                     }
                     else
                     {
-                        lblBranchName.Text = "--Select Branch--";
+                        lblBranchID.Text = "--Select Branch--";
                     }
                 }
             }
@@ -195,30 +199,18 @@ namespace fyp1.Admin
         {
             if (e.Item.ItemType == ListViewItemType.DataItem)
             {
-                // Get the current item's data
                 ListViewDataItem dataItem = (ListViewDataItem)e.Item;
                 DataRowView rowView = dataItem.DataItem as DataRowView;
 
                 DropDownList ddlEditAssignToBranch = e.Item.FindControl("ddlEditAssignToBranch") as DropDownList;
                 if (ddlEditAssignToBranch != null)
                 {
-                    // Bind branches to dropdown
                     ddlEditAssignToBranch.DataSource = GetAllBranches();
-                    ddlEditAssignToBranch.DataValueField = "branchID";
+                    ddlEditAssignToBranch.DataValueField = "BranchID";
                     ddlEditAssignToBranch.DataTextField = "BranchName";
                     ddlEditAssignToBranch.DataBind();
 
-                    // Set the selected value based on the current item's branchID
-                    string currentBranchID = null;
-                    if (rowView != null)
-                    {
-                        currentBranchID = rowView["branchID"].ToString();
-                    }
-                    else if (e.Item.DataItem is Department dept)
-                    {
-                        currentBranchID = dept.BranchID;
-                    }
-
+                    string currentBranchID = rowView?["BranchID"].ToString();
                     if (!string.IsNullOrEmpty(currentBranchID))
                     {
                         ListItem item = ddlEditAssignToBranch.Items.FindByValue(currentBranchID);
@@ -235,13 +227,14 @@ namespace fyp1.Admin
                 if (ddlAssignToBranch != null)
                 {
                     ddlAssignToBranch.DataSource = GetAllBranches();
-                    ddlAssignToBranch.DataValueField = "branchID";
+                    ddlAssignToBranch.DataValueField = "BranchID";
                     ddlAssignToBranch.DataTextField = "BranchName";
                     ddlAssignToBranch.DataBind();
                     ddlAssignToBranch.Items.Insert(0, new ListItem("--Select Branch--", ""));
                 }
             }
         }
+
         protected void lvDepartment_ItemCanceling(object sender, ListViewCancelEventArgs e)
         {
             // Remove the insert template
@@ -311,6 +304,7 @@ namespace fyp1.Admin
             string departmentName = (e.Item.FindControl("txtDepartmentName") as TextBox).Text;
             string branchID = (e.Item.FindControl("ddlAssignToBranch") as DropDownList).SelectedValue;
             string newDepartmentID = GenerateNextDepartmentID();
+            string status = "Activated";
             if (string.IsNullOrEmpty(departmentName) || string.IsNullOrEmpty(branchID))
             {
                 Page.ClientScript.RegisterStartupScript(GetType(), "Add Failed",
@@ -322,11 +316,12 @@ namespace fyp1.Admin
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 conn.Open();
-                string insertQuery = "INSERT INTO Department (departmentID, name, branchID) VALUES (@departmentID, @name, @branchID)";
+                string insertQuery = "INSERT INTO Department (departmentID, name, branchID, status) VALUES (@departmentID, @name, @branchID, @status)";
                 SqlCommand cmd = new SqlCommand(insertQuery, conn);
                 cmd.Parameters.AddWithValue("@departmentID", newDepartmentID);
                 cmd.Parameters.AddWithValue("@name", departmentName);
                 cmd.Parameters.AddWithValue("@branchID", branchID);
+                cmd.Parameters.AddWithValue("@status", status);
                 cmd.ExecuteNonQuery();
             }
             lvDepartment.InsertItemPosition = InsertItemPosition.None;
@@ -369,7 +364,7 @@ namespace fyp1.Admin
 
                 ddlEditAssignToBranch.DataSource = GetAllBranches();
                 ddlEditAssignToBranch.DataValueField = "BranchID";
-                ddlEditAssignToBranch.DataTextField = "BranchID";
+                ddlEditAssignToBranch.DataTextField = "BranchName";
                 ddlEditAssignToBranch.DataBind();
 
                 // Set the dropdown to the original branch ID
@@ -431,25 +426,20 @@ namespace fyp1.Admin
             DropDownList ddlAssignToBranch = sender as DropDownList;
             if (ddlAssignToBranch != null)
             {
-                ListViewItem item = (ListViewItem)ddlAssignToBranch.NamingContainer;
-                Label lblBranchName = item.FindControl("lblBranchName") as Label;
-                if (lblBranchName != null)
+                ListViewItem item = ddlAssignToBranch.NamingContainer as ListViewItem;
+                if (item != null)
                 {
-                    string selectedBranchID = ddlAssignToBranch.SelectedValue;
-                    // Retrieve branch name based on selectedBranchID
-                    DataTable branches = GetAllBranches();
-                    DataRow[] branchRows = branches.Select($"branchID = '{selectedBranchID}'");
-                    if (branchRows.Length > 0)
+                    Label lblBranchID = item.FindControl("lblBranchID") as Label;
+
+                    if (lblBranchID != null)
                     {
-                        lblBranchName.Text = branchRows[0]["BranchName"].ToString();
-                    }
-                    else
-                    {
-                        lblBranchName.Text = "--Select Branch--";
+                        string selectedBranchID = ddlAssignToBranch.SelectedValue;
+                        lblBranchID.Text = selectedBranchID; 
                     }
                 }
             }
         }
+
         private void PopulateBranchFilterDropdown()
         {
             DataTable branches = GetAllBranches();
@@ -471,24 +461,36 @@ namespace fyp1.Admin
         private void LoadDataWithFilters(string searchTerm, string selectedBranchID)
         {
             string query = @"
-    SELECT d.departmentID, d.name, d.branchID, b.name AS BranchName, COUNT(DISTINCT dr.doctorID) AS TotalDoctors
-    FROM Department d
-    LEFT JOIN Branch b ON d.branchID = b.branchID
-    LEFT JOIN Doctor dr ON d.departmentID = dr.departmentID
-    WHERE 1=1";
+        SELECT 
+            d.departmentID, 
+            d.name AS name, 
+            d.branchID, 
+            b.name AS BranchName, 
+            COUNT(DISTINCT dd.doctorID) AS TotalDoctors
+        FROM Department d
+        LEFT JOIN Branch b ON d.branchID = b.branchID
+        LEFT JOIN DoctorDepartment dd ON d.departmentID = dd.departmentID
+        LEFT JOIN Doctor dr ON dd.doctorID = dr.doctorID
+        WHERE d.status = 'Activated'";
+
             var parameters = new List<SqlParameter>();
+
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
                 query += " AND (d.departmentID LIKE @searchTerm OR d.name LIKE @searchTerm)";
                 parameters.Add(new SqlParameter("@searchTerm", "%" + searchTerm + "%"));
             }
+
             if (!string.IsNullOrWhiteSpace(selectedBranchID))
             {
                 query += " AND d.branchID = @selectedBranchID";
                 parameters.Add(new SqlParameter("@selectedBranchID", selectedBranchID));
             }
+
             query += " GROUP BY d.departmentID, d.name, d.branchID, b.name";
+
             DataTable departmentTable = new DataTable();
+
             using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString))
             {
                 SqlCommand cmd = new SqlCommand(query, conn);
@@ -497,11 +499,60 @@ namespace fyp1.Admin
                 conn.Open();
                 adapter.Fill(departmentTable);
             }
+
             lvDepartment.DataSource = departmentTable;
             lvDepartment.DataBind();
         }
 
 
+        protected void lvDepartment_ItemCommand(object sender, ListViewCommandEventArgs e)
+        {
+            if (e.CommandName == "Unactivate")
+            {
+                string departmentID = e.CommandArgument.ToString();
+
+                if (!string.IsNullOrEmpty(departmentID))
+                {
+                    string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
+
+                    using (SqlConnection conn = new SqlConnection(connectionString))
+                    {
+                        try
+                        {
+                            conn.Open();
+                            string updateQuery = "UPDATE Department SET status = @status WHERE departmentID = @departmentID";
+                            SqlCommand cmd = new SqlCommand(updateQuery, conn);
+
+                            cmd.Parameters.AddWithValue("@status", "Unactivated");
+                            cmd.Parameters.AddWithValue("@departmentID", departmentID);
+
+                            int rowsAffected = cmd.ExecuteNonQuery();
+
+                            if (rowsAffected > 0)
+                            {
+                                System.Diagnostics.Debug.WriteLine($"Branch {departmentID} successfully updated to 'Unactivated'.");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine("Error updating branch status: " + ex.Message);
+                        }
+                    }
+
+                    string searchTerm = ViewState["SearchTerm"] as string;
+                    string selectBranchID = ViewState["SelectedBranch"] as string;
+                    if (!string.IsNullOrEmpty(searchTerm))
+                    {
+                        LoadFilteredData(searchTerm);
+                    }
+                    else
+                    {
+                        LoadDepartmentData();
+                    }
+                    LoadDataWithFilters(searchTerm, selectBranchID);
+                }
+            }
+        }
         public class Department
         {
             public string DepartmentID { get; set; }

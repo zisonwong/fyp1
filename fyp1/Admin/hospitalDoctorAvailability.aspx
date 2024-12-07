@@ -14,7 +14,7 @@
             <div class="d-flex align-items-center">
                 <asp:Button ID="btnPrevious" runat="server" Text="←" CssClass="btn btn-outline-primary me-2"
                     OnClick="btnPrevious_Click" />
-                <h4 class="mb-0 d-none" id="lblMonth">November 2024</h4>
+                <h4 class="mb-0 d-none" id="lblMonth">December 2024</h4>
                 <asp:Label ID="lblMonth2" runat="server" CssClass="fs-4 fw-bold" Text="Label"></asp:Label>
                 <asp:Button ID="btnNext" runat="server" Text="→" CssClass="btn btn-outline-primary ms-2"
                     OnClick="btnNext_Click" />
@@ -122,13 +122,18 @@
                                         <label for="selectDay" class="form-label">What days?</label>
                                     </div>
                                     <div>
-                                        <asp:Repeater ID="rptDaysOfWeek" runat="server">
+                                        <asp:Repeater ID="rptDaysOfWeek" runat="server" OnItemCommand="rptDaysOfWeek_ItemCommand">
                                             <ItemTemplate>
-                                                <div class="day-circle text-center">
-                                                    <%# Eval("Day") %>
-                                                </div>
+                                                <asp:Button
+                                                    ID="btnDay"
+                                                    runat="server"
+                                                    CommandName="ToggleDay"
+                                                    CommandArgument='<%# Container.ItemIndex %>'
+                                                    Text='<%# Eval("Day") %>'
+                                                    CssClass='<%# (SelectedDayIndices.Contains(Container.ItemIndex)) ? "day-circle text-center selected" : "day-circle text-center" %>' />
                                             </ItemTemplate>
                                         </asp:Repeater>
+
                                     </div>
                                 </div>
                             </asp:Panel>

@@ -34,8 +34,18 @@ namespace fyp1.Admin
 
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
-                string query = @"SELECT doctorID, name, DOB, ICNumber, gender, contactInfo, email, password,
-                         departmentID, role, status, photo FROM Doctor WHERE doctorID = @DoctorID";
+                string query = @"
+SELECT d.doctorID, d.name, d.DOB, d.ICNumber, d.gender, d.contactInfo, d.email, d.password,
+       d.role, d.status, d.photo, 
+       STRING_AGG(dep.name + ' - ' + b.branchID, ', ') AS Departments
+FROM Doctor d
+LEFT JOIN DoctorDepartment dd ON d.doctorID = dd.doctorID
+LEFT JOIN Department dep ON dd.departmentID = dep.departmentID
+LEFT JOIN Branch b ON dep.branchID = b.branchID
+WHERE d.doctorID = @DoctorID
+GROUP BY d.doctorID, d.name, d.DOB, d.ICNumber, d.gender, d.contactInfo, d.email, 
+         d.password, d.role, d.status, d.photo";
+
 
                 SqlCommand cmd = new SqlCommand(query, conn);
                 cmd.Parameters.AddWithValue("@DoctorID", doctorID);
@@ -47,14 +57,11 @@ namespace fyp1.Admin
                 {
                     lblDoctorName.Text = $"Dr. {reader["name"]}";
 
-                    // Split full name into first and last name
                     string fullName = reader["name"].ToString();
                     string[] nameParts = fullName.Split(' ');
 
-                    // Assign the last name (the first part)
                     txtLastName.Text = nameParts.Length > 0 ? nameParts[0] : "";
 
-                    // Join all parts (except the first one) for the first name
                     txtFirstName.Text = nameParts.Length > 1 ? string.Join(" ", nameParts.Skip(1)) : "";
 
                     txtEmployeeId.Text = reader["doctorID"].ToString();
@@ -64,11 +71,13 @@ namespace fyp1.Admin
                     txtContactInfo.Text = reader["contactInfo"].ToString();
                     txtEmail.Text = reader["email"].ToString();
                     txtPassword.Attributes["value"] = "***********";
-                    txtDepartmentId.Text = reader["departmentID"].ToString();
                     txtRole.Text = reader["role"].ToString();
                     txtStatus.Text = reader["status"].ToString();
 
-                    // Convert the binary photo data to a Base64 string and set it as the image source
+                    txtDepartmentId.Text = reader["Departments"] != DBNull.Value
+                        ? reader["Departments"].ToString()
+                        : "No Department Assigned";
+
                     if (reader["photo"] != DBNull.Value)
                     {
                         byte[] photoData = (byte[])reader["photo"];
@@ -84,6 +93,8 @@ namespace fyp1.Admin
                 reader.Close();
             }
         }
+
+
         protected void btnEdit_Command(object sender, CommandEventArgs e)
         {
             if (e.CommandArgument != null)

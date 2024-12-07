@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data.SqlClient;
+using System.Globalization;
 using System.Linq;
 using System.Web;
 using System.Web.Services;
@@ -28,23 +29,34 @@ namespace fyp1.Admin
                     ViewState["CurrentMonth"] = DateTime.Now.Month;
                     ViewState["CurrentYear"] = DateTime.Now.Year;
                 }
+
                 PopulateTimeDropdown(ddlAvailableFrom, "Choose Time");
                 PopulateTimeDropdown(ddlAvailableTo, "Choose Time");
                 PopulateIntervalDropdown(ddlIntervalTime, "Choose Duration");
 
                 DisplayCalendar();
-                BindDaysOfWeek();
+
+                DateTime selectedDate;
+                if (DateTime.TryParse(txtDate.Text, out selectedDate))
+                {
+                    BindDaysOfWeek(selectedDate);
+                }
+                else
+                {
+                    selectedDate = DateTime.Now;
+                    BindDaysOfWeek(selectedDate);
+                }
 
                 rbNoRepeat.Checked = true;
-                pnlRepeatDays.Visible = false; // Hide panel initially
+                pnlRepeatDays.Visible = false;
                 lblMonth2.Text = new DateTime(currentYear, currentMonth, 1).ToString("MMMM yyyy");
             }
-
 
             // Attach event handlers for radio buttons
             rbRepeat.CheckedChanged += new EventHandler(RadioButton_CheckedChanged);
             rbNoRepeat.CheckedChanged += new EventHandler(RadioButton_CheckedChanged);
         }
+
 
 
         protected void btnPrevious_Click(object sender, EventArgs e)
@@ -261,28 +273,120 @@ namespace fyp1.Admin
             return (new DateTime(1, 1, 1) + time).ToString("hh:mm tt");
         }
 
-        private void BindDaysOfWeek()
+        protected void Calendar_SelectionChanged(object sender, EventArgs e)
         {
-            // Data for the days of the week
-            var daysOfWeek = new[]
-            {
-            new { Day = "S", DayName = "Sunday" },
-            new { Day = "M", DayName = "Monday" },
-            new { Day = "T", DayName = "Tuesday" },
-            new { Day = "W", DayName = "Wednesday" },
-            new { Day = "T", DayName = "Thursday" },
-            new { Day = "F", DayName = "Friday" },
-            new { Day = "S", DayName = "Saturday" }
-        };
+            DateTime selectedDate = DateTime.Parse(txtDate.Text);
+            ViewState["SelectedDate"] = selectedDate;
 
+            // Debugging log
+            string script = $"console.log('Selected Calendar Date: {selectedDate.ToString("yyyy-MM-dd")}');";
+            ScriptManager.RegisterStartupScript(this, this.GetType(), "logCalendarDate", script, true);
+
+            DateTime startOfWeek = selectedDate.AddDays(-(int)selectedDate.DayOfWeek); // Get Sunday of the week
+            ViewState["StartOfWeek"] = startOfWeek;
+
+            // Debugging log
+            script = $"console.log('Start of Week: {startOfWeek.ToString("yyyy-MM-dd")}');";
+            ScriptManager.RegisterStartupScript(this, this.GetType(), "logStartOfWeek", script, true);
+
+            BindDaysOfWeek(selectedDate); // Rebind days of week
+        }
+
+
+        private void BindDaysOfWeek(DateTime selectedDate)
+        {
+            DateTime startOfWeek = selectedDate.AddDays(-(int)selectedDate.DayOfWeek);
+
+            List<DayItem> daysOfWeek = new List<DayItem>();
+
+            for (int i = 0; i < 7; i++)
+            {
+                DateTime currentDay = startOfWeek.AddDays(i);
+                daysOfWeek.Add(new DayItem
+                {
+                    Day = currentDay.DayOfWeek.ToString().Substring(0, 3),
+                    Date = currentDay.ToString("yyyy-MM-dd")
+                });
+            }
+
+            // Bind data to the Repeater
             rptDaysOfWeek.DataSource = daysOfWeek;
             rptDaysOfWeek.DataBind();
         }
 
+        protected void rptDaysOfWeek_ItemCommand(object source, RepeaterCommandEventArgs e)
+        {
+            if (e.CommandName == "ToggleDay")
+            {
+                // Get the index of the clicked day
+                int index = Convert.ToInt32(e.CommandArgument);
+
+                // Get the selected date based on the clicked index
+                List<DateTime> selectedWeek = GetSevenDayRange(DateTime.Parse(txtDate.Text));
+                DateTime selectedDay = selectedWeek[index];
+
+                // Log the selected day
+                string dateLogScript = $"console.log('Selected Day: {selectedDay.ToString("yyyy-MM-dd")}');";
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "logSelectedDay", dateLogScript, true);
+
+                // Toggle selection logic
+                if (SelectedDayIndices.Contains(index))
+                {
+                    SelectedDayIndices.Remove(index);
+                }
+                else
+                {
+                    SelectedDayIndices.Add(index);
+                }
+
+                BindDaysOfWeek(DateTime.Parse(txtDate.Text));
+            }
+        }
+
+
+        private List<DateTime> GetSevenDayRange(DateTime selectedDate)
+        {
+            // Calculate start of week (Sunday)
+            DateTime startOfWeek = selectedDate.AddDays(-(int)selectedDate.DayOfWeek);
+
+            List<DateTime> weekDates = new List<DateTime>();
+            for (int i = 0; i < 7; i++)
+            {
+                weekDates.Add(startOfWeek.AddDays(i));
+            }
+
+            return weekDates;
+        }
+
+
+        public List<int> SelectedDayIndices
+        {
+            get
+            {
+                if (ViewState["SelectedDayIndices"] == null)
+                {
+                    ViewState["SelectedDayIndices"] = new List<int>();
+                }
+                return (List<int>)ViewState["SelectedDayIndices"];
+            }
+            set
+            {
+                ViewState["SelectedDayIndices"] = value;
+            }
+        }
+
         protected void RadioButton_CheckedChanged(object sender, EventArgs e)
         {
-            // Show or hide the panel based on the "Repeat Weekly" radio button selection
             pnlRepeatDays.Visible = rbRepeat.Checked;
+
+            if (rbRepeat.Checked)
+            {
+                pnlRepeatDays.Visible = true;
+            }
+            else
+            {
+                pnlRepeatDays.Visible=false;
+            }
         }
         private void PopulateTimeDropdown(DropDownList ddl, string defaultText = "")
         {
@@ -329,21 +433,23 @@ namespace fyp1.Admin
         {
             DateTime currentStartTime = availableFrom;
 
+            // Generate records for each interval between availableFrom and availableTo
             while (currentStartTime.AddMinutes(interval) <= availableTo)
             {
-                // Generate availability ID
+                // Generate the availability ID (calls your GenerateNextAvailabilityID method)
                 string availabilityID = GenerateNextAvailabilityID();
 
-                // Calculate end time for this interval
+                // Calculate the end time for this interval
                 DateTime currentEndTime = currentStartTime.AddMinutes(interval);
 
-                // Save to database
+                // Save this availability record into the database
                 SaveRecordToDatabase(availabilityID, doctorID, date, currentStartTime, currentEndTime, interval);
 
-                // Update start time for the next interval
+                // Update the start time for the next interval
                 currentStartTime = currentEndTime;
             }
         }
+
 
         private void SaveRecordToDatabase(string availabilityID, string doctorID, DateTime date, DateTime fromTime, DateTime toTime, int interval)
         {
@@ -351,7 +457,7 @@ namespace fyp1.Admin
 
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
-                // Check if the record already exists
+                // Check if the record already exists for the same doctor, date, and time range
                 string checkQuery = "SELECT COUNT(1) FROM Availability WHERE doctorID = @doctorID AND availableDate = @date AND availableFrom = @availableFrom AND availableTo = @availableTo";
 
                 using (SqlCommand checkCmd = new SqlCommand(checkQuery, conn))
@@ -366,12 +472,12 @@ namespace fyp1.Admin
 
                     if (count > 0)
                     {
-                        // Record already exists, so we don't need to insert it again
+                        // If the record already exists, exit early
                         return;
                     }
                 }
 
-                // If the record doesn't exist, insert the new record
+                // If the record doesn't exist, proceed with inserting the new availability record
                 string insertQuery = "INSERT INTO Availability (availabilityID, doctorID, availableDate, availableFrom, availableTo, intervalTime, status) " +
                                      "VALUES (@availabilityID, @doctorID, @date, @availableFrom, @availableTo, @intervalTime, @status)";
 
@@ -383,12 +489,11 @@ namespace fyp1.Admin
                     cmd.Parameters.AddWithValue("@availableFrom", fromTime.TimeOfDay);
                     cmd.Parameters.AddWithValue("@availableTo", toTime.TimeOfDay);
                     cmd.Parameters.AddWithValue("@intervalTime", TimeSpan.FromMinutes(interval));
-                    cmd.Parameters.AddWithValue("@status", "Available");
+                    cmd.Parameters.AddWithValue("@status", "Available"); // Default status
                     cmd.ExecuteNonQuery();
                 }
             }
         }
-
 
         protected void btnSave_Click(object sender, EventArgs e)
         {
@@ -400,13 +505,13 @@ namespace fyp1.Admin
 
             if (string.IsNullOrEmpty(ddlAvailableTo.SelectedValue))
             {
-                ClientScript.RegisterStartupScript(this.GetType(), "alert", "alert('Please select a end time.');", true);
+                ClientScript.RegisterStartupScript(this.GetType(), "alert", "alert('Please select an end time.');", true);
                 return;
             }
 
             if (string.IsNullOrEmpty(ddlIntervalTime.SelectedValue))
             {
-                ClientScript.RegisterStartupScript(this.GetType(), "alert", "alert('Please select a interval time.');", true);
+                ClientScript.RegisterStartupScript(this.GetType(), "alert", "alert('Please select an interval time.');", true);
                 return;
             }
 
@@ -415,16 +520,17 @@ namespace fyp1.Admin
             {
                 doctorID = Request.Cookies["DoctorID"].Value;
             }
-
             else
             {
                 ClientScript.RegisterStartupScript(this.GetType(), "alert", "alert('Doctor ID not found. Please log in again.');", true);
                 return;
             }
+
             DateTime date = DateTime.Parse(txtDate.Text);
             DateTime availableFrom = DateTime.Parse(ddlAvailableFrom.SelectedValue);
             DateTime availableTo = DateTime.Parse(ddlAvailableTo.SelectedValue);
 
+            // Validate that start time is earlier than end time
             if (availableFrom >= availableTo)
             {
                 ClientScript.RegisterStartupScript(this.GetType(), "alert", "alert('Start time must be earlier than end time.');", true);
@@ -432,13 +538,36 @@ namespace fyp1.Admin
             }
 
             int intervalMinutes = int.Parse(ddlIntervalTime.SelectedValue);
-            GenerateAvailabilityRecords(doctorID, date, availableFrom, availableTo, intervalMinutes);
-            // Refresh calendar to show updated availability times
+
+            if (rbRepeat.Checked)
+            {
+                if (SelectedDayIndices.Count == 0)
+                {
+                    ClientScript.RegisterStartupScript(this.GetType(), "alert", "alert('Please select at least one day for weekly repetition.');", true);
+                    return;
+                }
+
+                List<DateTime> weekDates = GetSevenDayRange(date);
+
+                foreach (int index in SelectedDayIndices)
+                {
+                    DateTime repeatDate = weekDates[index];
+                    GenerateAvailabilityRecords(doctorID, repeatDate, availableFrom, availableTo, intervalMinutes);
+                }
+            }
+            else
+            {
+                GenerateAvailabilityRecords(doctorID, date, availableFrom, availableTo, intervalMinutes);
+            }
+
             DisplayCalendar();
+
             ClearSection();
+
+            SelectedDayIndices.Clear();
+
             ClientScript.RegisterStartupScript(this.GetType(), "alert", "alert('Availability saved successfully.');", true);
         }
-
 
         private string GenerateNextAvailabilityID()
         {
@@ -458,7 +587,6 @@ namespace fyp1.Admin
                 }
             }
 
-            // Ensure the latestAvailabilityID has the expected format before attempting to increment
             if (!string.IsNullOrEmpty(latestAvailabilityID) && latestAvailabilityID.Length > 2)
             {
                 string numericPart = latestAvailabilityID.Substring(2);
@@ -469,16 +597,20 @@ namespace fyp1.Admin
                 }
             }
 
-            // If no valid ID is found or format is unexpected, return the first ID
-            return "AB001"; // Fallback to first ID
+            return "AB001"; 
         }
+
 
         private void ClearSection()
         {
             ddlAvailableFrom.SelectedIndex = 0;
             ddlAvailableTo.SelectedIndex = 0;
             ddlIntervalTime.SelectedIndex = 0;
+
+            SelectedDayIndices.Clear();
+            BindDaysOfWeek(DateTime.Parse(txtDate.Text));
         }
+
         protected void btnSaveEdit_Click(object sender, EventArgs e)
         {
             try
@@ -696,5 +828,9 @@ namespace fyp1.Admin
         public string TimeSlot { get; set; }
         public string AvailableIDs { get; set; }
     }
-
+    public class DayItem
+    {
+        public string Day { get; set; }
+        public string Date { get; set; }
+    }
 }

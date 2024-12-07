@@ -47,7 +47,7 @@ namespace fyp1.Admin
                 try
                 {
                     conn.Open();
-                    string selectQuery = "SELECT [branchID], [name], [address], [openTime], [closeTime] FROM [Branch]";
+                    string selectQuery = "SELECT [branchID], [name], [address], [openTime], [closeTime] FROM [Branch] WHERE status = 'Activated'";
                     SqlCommand cmd = new SqlCommand(selectQuery, conn);
                     SqlDataReader reader = cmd.ExecuteReader();
                     while (reader.Read())
@@ -105,6 +105,7 @@ namespace fyp1.Admin
             string openTime = (e.Item.FindControl("ddlBranchOpeningTime") as DropDownList).SelectedValue;
             string closeTime = (e.Item.FindControl("ddlBranchClosingTime") as DropDownList).SelectedValue;
             string newBranchID = GenerateNextBranchID();
+            string status = "Activated";
 
             if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(address) || string.IsNullOrEmpty(openTime) || string.IsNullOrEmpty(closeTime))
             {
@@ -118,13 +119,14 @@ namespace fyp1.Admin
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 conn.Open();
-                string insertQuery = "INSERT INTO Branch (branchID, name, address, openTime, closeTime) VALUES (@branchID, @name, @address, @openTime, @closeTime)";
+                string insertQuery = "INSERT INTO Branch (branchID, name, address, openTime, closeTime, status) VALUES (@branchID, @name, @address, @openTime, @closeTime,@status)";
                 SqlCommand cmd = new SqlCommand(insertQuery, conn);
                 cmd.Parameters.AddWithValue("@branchID", newBranchID);
                 cmd.Parameters.AddWithValue("@name", name);
                 cmd.Parameters.AddWithValue("@address", address);
                 cmd.Parameters.AddWithValue("@openTime", openTime);
                 cmd.Parameters.AddWithValue("@closeTime", closeTime);
+                cmd.Parameters.AddWithValue("@status", status);
                 cmd.ExecuteNonQuery();
             }
             lvBranch.InsertItemPosition = InsertItemPosition.None;
@@ -342,7 +344,7 @@ namespace fyp1.Admin
 
         private void LoadFilteredData(string searchTerm)
         {
-            string query = "SELECT [branchID], [name], [address], [openTime], [closeTime] FROM Branch WHERE 1=1";
+            string query = "SELECT [branchID], [name], [address], [openTime], [closeTime] FROM Branch WHERE 1=1 AND status = 'Activated'";
 
             // Initialize the SQL parameters list
             var parameters = new List<SqlParameter>();
@@ -400,9 +402,55 @@ namespace fyp1.Admin
             ViewState["ClosingTime"] = ddlFilterClosingTime.SelectedValue;
             LoadFilteredData(ViewState["SearchTerm"] as string);
         }
+        protected void lvBranch_ItemCommand(object sender, ListViewCommandEventArgs e)
+        {
+            if (e.CommandName == "Unactivate")
+            {
+                string branchID = e.CommandArgument.ToString();
+
+                if (!string.IsNullOrEmpty(branchID))
+                {
+                    string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
+
+                    using (SqlConnection conn = new SqlConnection(connectionString))
+                    {
+                        try
+                        {
+                            conn.Open();
+                            string updateQuery = "UPDATE Branch SET status = @status WHERE branchID = @branchID";
+                            SqlCommand cmd = new SqlCommand(updateQuery, conn);
+
+                            cmd.Parameters.AddWithValue("@status", "Unactivated");
+                            cmd.Parameters.AddWithValue("@branchID", branchID);
+
+                            int rowsAffected = cmd.ExecuteNonQuery();
+
+                            if (rowsAffected > 0)
+                            {
+                                System.Diagnostics.Debug.WriteLine($"Branch {branchID} successfully updated to 'Unactivated'.");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine("Error updating branch status: " + ex.Message);
+                        }
+                    }
+
+                    string searchTerm = ViewState["SearchTerm"] as string;
+                    if (!string.IsNullOrEmpty(searchTerm))
+                    {
+                        LoadFilteredData(searchTerm);
+                    }
+                    else
+                    {
+                        LoadBranchData();
+                    }
+                    LoadFilteredData(ViewState["SearchTerm"] as string);
+                }
+            }
+        }
 
     }
-
     public class Branch
     {
         public string BranchID { get; set; }

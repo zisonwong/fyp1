@@ -21,7 +21,7 @@ namespace fyp1.Admin
         {
             if (!IsPostBack)
             {
-                PopulateDepartmentDropdown();
+                PopulatePrimaryDepartmentDropdown();
                 GenerateDoctorID();
                 PopulateGenderDropdown();
                 PopulateStatusDropdown();
@@ -48,22 +48,34 @@ namespace fyp1.Admin
                 txtEmployeeId.Text = newDoctorID; // Display new ID in textbox
             }
         }
-        private void PopulateDepartmentDropdown()
+        private void PopulatePrimaryDepartmentDropdown()
         {
-            // Populate Department dropdown from Department table
             string connString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
             using (SqlConnection conn = new SqlConnection(connString))
             {
                 conn.Open();
-                string query = "SELECT departmentID, name FROM Department";
+                string query = @"
+            SELECT d.departmentID, d.name, b.branchID, b.name AS branchName
+            FROM Department d
+            INNER JOIN Branch b ON d.branchID = b.branchID
+            WHERE d.status = 'Activated'";
                 SqlCommand cmd = new SqlCommand(query, conn);
                 SqlDataReader reader = cmd.ExecuteReader();
 
-                ddlDepartmentId.DataSource = reader;
+                DataTable dt = new DataTable();
+                dt.Load(reader);
+
+                foreach (DataRow row in dt.Rows)
+                {
+                    row["name"] = $"{row["name"]} - {row["branchName"]}";
+                }
+
+                ddlDepartmentId.DataSource = dt;
                 ddlDepartmentId.DataTextField = "name";
                 ddlDepartmentId.DataValueField = "departmentID";
                 ddlDepartmentId.DataBind();
 
+                // Add a default "Select" option
                 ddlDepartmentId.Items.Insert(0, new ListItem("- Select -", ""));
             }
         }
@@ -102,9 +114,8 @@ namespace fyp1.Admin
             string contactInfo = txtContactInfo.Text.Trim();
             string email = txtEmail.Text.Trim();
             string password = txtPassword.Text.Trim();
-            string departmentID = ddlDepartmentId.SelectedValue;
             string role = txtRole.Text.Trim();
-            string status = ddlStatus.SelectedValue; // "Activated", "Deactivated"
+            string status = ddlStatus.SelectedValue; 
             byte[] avatarData = null; // To store the image binary data
 
             if (!CheckFields())
@@ -118,7 +129,6 @@ namespace fyp1.Admin
             // Validate IC and DOB
             if (!ValidateICAndDOB(icNumber, dob))
             {
-                // If validation fails, show an error and return
                 Page.ClientScript.RegisterStartupScript(GetType(), "Invalid IC",
                     "document.addEventListener('DOMContentLoaded', ()=> alert('IC Number does not match the date of " +
                     "birth or is in the wrong format.'));", true);
@@ -175,41 +185,48 @@ namespace fyp1.Admin
             string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
-                string query = "INSERT INTO Doctor (doctorID, name, DOB, ICNumber, gender, contactInfo, email, password, departmentID, role, status, photo) " +
-                               "VALUES (@DoctorID, @Name, @DOB, @ICNumber, @Gender, @ContactInfo, @Email, @Password, @DepartmentID, @Role, @Status, @Photo)";
+                connection.Open();
 
-                using (SqlCommand command = new SqlCommand(query, connection))
+                // Insert into Doctor table
+                string insertDoctorQuery = "INSERT INTO Doctor (doctorID, name, DOB, ICNumber, gender, contactInfo, email, password, role, status, photo) " +
+                                            "VALUES (@DoctorID, @Name, @DOB, @ICNumber, @Gender, @ContactInfo, @Email, @Password, @Role, @Status, @Photo)";
+                using (SqlCommand doctorCommand = new SqlCommand(insertDoctorQuery, connection))
                 {
-                    command.Parameters.AddWithValue("@DoctorID", doctorID);
-                    command.Parameters.AddWithValue("@Name", fullName);
-                    command.Parameters.AddWithValue("@DOB", dob);
-                    command.Parameters.AddWithValue("@ICNumber", icNumber);
-                    command.Parameters.AddWithValue("@Gender", gender);
-                    command.Parameters.AddWithValue("@ContactInfo", contactInfo);
-                    command.Parameters.AddWithValue("@Email", email);
-                    command.Parameters.AddWithValue("@Password", hashedPassword);
-                    command.Parameters.AddWithValue("@DepartmentID", departmentID);
-                    command.Parameters.AddWithValue("@Role", role);
-                    command.Parameters.AddWithValue("@Status", status);
+                    doctorCommand.Parameters.AddWithValue("@DoctorID", doctorID);
+                    doctorCommand.Parameters.AddWithValue("@Name", fullName);
+                    doctorCommand.Parameters.AddWithValue("@DOB", dob);
+                    doctorCommand.Parameters.AddWithValue("@ICNumber", icNumber);
+                    doctorCommand.Parameters.AddWithValue("@Gender", gender);
+                    doctorCommand.Parameters.AddWithValue("@ContactInfo", contactInfo);
+                    doctorCommand.Parameters.AddWithValue("@Email", email);
+                    doctorCommand.Parameters.AddWithValue("@Password", hashedPassword);
+                    doctorCommand.Parameters.AddWithValue("@Role", role);
+                    doctorCommand.Parameters.AddWithValue("@Status", status);
+                    doctorCommand.Parameters.Add("@Photo", SqlDbType.VarBinary).Value = avatarData;
 
-                    // Add the avatar data (either the uploaded image or the default image)
-                    command.Parameters.Add("@Photo", SqlDbType.VarBinary).Value = avatarData;
+                    doctorCommand.ExecuteNonQuery();
+                }
 
-                    connection.Open();
-                    int rowsAffected = command.ExecuteNonQuery();
-                    if (rowsAffected > 0)
+                string insertDoctorDepartmentQuery = "INSERT INTO DoctorDepartment (doctorID, departmentID) VALUES (@DoctorID, @DepartmentID)";
+                using (SqlCommand doctorDepartmentCommand = new SqlCommand(insertDoctorDepartmentQuery, connection))
+                {
+                    doctorDepartmentCommand.Parameters.AddWithValue("@DoctorID", doctorID);
+                    doctorDepartmentCommand.Parameters.AddWithValue("@DepartmentID", ddlDepartmentId.SelectedValue);
+                    doctorDepartmentCommand.ExecuteNonQuery();
+
+                    if (!string.IsNullOrEmpty(ddlDepartmentId2.SelectedValue))
                     {
-                        Response.Write("<script>alert('Doctor added successfully.');</script>");
-                        ClearSection();
-                        GenerateDoctorID();
-                    }
-                    else
-                    {
-                        Response.Write("<script>alert('Error adding doctor.');</script>");
+                        doctorDepartmentCommand.Parameters["@DepartmentID"].Value = ddlDepartmentId2.SelectedValue;
+                        doctorDepartmentCommand.ExecuteNonQuery();
                     }
                 }
+
+                Response.Write("<script>alert('Doctor added successfully.');</script>");
+                ClearSection();
+                GenerateDoctorID();
             }
         }
+
         private void ClearSection()
         {
             txtFirstName.Text = string.Empty;
@@ -221,6 +238,7 @@ namespace fyp1.Admin
             txtEmail.Text = string.Empty;
             txtPassword.Text = string.Empty;
             ddlDepartmentId.SelectedIndex = 0;
+            ddlDepartmentId2.SelectedIndex = 0;
             txtRole.Text = string.Empty;
             ddlStatus.SelectedIndex = 0;
             FileUploadAvatar.Attributes.Clear();
@@ -309,6 +327,90 @@ namespace fyp1.Admin
                     builder.Append(b.ToString("x2")); // Convert byte to hexadecimal
                 }
                 return builder.ToString();
+            }
+        }
+        protected void ddlDepartmentId_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (!string.IsNullOrEmpty(ddlDepartmentId.SelectedValue))
+            {
+                secondaryDepartmentContainer.Visible = true;
+
+                PopulateSecondaryDepartmentDropdown(ddlDepartmentId.SelectedValue);
+            }
+            else
+            {
+                secondaryDepartmentContainer.Visible = false;
+            }
+        }
+        private void PopulateSecondaryDepartmentDropdown(string excludedDepartmentId)
+        {
+            string connString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
+            using (SqlConnection conn = new SqlConnection(connString))
+            {
+                conn.Open();
+                string query = @"
+            SELECT d.departmentID, d.name, b.branchID, b.name AS branchName 
+            FROM Department d
+            INNER JOIN Branch b ON d.branchID = b.branchID
+            WHERE d.departmentID != @ExcludedDepartmentID AND d.status = 'Activated'";
+                SqlCommand cmd = new SqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@ExcludedDepartmentID", excludedDepartmentId);
+
+                SqlDataReader reader = cmd.ExecuteReader();
+
+                DataTable dt = new DataTable();
+                dt.Load(reader);
+
+                foreach (DataRow row in dt.Rows)
+                {
+                    row["name"] = $"{row["name"]} - {row["branchName"]}";
+                }
+
+                ddlDepartmentId2.DataSource = dt;
+                ddlDepartmentId2.DataTextField = "name"; 
+                ddlDepartmentId2.DataValueField = "departmentID"; 
+                ddlDepartmentId2.DataBind();
+
+                ddlDepartmentId2.Items.Insert(0, new ListItem("- Select -", ""));
+            }
+        }
+        protected void txtDateOfBirth_TextChanged(object sender, EventArgs e)
+        {
+            if (DateTime.TryParse(txtDateOfBirth.Text, out DateTime selectedDate))
+            {
+                string formattedDate = selectedDate.ToString("yyMMdd");
+
+                txtIc.Text = formattedDate;
+            }
+            else
+            {
+                txtIc.Text = string.Empty;
+            }
+        }
+        protected void txtIc_TextChanged(object sender, EventArgs e)
+        {
+            string icNumber = txtIc.Text.Trim();
+
+            if (icNumber.Length >= 6)
+            {
+                string yearPart = icNumber.Substring(0, 2);
+                string monthPart = icNumber.Substring(2, 2);
+                string dayPart = icNumber.Substring(4, 2);
+
+                int year = int.Parse(yearPart) < 50 ? 2000 + int.Parse(yearPart) : 1900 + int.Parse(yearPart);
+
+                if (DateTime.TryParse($"{year}-{monthPart}-{dayPart}", out DateTime dob))
+                {
+                    txtDateOfBirth.Text = dob.ToString("yyyy-MM-dd");
+                }
+                else
+                {
+                    txtDateOfBirth.Text = string.Empty;
+                }
+            }
+            else
+            {
+                txtDateOfBirth.Text = string.Empty;
             }
         }
 

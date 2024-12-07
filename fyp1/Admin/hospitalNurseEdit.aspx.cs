@@ -370,5 +370,45 @@ namespace fyp1.Admin
                 }
             }
         }
+
+        protected void txtDateOfBirth_TextChanged(object sender, EventArgs e)
+        {
+            if (DateTime.TryParse(txtDateOfBirth.Text, out DateTime selectedDate))
+            {
+                string formattedDate = selectedDate.ToString("yyMMdd");
+
+                txtIc.Text = formattedDate;
+            }
+            else
+            {
+                txtIc.Text = string.Empty;
+            }
+        }
+        protected void txtIc_TextChanged(object sender, EventArgs e)
+        {
+            string icNumber = txtIc.Text.Trim();
+
+            if (icNumber.Length >= 6)
+            {
+                string yearPart = icNumber.Substring(0, 2);
+                string monthPart = icNumber.Substring(2, 2);
+                string dayPart = icNumber.Substring(4, 2);
+
+                int year = int.Parse(yearPart) < 50 ? 2000 + int.Parse(yearPart) : 1900 + int.Parse(yearPart);
+
+                if (DateTime.TryParse($"{year}-{monthPart}-{dayPart}", out DateTime dob))
+                {
+                    txtDateOfBirth.Text = dob.ToString("yyyy-MM-dd");
+                }
+                else
+                {
+                    txtDateOfBirth.Text = string.Empty;
+                }
+            }
+            else
+            {
+                txtDateOfBirth.Text = string.Empty;
+            }
+        }
     }
 }

@@ -50,11 +50,13 @@
                         </div>
                         <div class="col-md-4 mb-3">
                             <label for="txtDateOfBirth" class="form-label">Date of Birth</label>
-                            <asp:TextBox ID="txtDateOfBirth" runat="server" CssClass="form-control" TextMode="Date"></asp:TextBox>
+                            <asp:TextBox ID="txtDateOfBirth" runat="server" CssClass="form-control"
+                                AutoPostBack="true" OnTextChanged="txtDateOfBirth_TextChanged" TextMode="Date"></asp:TextBox>
                         </div>
                         <div class="col-md-4 mb-3">
                             <label for="txtIc" class="form-label">IC Number</label>
-                            <asp:TextBox ID="txtIc" runat="server" CssClass="form-control" Placeholder="0123456-78-9012"></asp:TextBox>
+                            <asp:TextBox ID="txtIc" runat="server" CssClass="form-control"
+                                AutoPostBack="true" OnTextChanged="txtIc_TextChanged" Placeholder="0123456-78-9012"></asp:TextBox>
                         </div>
                         <div class="col-md-4 mb-3">
                             <label for="ddlGender" class="form-label">Gender</label>

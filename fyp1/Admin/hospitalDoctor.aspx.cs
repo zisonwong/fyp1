@@ -22,7 +22,7 @@ namespace fyp1.Admin
         private void LoadDoctors()
         {
             string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
-            string query = "SELECT doctorID, name, role, email, photo FROM Doctor";
+            string query = "SELECT doctorID, name, role, email, photo FROM Doctor WHERE status = 'Activate'";
 
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
@@ -101,7 +101,7 @@ namespace fyp1.Admin
                 string doctorID = e.CommandArgument.ToString();
 
                 string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
-                string query = "DELETE FROM Doctor WHERE doctorID = @DoctorID";
+                string query = "UPDATE Doctor SET status = 'UnActivate' WHERE doctorID = @DoctorID";
 
                 using (SqlConnection connection = new SqlConnection(connectionString))
                 {
@@ -113,18 +113,15 @@ namespace fyp1.Admin
                         int rowsAffected = command.ExecuteNonQuery();
                         if (rowsAffected > 0)
                         {
-                            // Show a success message
-                            ClientScript.RegisterStartupScript(this.GetType(), "DeleteSuccess",
-                                "alert('Doctor deleted successfully.');", true);
+                            ClientScript.RegisterStartupScript(this.GetType(), "StatusUpdated",
+                                "alert('Doctor status updated to UnActivate successfully.');", true);
 
-                            // Reload the doctors list to reflect the changes
                             LoadDoctors();
                         }
                         else
                         {
-                            // Show an error message if the delete was unsuccessful
-                            ClientScript.RegisterStartupScript(this.GetType(), "DeleteError",
-                                "alert('Error deleting doctor.');", true);
+                            ClientScript.RegisterStartupScript(this.GetType(), "UpdateError",
+                                "alert('Error updating doctor status.');", true);
                         }
                     }
                 }

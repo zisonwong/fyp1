@@ -12,12 +12,12 @@ namespace fyp1.Client
 {
     public partial class BranchDoctorSelection : System.Web.UI.Page
     {
-
         protected void Page_Load(object sender, EventArgs e)
         {
             if (!IsPostBack)
             {
                 LoadBranches();
+                LoadDepartments();
                 LoadDoctors();
             }
         }
@@ -35,25 +35,45 @@ namespace fyp1.Client
                 ddlBranch.Items.Insert(0, new ListItem("Select Branch", ""));
             }
         }
-        private void LoadDoctors(string filter = "")
+        private void LoadDoctors(string filter = "", string branchID = "", string departmentID = "")
         {
-            string query = @"SELECT d.doctorID, d.name, d.role, d.contactInfo, d.photo
-                     FROM Doctor d
-                     INNER JOIN Department dept ON d.departmentID = dept.departmentID
-                     WHERE (d.name LIKE @filter OR @filter = '')
-                     AND (dept.branchID = @branchID OR @branchID = '')";
+            string query = @"
+                        SELECT 
+                    d.doctorID, 
+                    d.name, 
+                    d.role, 
+                    d.contactInfo, 
+                    d.photo,
+                    STRING_AGG(dept.name, ', ') AS DepartmentNames,
+                    STRING_AGG(b.name, ', ') AS BranchNames
+                FROM Doctor d
+                LEFT JOIN DoctorDepartment dd ON d.doctorID = dd.doctorID
+                LEFT JOIN Department dept ON dd.departmentID = dept.departmentID
+                LEFT JOIN Branch b ON dept.branchID = b.branchID
+                WHERE (d.name LIKE @filter OR @filter = '' OR @filter IS NULL)
+                  AND (@departmentID = '' OR @departmentID IS NULL OR dept.departmentID = @departmentID)
+                  AND (@branchID = '' OR @branchID IS NULL OR b.branchID = @branchID)
+                  AND d.status = 'Activated'
+                GROUP BY 
+                    d.doctorID, 
+                    d.name, 
+                    d.role, 
+                    d.contactInfo, 
+                    d.photo";
 
-            using (SqlConnection conn = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["connectionString"].ToString()))
+            using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["connectionString"].ToString()))
             {
                 SqlCommand cmd = new SqlCommand(query, conn);
                 cmd.Parameters.AddWithValue("@filter", "%" + filter + "%");
-                cmd.Parameters.AddWithValue("@branchID", ddlBranch.SelectedValue);
+                cmd.Parameters.AddWithValue("@branchID", branchID);
+                cmd.Parameters.AddWithValue("@departmentID", departmentID);
+
                 conn.Open();
                 SqlDataReader reader = cmd.ExecuteReader();
                 DataTable dt = new DataTable();
                 dt.Load(reader);
 
-                // Add a new column to store the ImageUrl in Base64 format
+                // Process photo conversion
                 dt.Columns.Add("ImageUrl", typeof(string));
 
                 foreach (DataRow row in dt.Rows)
@@ -69,7 +89,6 @@ namespace fyp1.Client
                     }
                     else
                     {
-                        // Provide a default image if no photo is available
                         row["ImageUrl"] = ResolveUrl("~/Images/default-doctor.png");
                     }
                 }
@@ -79,13 +98,29 @@ namespace fyp1.Client
                     rptDoctors.DataSource = dt;
                     rptDoctors.DataBind();
                     pnlRecommendations.Visible = false;
+                    lblError.Text = ""; // Clear any previous error messages
                 }
                 else
                 {
                     rptDoctors.DataSource = null;
                     rptDoctors.DataBind();
                     ShowRecommendations(filter);
+                    lblError.Text = "No doctors found.";
                 }
+            }
+        }
+
+        private void LoadDepartments()
+        {
+            using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["connectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand("SELECT departmentID, name FROM Department", conn);
+                conn.Open();
+                ddlDepartment.DataSource = cmd.ExecuteReader();
+                ddlDepartment.DataTextField = "name";
+                ddlDepartment.DataValueField = "departmentID";
+                ddlDepartment.DataBind();
+                ddlDepartment.Items.Insert(0, new ListItem("Select Department", ""));
             }
         }
 
@@ -102,7 +137,6 @@ namespace fyp1.Client
                 imgDoctorPhoto.ImageUrl = row["ImageUrl"].ToString();
             }
         }
-
 
         private void ShowRecommendations(string filter)
         {
@@ -125,7 +159,12 @@ namespace fyp1.Client
 
         protected void ddlBranch_SelectedIndexChanged(object sender, EventArgs e)
         {
-            LoadDoctors(txtDoctorSearch.Text);
+            LoadDoctors(txtDoctorSearch.Text, ddlBranch.SelectedValue, ddlDepartment.SelectedValue);
+        }
+
+        protected void ddlDepartment_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            LoadDoctors(txtDoctorSearch.Text, ddlBranch.SelectedValue, ddlDepartment.SelectedValue);
         }
 
         protected void btnSearch_Click(object sender, EventArgs e)

@@ -19,10 +19,15 @@
     <header>
         <nav>
             <ul class="masterSidebar">
-                <li><a href="../Client/clientHome.aspx">Home</a></li>
-                <li><a href="../Client/clientAppointment.aspx">Book Appointment</a></li>
-                <li><a href="clientSignUp.aspx">Sign up</a></li>
-                <li><a href="clientLogin.aspx">Login</a></li>
+                <li><a href="../Client/BranchDoctorSelection.aspx">Book Appointment</a></li>
+                <li><a href="../Client/SymptomChecker.aspx">Check Your Sickness</a></li>
+                <li><a href="<%= GetProfileOrLoginLink() %>">
+                    <% if (Request.Cookies["Username"] == null || string.IsNullOrEmpty(Request.Cookies["Username"].Value))
+                        { %>Login<% }
+                                     else
+                                     { %>Profile<% } %>
+                </a></li>
+
                 <li onclick="hideSidebar()"><a class="menuLink" href="#">
                     <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#5f6368">
                         <path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z" />
@@ -33,11 +38,31 @@
                 <li><a class="closeMenuLink" href="../Client/clientHome.aspx">
                     <img src="../Images/logo.jpg" alt="logo" class="logoImage">Trinity Medical Center</a></li>
                 <li>
-                    <button id="btnEmergency" class="btn btn-danger">Emergency</button></li>
+                    <button id="EmergencyButton" class="btn btn-danger mr-2" runat="server" onserverclick="EmergencyButton_Click">Emergency</button>
+                </li>
                 <li><span id="errorMessage" style="color: red;"></span></li>
-                <li class="hideOnMobile"><a href="#">Our Services</a></li>
+                <asp:Label ID="lblEmergencyMessage" runat="server"></asp:Label>
+                <li class="hideOnMobile relative group">
+                    <a href="#" class="block px-4 py-2 text-gray-700 hover:text-blue-500 transition">Our Services
+                    </a>
+                    <ul
+                        class="absolute left-0 mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg hidden group-hover:block">
+                        <li class="submenu">
+                            <a
+                                href="../Client/SymptomChecker.aspx"
+                                class="block px-4 py-2 text-gray-700 hover:bg-gray-100 focus:outline-none hover:text-blue-500">Check Your Sickness
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
                 <li class="hideOnMobile"><a href="../Client/BranchDoctorSelection.aspx">Book Appointment</a></li>
-                <li class="hideOnMobile"><a id="loginProfileLink" href="../Client/clientLogin.aspx" class="login_Profile">Login</a></li>
+                <li class="hideOnMobile"><a href="<%= GetProfileOrLoginLink() %>">
+                    <% if (Request.Cookies["Username"] == null || string.IsNullOrEmpty(Request.Cookies["Username"].Value))
+                        { %>Login<% }
+                                     else
+                                     { %>Profile<% } %>
+                </a></li>
                 <li class="masterNavMenuButton" onclick="showSidebar()"><a href="#">
                     <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="26px" fill="#5f6368">
                         <path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z" />
@@ -56,13 +81,10 @@
         <br>
         <div class="footer-content">
             <div class="footer-column">
-                <h4>Address</h4>
-                <p>
-                    50, Jln Raja Chulan, Bukit Bintang,<br />
-                    50200 Kuala Lumpur, Wilayah Persekutuan Kuala Lumpur
-                </p>
-                <a href="https://www.google.com/maps/d/u/0/embed?mid=1ub4mVPjhva5HmzatIcmpaI--bV9tVi0&ehbc=2E312F" target="_blank" class="mapBtn" runat="server">DIRECTION</a>
-
+                <h4>Nearest Branch</h4>
+                <div>
+                    <p><span id="lblBranchAddress" runat="server"></span></p>
+                </div>
             </div>
             <div class="footer-column">
                 <h4>Contact Details</h4>
@@ -178,7 +200,6 @@
             const mainbar = document.querySelector('.masterNav');
             sidebar.style.display = 'flex';
             mainbar.style.display = 'none';
-
         }
 
         function hideSidebar() {
@@ -187,69 +208,7 @@
             sidebar.style.display = 'none';
             mainbar.style.display = 'flex';
         }
-
-        function getCookieValue(cookieName) {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                // Check if the cookie name matches
-                if (cookie.startsWith(`${cookieName}=`)) {
-                    return cookie.substring(cookieName.length + 1);
-                }
-            }
-            return null;
-        }
-
-        const patientID = getCookieValue('PatientID');
-
-        document.getElementById('btnEmergency').addEventListener('click', function () {
-            // Check if geolocation is supported
-            if (confirm("Are you sure you want to trigger the emergency?")) {
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(
-                        function (position) {
-                            const latitude = position.coords.latitude;
-                            const longitude = position.coords.longitude;
-
-                            // Use a geocoding API (like Google Maps Geocoder) to convert the coordinates into an address
-                            const geocoder = new google.maps.Geocoder();
-                            const latLng = new google.maps.LatLng(latitude, longitude);
-
-
-                                    // Send data to the server using AJAX
-                                    fetch('EmergencyPage.aspx/EmergencyAlert', {
-                                        method: 'POST',
-                                        headers: {
-                                            'Content-Type': 'application/json'
-                                        },
-                                        body: JSON.stringify(data)
-                                    })
-                                        .then(response => response.json())
-                                        .then(result => {
-                                            if (result.d.success) {
-                                                alert('Emergency alert sent successfully!');
-                                                window.location.href = 'EmergencyPage.aspx';
-                                            } else {
-                                                document.getElementById('errorMessage').textContent = result.d.error;
-                                            }
-                                        })
-                                        .catch(error => {
-                                            document.getElementById('errorMessage').textContent = 'Error sending alert. Please try again.';
-                                            console.error(error);
-                                        });
-                                } else {
-                                    document.getElementById('errorMessage').textContent = 'Failed to get address from location.';
-                                }
-                            });
-                        },
-                        function (error) {
-                            document.getElementById('errorMessage').textContent = 'Unable to retrieve location. Please allow location access.';
-                        });
-                } else {
-                    document.getElementById('errorMessage').textContent = 'Geolocation is not supported by this browser.';
-                }
-            }
-        });
     </script>
+
 </body>
 </html>

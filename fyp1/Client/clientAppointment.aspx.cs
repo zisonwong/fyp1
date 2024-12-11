@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Stripe;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data.SqlClient;
@@ -19,6 +20,7 @@ namespace fyp1.Client
         private DateTime toTime;
         protected void Page_Load(object sender, EventArgs e)
         {
+
             if (!IsPostBack)
             {
                 if (Request.Cookies["PatientID"] == null)
@@ -38,16 +40,17 @@ namespace fyp1.Client
                     lblError.Text = "Doctor ID is missing from the URL.";
                     btnConfirmAppointment.Enabled = false;
                 }
-
             }
         }
 
         private void LoadDoctorDetails(string doctorID)
         {
-            string query = @"SELECT d.Name, d.ContactInfo, d.photo, dept.name AS DepartmentName
-                            FROM Doctor d
-                            INNER JOIN Department dept ON d.DepartmentID = dept.DepartmentID
-                            WHERE d.doctorID = @doctorID";
+            string query = @"
+        SELECT d.*, dept.name AS DepartmentName 
+        FROM Doctor d
+        LEFT JOIN DoctorDepartment dd ON d.doctorID = dd.doctorID
+        LEFT JOIN Department dept ON dd.departmentID = dept.departmentID
+        WHERE d.doctorID =  @doctorID";
 
             using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ConnectionString"].ToString()))
             {
@@ -61,8 +64,6 @@ namespace fyp1.Client
                 {
                     // Check each field and handle nulls
                     lblDoctorName.Text = reader["Name"]?.ToString() ?? "N/A";
-                    lblDoctorContact.Text = reader["ContactInfo"]?.ToString() ?? "N/A";
-                    lblDepartmentName.Text = reader["DepartmentName"]?.ToString() ?? "N/A";
 
                     // Set doctor's photo if available, otherwise use a default image
                     if (reader["photo"] != DBNull.Value)
@@ -85,6 +86,7 @@ namespace fyp1.Client
                 reader.Close();
             }
         }
+
 
         private void LoadPatientDetails()
         {

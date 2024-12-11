@@ -37,10 +37,14 @@ namespace fyp1.Client
                 LoadAppointmentData();
                 LoadEmergencyContactData();
                 LoadPaymentData();
-                //LoadSettingsData();
-                
+
                 lblErrorMessage.Text = "";
             }
+        }
+
+        protected void btnHome_Click(object sender, EventArgs e)
+        {
+            Response.Redirect("clientHome.aspx");
         }
 
         protected void SelectTab(object sender, EventArgs e)
@@ -299,94 +303,30 @@ namespace fyp1.Client
             return Regex.IsMatch(newPassword, @"^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$");
         }
 
-
-
-        protected void btnNotificationSettings_Click(object sender, EventArgs e)
-        {
-            bool emailNotifications = chkEmailNotifications.Checked;
-            bool smsNotifications = chkSMSNotifications.Checked;
-            bool pushNotifications = chkPushNotifications.Checked;
-
-            HttpCookie IDCookie = HttpContext.Current.Request.Cookies["PatientID"];
-            if (IDCookie == null || string.IsNullOrEmpty(IDCookie.Value))
-            {
-                lblErrorMessage.Text = "Error: Patient ID not found.";
-                return;
-            }
-            string patientId = IDCookie.Value;
-
-            using (SqlConnection conn = new SqlConnection("connectionString"))
-            {
-                conn.Open();
-                string query = "UPDATE Patient SET emailNotifications = @Email, smsNotifications = @SMS, pushNotifications = @Push WHERE patientID = @PatientID";
-                using (SqlCommand cmd = new SqlCommand(query, conn))
-                {
-                    cmd.Parameters.AddWithValue("@Email", emailNotifications);
-                    cmd.Parameters.AddWithValue("@SMS", smsNotifications);
-                    cmd.Parameters.AddWithValue("@Push", pushNotifications);
-                    cmd.Parameters.AddWithValue("@PatientID", patientId);
-
-                    int rowsAffected = cmd.ExecuteNonQuery();
-                    lblErrorMessage.Text = rowsAffected > 0 ? "Notification settings updated successfully!" : "Error updating notification settings!";
-                }
-            }
-        }
-
-        protected void btnPrivacySettings_Click(object sender, EventArgs e)
-        {
-            string profileVisibility = ddlProfileVisibility.SelectedValue;
-            bool dataSharing = chkDataSharing.Checked;
-            bool adPreferences = chkAdPreferences.Checked;
-
-            // Obtain patientId from session, cookie, or other context
-            HttpCookie IDCookie = HttpContext.Current.Request.Cookies["PatientID"];
-            if (IDCookie == null || string.IsNullOrEmpty(IDCookie.Value))
-            {
-                lblErrorMessage.Text = "Error: Patient ID not found.";
-                return;
-            }
-            string patientId = IDCookie.Value;
-
-            using (SqlConnection conn = new SqlConnection("connectionString"))
-            {
-                conn.Open();
-                string query = "UPDATE Patient SET profileVisibility = @Visibility, dataSharing = @Sharing, adPreferences = @Ad WHERE patientID = @PatientID";
-                using (SqlCommand cmd = new SqlCommand(query, conn))
-                {
-                    cmd.Parameters.AddWithValue("@Visibility", profileVisibility);
-                    cmd.Parameters.AddWithValue("@Sharing", dataSharing);
-                    cmd.Parameters.AddWithValue("@Ad", adPreferences);
-                    cmd.Parameters.AddWithValue("@PatientID", patientId);
-
-                    int rowsAffected = cmd.ExecuteNonQuery();
-                    lblErrorMessage.Text = rowsAffected > 0 ? "Privacy settings updated successfully!" : "Error updating privacy settings!";
-                }
-            }
-        }
         private void LoadAppointmentData()
         {
             HttpCookie IDCookie = HttpContext.Current.Request.Cookies["PatientID"];
             string patientID = IDCookie.Value;
             string query = @"SELECT 
-                                a.appointmentID,
-                                d.name,
-                                av.availableDate AS AppointmentDate,
-                                av.availableFrom AS StartTime,
-                                av.availableTo AS EndTime,
-                                a.status,
-                                pm.paymentAmount,
-                                pm.paymentDate,
-                                pm.paymentMethod
-                            FROM 
-                                Appointment a
-                            JOIN 
-                                Doctor d ON a.doctorID = d.doctorID
-                            JOIN 
-                                Availability av ON a.availabilityID = av.availabilityID
-                            LEFT JOIN 
-                                Payment pm ON a.paymentID = pm.paymentID
-                            WHERE 
-                                patientID = @patientID";
+                        a.appointmentID,
+                        d.name,
+                        av.availableDate AS AppointmentDate,
+                        av.availableFrom AS StartTime,
+                        av.availableTo AS EndTime,
+                        a.status,
+                        pm.paymentAmount,
+                        pm.paymentDate,
+                        pm.paymentMethod
+                    FROM 
+                        Appointment a
+                    JOIN 
+                        Doctor d ON a.doctorID = d.doctorID
+                    JOIN 
+                        Availability av ON a.availabilityID = av.availabilityID
+                    LEFT JOIN 
+                        Payment pm ON a.paymentID = pm.paymentID
+                    WHERE 
+                        patientID = @patientID";
 
             using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ConnectionString"].ToString()))
             using (SqlCommand cmd = new SqlCommand(query, conn))
@@ -396,10 +336,123 @@ namespace fyp1.Client
                 DataTable dt = new DataTable();
                 adapter.Fill(dt);
 
-                gridAppointment.DataSource = dt;
-                gridAppointment.DataBind();
+                if (dt.Rows.Count > 0)
+                {
+                    gridAppointment.DataSource = dt;
+                    gridAppointment.DataBind();
+                }
+                else
+                {
+                    gridAppointment.DataSource = null;
+                    gridAppointment.DataBind();
+                    lblNoAppointments.Text = "No appointments found. Please schedule a new appointment.";
+                    lblNoAppointments.Visible = true;
+                }
             }
         }
+
+        private void RedirectToPayment(string appointmentID)
+        {
+            if (!string.IsNullOrEmpty(appointmentID))
+            {
+                string query = @"
+            SELECT 
+                d.name AS DoctorName,
+                av.availableDate,
+                av.availableFrom,
+                av.availableTo
+            FROM 
+                Appointment a
+            JOIN 
+                Doctor d ON a.doctorID = d.doctorID
+            JOIN 
+                Availability av ON a.availabilityID = av.availabilityID
+            WHERE 
+                a.appointmentID = @appointmentID";
+
+                using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["connectionString"].ToString()))
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@appointmentID", appointmentID);
+                    conn.Open();
+                    SqlDataReader reader = cmd.ExecuteReader();
+
+                    if (reader.Read())
+                    {
+                        string doctorName = reader["DoctorName"].ToString();
+                        DateTime appointmentDate = (DateTime)reader["availableDate"];
+                        TimeSpan fromTimeSpan = reader["availableFrom"] != DBNull.Value ? (TimeSpan)reader["availableFrom"] : TimeSpan.Zero;
+                        TimeSpan toTimeSpan = reader["availableTo"] != DBNull.Value ? (TimeSpan)reader["availableTo"] : TimeSpan.Zero;
+
+                        // Combine the date and time
+                        DateTime fromTime = appointmentDate.Add(fromTimeSpan);
+                        DateTime toTime = appointmentDate.Add(toTimeSpan);
+
+                        // Construct the redirection URL
+                        string redirectUrl = $"clientPayment.aspx?doctorName={HttpUtility.UrlEncode(doctorName)}" +
+                                             $"&appointmentDate={HttpUtility.UrlEncode(appointmentDate.ToString("yyyy-MM-dd"))}" +
+                                             $"&appointmentTime={HttpUtility.UrlEncode($"{fromTime:hh:mm tt} - {toTime:hh:mm tt}")}" +
+                                             $"&appointmentID={appointmentID}";
+
+                        Response.Redirect(redirectUrl);
+                    }
+                    else
+                    {
+                        lblErrorMessage.Text = "Appointment details could not be retrieved for payment.";
+                    }
+
+                    reader.Close();
+                }
+            }
+            else
+            {
+                lblErrorMessage.Text = "Appointment ID is missing.";
+            }
+        }
+
+        protected void gridAppointment_RowDataBound(object sender, GridViewRowEventArgs e)
+        {
+            if (e.Row.RowType == DataControlRowType.DataRow)
+            {
+                string paymentStatus = DataBinder.Eval(e.Row.DataItem, "paymentAmount")?.ToString();
+
+                Button btnPay = (Button)e.Row.FindControl("btnPay");
+
+                // Show or hide the Pay button based on the payment status
+                if (!string.IsNullOrEmpty(paymentStatus) && decimal.TryParse(paymentStatus, out decimal payment) && payment > 0)
+                {
+                    btnPay.Visible = false;
+                }
+                else
+                {
+                    btnPay.Visible = true;
+                }
+            }
+        }
+
+
+        protected void gridAppointment_RowCommand(object sender, GridViewCommandEventArgs e)
+        {
+            if (e.CommandName == "EditAppointment")
+            {
+                // Redirect to the Edit Appointment page with the selected AppointmentID
+                string appointmentID = e.CommandArgument.ToString();
+                Response.Redirect($"EditAppointment.aspx?AppointmentID={appointmentID}");
+            }
+            else if (e.CommandName == "PayAppointment")
+            {
+                // Redirect to the Payment page with the selected AppointmentID
+                string appointmentID = e.CommandArgument.ToString();
+                RedirectToPayment(appointmentID);
+            }
+        }
+
+
+        protected void btnAddAppointment_Click(object sender, EventArgs e)
+        {
+            Response.Redirect("BranchDoctorSelection.aspx");
+        }
+
 
         private void LoadEmergencyContactData()
         {
@@ -419,6 +472,95 @@ namespace fyp1.Client
                 gridEmergency.DataBind();
             }
         }
+
+        protected void gridEmergency_RowEditing(object sender, GridViewEditEventArgs e)
+        {
+            gridEmergency.EditIndex = e.NewEditIndex;
+            LoadEmergencyContacts();  // Reload grid data to reflect editing mode
+        }
+
+        protected void gridEmergency_RowCancelingEdit(object sender, GridViewCancelEditEventArgs e)
+        {
+            gridEmergency.EditIndex = -1;
+            LoadEmergencyContacts();  // Reload grid data to cancel editing
+        }
+
+        protected void gridEmergency_RowUpdating(object sender, GridViewUpdateEventArgs e)
+        {
+            // Retrieve updated values
+            string contactID = gridEmergency.DataKeys[e.RowIndex].Value.ToString();  // Get contact ID for updating
+            string contactName = ((TextBox)gridEmergency.Rows[e.RowIndex].FindControl("txtEditContactName")).Text;
+            string relationship = ((TextBox)gridEmergency.Rows[e.RowIndex].FindControl("txtEditRelationship")).Text;
+            string phone = ((TextBox)gridEmergency.Rows[e.RowIndex].FindControl("txtEditPhone")).Text;
+            string email = ((TextBox)gridEmergency.Rows[e.RowIndex].FindControl("txtEditEmail")).Text;
+
+            // Update logic here, e.g., update the database
+            string query = @"UPDATE EmergencyContacts SET ContactName = @ContactName, Relationship = @Relationship, 
+                    Phone = @Phone, Email = @Email WHERE ContactID = @ContactID";
+
+            using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["connectionString"].ToString()))
+            using (SqlCommand cmd = new SqlCommand(query, conn))
+            {
+                cmd.Parameters.AddWithValue("@ContactID", contactID);
+                cmd.Parameters.AddWithValue("@ContactName", contactName);
+                cmd.Parameters.AddWithValue("@Relationship", relationship);
+                cmd.Parameters.AddWithValue("@Phone", phone);
+                cmd.Parameters.AddWithValue("@Email", email);
+
+                conn.Open();
+                cmd.ExecuteNonQuery();
+            }
+
+            gridEmergency.EditIndex = -1;
+            LoadEmergencyContacts();  // Reload grid data after updating
+        }
+
+        protected void gridEmergency_RowDeleting(object sender, GridViewDeleteEventArgs e)
+        {
+            // Get the contact ID to delete
+            string contactID = gridEmergency.DataKeys[e.RowIndex].Value.ToString();
+
+            // Delete logic here, e.g., delete the contact from the database
+            string query = @"DELETE FROM EmergencyContacts WHERE ContactID = @ContactID";
+
+            using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["connectionString"].ToString()))
+            using (SqlCommand cmd = new SqlCommand(query, conn))
+            {
+                cmd.Parameters.AddWithValue("@ContactID", contactID);
+
+                conn.Open();
+                cmd.ExecuteNonQuery();
+            }
+
+            LoadEmergencyContacts();  // Reload grid data after deleting
+        }
+
+        protected void btnAddNewContact_Click(object sender, EventArgs e)
+        {
+            // Redirect to a page where users can add a new emergency contact
+            Response.Redirect("AddEmergencyContact.aspx");
+        }
+
+        private void LoadEmergencyContacts()
+        {
+            string query = "SELECT ContactID, ContactName, Relationship, Phone, Email FROM EmergencyContacts WHERE PatientID = @PatientID";
+
+            using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["connectionString"].ToString()))
+            using (SqlCommand cmd = new SqlCommand(query, conn))
+            {
+                // Assuming PatientID is available via session or cookie
+                string patientID = HttpContext.Current.Request.Cookies["PatientID"].Value;
+                cmd.Parameters.AddWithValue("@PatientID", patientID);
+
+                SqlDataAdapter adapter = new SqlDataAdapter(cmd);
+                DataTable dt = new DataTable();
+                adapter.Fill(dt);
+
+                gridEmergency.DataSource = dt;
+                gridEmergency.DataBind();
+            }
+        }
+
 
         private void LoadPaymentData()
         {
@@ -450,54 +592,76 @@ namespace fyp1.Client
 
         protected void btnEdit_Click(object sender, EventArgs e)
         {
-            SetFieldsReadOnly(false); 
-            btnEdit.CssClass = "hidden"; 
-            btnSave.CssClass = "visible"; 
-            btnCancel.CssClass = "visible"; 
+            // Make all textboxes editable
+            txtName.ReadOnly = false;
+            txtDOB.ReadOnly = false;
+            txtEmail.ReadOnly = false;
+            txtPhone.ReadOnly = false;
+            txtBloodType.ReadOnly = false;
+
+            // Show Save and Cancel buttons
+            btnSave.CssClass = "bg-green-500 text-white py-2 px-4 rounded";
+            btnCancel.CssClass = "bg-gray-500 text-white py-2 px-4 rounded";
+
+            // Hide the Edit button
+            btnEdit.CssClass = "hidden";
         }
+
 
         protected void btnSave_Click(object sender, EventArgs e)
         {
-            string patientID = Session["patientID"]?.ToString();
-
-            if (!string.IsNullOrEmpty(patientID))
+            try
             {
-                using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString))
+                HttpCookie IDCookie = HttpContext.Current.Request.Cookies["patientID"];
+                string patientID = IDCookie.Value;
+
+                if (!string.IsNullOrEmpty(patientID))
                 {
-                    string query = "UPDATE Patient SET name = @name, DOB = @dob, email = @email, " +
-                                   "contactInfo = @contactInfo, bloodtype = @bloodtype WHERE patientID = @patientID";
+                    using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString))
+                    {
+                        string query = "UPDATE Patient SET name = @name, DOB = @dob, email = @email, " +
+                                       "contactInfo = @contactInfo, bloodtype = @bloodtype WHERE patientID = @patientID";
 
-                    SqlCommand cmd = new SqlCommand(query, conn);
-                    cmd.Parameters.AddWithValue("@name", txtName.Text);
-                    cmd.Parameters.AddWithValue("@dob", Convert.ToDateTime(txtDOB.Text));
-                    cmd.Parameters.AddWithValue("@email", txtEmail.Text);
-                    cmd.Parameters.AddWithValue("@contactInfo", txtPhone.Text);
-                    cmd.Parameters.AddWithValue("@bloodtype", txtBloodType.Text);
-                    cmd.Parameters.AddWithValue("@patientID", patientID);
+                        SqlCommand cmd = new SqlCommand(query, conn);
+                        cmd.Parameters.AddWithValue("@name", txtName.Text);
+                        cmd.Parameters.AddWithValue("@dob", Convert.ToDateTime(txtDOB.Text));
+                        cmd.Parameters.AddWithValue("@email", txtEmail.Text);
+                        cmd.Parameters.AddWithValue("@contactInfo", txtPhone.Text);
+                        cmd.Parameters.AddWithValue("@bloodtype", txtBloodType.Text);
+                        cmd.Parameters.AddWithValue("@patientID", patientID);
 
-                    conn.Open();
-                    cmd.ExecuteNonQuery();
-                    conn.Close();
+                        conn.Open();
+                        cmd.ExecuteNonQuery();
+                        conn.Close();
+                    }
+
+                    // After saving, revert to read-only mode
+                    SetFieldsReadOnly(true);
+                    btnSave.CssClass = "hidden";
+                    btnCancel.CssClass = "hidden";
+                    btnEdit.CssClass = "bg-blue-500 text-white py-2 px-4 rounded";
+
+                    // Optionally, show a success message
+                    Response.Write("<script>alert('Profile updated successfully!');</script>");
                 }
-
-                // After saving, revert to read-only mode
-                SetFieldsReadOnly(true);
-                btnEdit.CssClass = "visible";
-                btnSave.CssClass = "hidden";
-                btnCancel.CssClass = "hidden";
-
-                // Optionally, show a success message
-                Response.Write("<script>alert('Profile updated successfully!');</script>");
+                else
+                {
+                    Response.Write("<script>alert('Patient ID is missing or invalid.');</script>");
+                }
+            }
+            catch (Exception ex)
+            {
+                Response.Write($"<script>alert('Error: {ex.Message}');</script>");
             }
         }
 
         protected void btnCancel_Click(object sender, EventArgs e)
         {
             LoadProfileData();
-            SetFieldsReadOnly(true); 
-            btnEdit.CssClass = "visible";
+            SetFieldsReadOnly(true);
             btnSave.CssClass = "hidden";
             btnCancel.CssClass = "hidden";
+            btnEdit.CssClass = "bg-blue-500 text-white py-2 px-4 rounded";
         }
 
         private void SetFieldsReadOnly(bool isReadOnly)

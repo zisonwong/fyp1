@@ -94,8 +94,7 @@ namespace fyp1.Admin
 
                 // First, try to get existing session
                 string getSessionQuery = @"SELECT sessionID FROM ChatSession 
-                                         WHERE doctorID = @doctorID AND patientID = @patientID 
-                                         AND (endTime IS NULL OR endTime > GETDATE())";
+                                         WHERE doctorID = @doctorID AND patientID = @patientID";
 
                 using (SqlCommand cmd = new SqlCommand(getSessionQuery, conn))
                 {

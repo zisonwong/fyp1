@@ -1,11 +1,13 @@
 ﻿using fyp1.Admin;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Net.Http;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Services;
 using System.Web.UI;
@@ -15,293 +17,69 @@ namespace fyp1.Client
 {
     public partial class EmergencyPage : System.Web.UI.Page
     {
+        private const string GOOGLE_API_KEY = "AIzaSyAbFkinyyHf8XwboZ1KHr7yupFq2yo_ufo";
+
+        public string BranchName { get; private set; }
+        public string BranchAddress { get; private set; }
+        public string Distance { get; private set; }
+        public string EstimatedTime { get; private set; }
+        public double BranchLatitude { get; private set; }
+        public double BranchLongitude { get; private set; }
+        public double PatientLatitude { get; private set; }
+        public double PatientLongitude { get; private set; }
+
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (!IsPostBack)
+            string userAddress = Request.Cookies["UserAddress"]?.Value;
+            if (!string.IsNullOrEmpty(userAddress))
             {
-                string userAddress = GetUserAddressFromEmergencyAlert(); // Get the user's address
-
-                if (!string.IsNullOrEmpty(userAddress))
-                {
-                    InitializeEmergencyDetails(userAddress); // Use the address for processing
-                }
-                else
-                {
-                    lblMessage.Text = "Could not retrieve the user's address from the emergency alert.";
-                }
-            }
-        }
-
-
-        private void InitializeEmergencyDetails(string userAddress)
-        {
-            string branchName = string.Empty;
-            string branchAddress = string.Empty;
-
-            GetNearestBranch(userAddress, ref branchName, ref branchAddress);
-
-            if (!string.IsNullOrEmpty(branchName))
-            {
-                lblNearestBranch.Text = $"Nearest Branch: {branchName}";
-                lblBranchAddress.Text = $"Address: {branchAddress}";
-
-                var travelDetails = GetTravelDetails(userAddress, branchAddress);
-                lblAmbulanceTime.Text = $"Estimated Ambulance Arrival Time: {travelDetails.Duration}";
-                lblMessage.Text = "Emergency team has been dispatched.";
+                userAddress = HttpUtility.UrlDecode(userAddress);
             }
             else
             {
-                lblNearestBranch.Text = "Nearest Branch: Not Available";
-                lblBranchAddress.Text = "Address: Not Available";
-                lblAmbulanceTime.Text = "Estimated Ambulance Arrival Time: Unknown";
-                lblMessage.Text = "No active emergency.";
+                Response.Write("User address not found.");
+            }
+
+            if (!IsPostBack)
+            {
+
+
+                // Retrieve query string parameters
+                string branchName = Request.QueryString["branchName"];
+                string branchAddress = Request.QueryString["branchAddress"];
+                string distance = Request.QueryString["distance"];
+                string time = Request.QueryString["time"];
+
+                // Set the labels
+                lblBranchName.Text = !string.IsNullOrEmpty(branchName) ? branchName : "N/A";
+                lblBranchAddress.Text = !string.IsNullOrEmpty(branchAddress) ? branchAddress : "N/A";
+                lblDistance.Text = !string.IsNullOrEmpty(distance) ? $"{distance} km" : "N/A";
+                lblTime.Text = !string.IsNullOrEmpty(time) ? $"{time} mins" : "N/A";
             }
         }
 
-        private void GetNearestBranch(string userAddress, ref string branchName, ref string branchAddress)
+        private async Task<string> GetDistanceFromBranchAsync(string userAddress, double userLat, double userLng, List<Branch> branches)
         {
-            using (SqlConnection connection = new SqlConnection(ConfigurationManager.ConnectionStrings["connectionString"].ConnectionString))
-            {
-                string query = "SELECT TOP 1 B.name, B.address FROM Branch B JOIN Location L ON B.locationID = L.locationID";
-                SqlCommand command = new SqlCommand(query, connection);
-                connection.Open();
-                SqlDataReader reader = command.ExecuteReader();
+            string origins = HttpUtility.UrlEncode(userAddress);  // The user's address
+            string destinations = string.Join("|", branches.Select(b => HttpUtility.UrlEncode(b.Address)));
 
-                if (reader.Read())
-                {
-                    branchName = reader["name"].ToString();
-                    branchAddress = reader["address"].ToString();
-                }
-            }
-        }
-
-
-
-        private (double Distance, string Duration) GetTravelDetails(string originAddress, string destAddress)
-        {
-            string apiKey = "AIzaSyAbFkinyyHf8XwboZ1KHr7yupFq2yo_ufo";
-            string url = $"https://maps.googleapis.com/maps/api/distancematrix/json?origins={Uri.EscapeDataString(originAddress)}&destinations={Uri.EscapeDataString(destAddress)}&key={apiKey}";
-
-            using (HttpClient client = new HttpClient())
-            {
-                HttpResponseMessage response = client.GetAsync(url).Result;
-                if (response.IsSuccessStatusCode)
-                {
-                    string jsonResponse = response.Content.ReadAsStringAsync().Result;
-                    dynamic data = Newtonsoft.Json.JsonConvert.DeserializeObject(jsonResponse);
-
-                    if (data.rows.Count > 0 && data.rows[0].elements[0].status == "OK")
-                    {
-                        double distanceInKm = data.rows[0].elements[0].distance.value / 1000.0; // Convert meters to kilometers
-                        string duration = data.rows[0].elements[0].duration.text;
-
-                        return (distanceInKm, duration);
-                    }
-                }
-            }
-
-            return (0, "Unavailable");
-        }
-
-
-
-
-        private void RegisterMapScript(double latitude, double longitude)
-        {
-            string mapScript = $@"
-                function initMap() {{
-                    const branchLocation = {{ lat: {latitude}, lng: {longitude} }};
-                    const map = new google.maps.Map(document.getElementById('map'), {{
-                        center: branchLocation,
-                        zoom: 14,
-                    }});
-
-                    new google.maps.Marker({{
-                        position: branchLocation,
-                        map: map,
-                        title: 'Nearest Branch',
-                    }});
-                }}
-                initMap();";
-
-            ScriptManager.RegisterStartupScript(this, GetType(), "initMap", mapScript, true);
-        }
-
-        private void SimulateProgress()
-        {
-            string progressScript = @"
-                let progress = 0;
-                const progressBar = document.getElementById('progressBar');
-                const interval = setInterval(() => {
-                    if (progress >= 100) {
-                        clearInterval(interval);
-                        alert('Emergency assistance has arrived!');
-                    } else {
-                        progress += 0.2;
-                        progressBar.style.width = progress + '%';
-                    }
-                }, 1000);";
-            ScriptManager.RegisterStartupScript(this, GetType(), "simulateProgress", progressScript, true);
-        }
-
-        private string GetUserAddressFromEmergencyAlert()
-        {
-            string address = string.Empty;
-            HttpCookie IDCookie = Request.Cookies["PatientID"];
-            string patientID = IDCookie.Value;
-
-            using (SqlConnection connection = new SqlConnection(ConfigurationManager.ConnectionStrings["connectionString"].ConnectionString))
-            {
-                string query = @"
-        SELECT L.address
-        FROM EmergencyAlert EA
-        JOIN Location L ON EA.locationID = L.locationID
-        WHERE EA.patientID = @patientID";
-
-                SqlCommand command = new SqlCommand(query, connection);
-                command.Parameters.AddWithValue("@patientID", patientID);
-
-                connection.Open();
-                SqlDataReader reader = command.ExecuteReader();
-
-                if (reader.Read())
-                {
-                    address = reader["address"].ToString();
-                }
-            }
-
-            return address;
-        }
-
-        static private string GenerateNextLocationID()
-        {
-            string nextLocationID = "L0001";
-            try
-            {
-                using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["connectionString"].ToString()))
-                {
-                    conn.Open();
-                    using (SqlCommand cmd = new SqlCommand("SELECT MAX(locationID) FROM Location", conn))
-                    {
-                        object result = cmd.ExecuteScalar();
-                        if (result != DBNull.Value && result != null)
-                        {
-                            int idNumber = int.Parse(result.ToString().Substring(1)) + 1;
-                            nextLocationID = "L" + idNumber.ToString("D4");
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-            }
-            return nextLocationID;
-        }
-        static private string GenerateNextAlertID()
-        {
-            string nextAlertID = "AL0001";
-            try
-            {
-                using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["connectionString"].ToString()))
-                {
-                    conn.Open();
-                    using (SqlCommand cmd = new SqlCommand("SELECT MAX(AlertID) FROM EmergencyAlert", conn))
-                    {
-                        object result = cmd.ExecuteScalar();
-                        if (result != DBNull.Value && result != null)
-                        {
-                            int idNumber = int.Parse(result.ToString().Substring(2)) + 1;
-                            nextAlertID = "AL" + idNumber.ToString("D4");
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-            }
-            return nextAlertID;
-        }
-        [WebMethod]
-        public static string EmergencyAlert(string patientID, string address)
-        {
-            string resultMessage = string.Empty;
-
-            try
-            {
-                // Save the address in the database (assuming you already have this method)
-                SaveEmergencyAlert(patientID, address);
-
-                // Get the nearest hospital/branch based on the address
-                var branchInfo = GetNearestBranch(address); // Get the nearest branch based on the user's address
-
-                if (branchInfo != null)
-                {
-                    string distance = branchInfo.Distance;
-                    string duration = branchInfo.Duration;
-
-                    resultMessage = $"Emergency alert sent successfully! Estimated time: {duration}, Distance: {distance}";
-                }
-                else
-                {
-                    resultMessage = "Unable to calculate time and distance to nearest branch.";
-                }
-            }
-            catch (Exception ex)
-            {
-                resultMessage = $"Error: {ex.Message}";
-            }
-
-            return resultMessage;
-        }
-
-        private static void SaveEmergencyAlert(string patientID, string address)
-        {
-            // Save the emergency alert with the address in the database
-            using (var connection = new SqlConnection(ConfigurationManager.ConnectionStrings["connectionString"].ConnectionString))
-            {
-                string query = "INSERT INTO EmergencyAlert (PatientID, Address) VALUES (@patientID, @address)";
-                SqlCommand command = new SqlCommand(query, connection);
-                command.Parameters.AddWithValue("@patientID", patientID);
-                command.Parameters.AddWithValue("@address", address);
-
-                connection.Open();
-                command.ExecuteNonQuery();
-            }
-        }
-
-        // Method to calculate the nearest hospital/branch and get distance & time based on the user's address
-        private static BranchInfo GetNearestBranch(string userAddress)
-        {
-            string apiKey = "AIzaSyAbFkinyyHf8XwboZ1KHr7yupFq2yo_ufo";
-
-            // Replace NEAREST_HOSPITAL_ADDRESS with the address or a list of addresses of your branches/hospitals
-            string nearestBranchApiUrl = $"https://maps.googleapis.com/maps/api/distancematrix/json?origins={Uri.EscapeDataString(userAddress)}&destinations=NEAREST_HOSPITAL_ADDRESS&key={apiKey}";
+            string url = $"https://maps.googleapis.com/maps/api/distancematrix/json?origins={origins}&destinations={destinations}&key={GOOGLE_API_KEY}";
 
             using (var client = new HttpClient())
             {
-                var response = client.GetStringAsync(nearestBranchApiUrl).Result;
-                dynamic responseJson = JsonConvert.DeserializeObject(response);
+                var response = await client.GetStringAsync(url);
+                dynamic result = JsonConvert.DeserializeObject(response);
 
-                if (responseJson.rows.Count > 0 && responseJson.rows[0].elements[0].status == "OK")
+                // Check for errors in the API response
+                if (result?.status?.ToString() != "OK")
                 {
-                    string distance = responseJson.rows[0].elements[0].distance.text;
-                    string duration = responseJson.rows[0].elements[0].duration.text;
-
-                    return new BranchInfo
-                    {
-                        Distance = distance,
-                        Duration = duration
-                    };
+                    return "Error: Could not calculate distance.";
                 }
+
+                // You can now process the result and extract the distance and time.
+                // Example: result.rows[0].elements[i].distance.text, result.rows[0].elements[i].duration.text
+                return "Distance information retrieved successfully.";
             }
-
-            return null;
-        }
-
-        public class BranchInfo
-        {
-            public string Distance { get; set; }
-            public string Duration { get; set; }
         }
 
     }

@@ -7,11 +7,14 @@ using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Stripe.Checkout;
+using System.Data;
 
 namespace fyp1.Client
 {
     public partial class clientPayment : System.Web.UI.Page
     {
+        double consultationFee = 30.00;
         protected void Page_Load(object sender, EventArgs e)
         {
             if (!IsPostBack)
@@ -20,6 +23,7 @@ namespace fyp1.Client
                 lblAppointmentDate.Text = Request.QueryString["appointmentDate"];
                 lblAppointmentTime.Text = Request.QueryString["appointmentTime"];
                 lblConsultationFee.Text = Request.QueryString["consultationFee"];
+                lblConsultationFee.Text = consultationFee.ToString();
 
                 paymentSuccessModal.Visible = false;
             }
@@ -27,8 +31,7 @@ namespace fyp1.Client
 
         protected void btnConfirmPayment_Click(object sender, EventArgs e)
         {
-
-            string paymentMethod = "";
+        string paymentMethod = "";
 
             if (radioBankTransfer.Checked)
             {
@@ -97,9 +100,8 @@ namespace fyp1.Client
                         return;
                     }
                 }
-
-                ShowPaymentSuccessModal();
             }
+            ShowPaymentSuccessModal();
         }
 
         private string GenerateNextPaymentID()
@@ -141,6 +143,40 @@ namespace fyp1.Client
         {
             paymentSuccessModal.Visible = false;
         }
+        private DataTable GetAppointmentDetails(string appointmentID)
+        {
+            string query = @"SELECT 
+                        a.appointmentID,
+                        d.name AS DoctorName,
+                        av.availableDate AS AppointmentDate,
+                        av.availableFrom AS StartTime,
+                        av.availableTo AS EndTime,
+                        a.status,
+                        pm.paymentAmount,
+                        pm.paymentDate,
+                        pm.paymentMethod
+                    FROM 
+                        Appointment a
+                    JOIN 
+                        Doctor d ON a.doctorID = d.doctorID
+                    JOIN 
+                        Availability av ON a.availabilityID = av.availabilityID
+                    LEFT JOIN 
+                        Payment pm ON a.paymentID = pm.paymentID
+                    WHERE 
+                        a.appointmentID = @appointmentID";
 
+            using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ConnectionString"].ToString()))
+            using (SqlCommand cmd = new SqlCommand(query, conn))
+            {
+                cmd.Parameters.AddWithValue("@appointmentID", appointmentID);
+
+                SqlDataAdapter adapter = new SqlDataAdapter(cmd);
+                DataTable dt = new DataTable();
+                adapter.Fill(dt);
+
+                return dt;
+            }
+        }
     }
 }

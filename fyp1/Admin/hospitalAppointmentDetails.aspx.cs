@@ -33,16 +33,14 @@ namespace fyp1.Admin
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 string query = @"
-                SELECT a.patientID, d.name AS DoctorName, d.email AS DoctorEmail, d.contactInfo AS DoctorPhone, dep.name AS DoctorDepartment,
-                p.name AS PatientName, p.email AS PatientEmail, p.contactInfo AS PatientPhone, p.address AS PatientAddress,
-                pay.paymentAmount, pay.paymentMethod, pay.paymentDate, pay.status AS PaymentStatus
-                FROM Appointment a
-                LEFT JOIN Doctor d ON a.doctorID = d.doctorID
-                LEFT JOIN Patient p ON a.patientID = p.patientID
-                LEFT JOIN Department dep ON d.departmentID = dep.departmentID
-                LEFT JOIN Payment pay ON a.paymentID = pay.paymentID
-                WHERE a.appointmentID = @appointmentID";
-
+        SELECT a.patientID, d.name AS DoctorName, d.email AS DoctorEmail, d.contactInfo AS DoctorPhone, d.gender AS DoctorGender,
+               p.name AS PatientName, p.email AS PatientEmail, p.contactInfo AS PatientPhone, p.address AS PatientAddress,
+               pay.paymentAmount, pay.paymentMethod, pay.paymentDate, pay.status AS PaymentStatus
+        FROM Appointment a
+        LEFT JOIN Doctor d ON a.doctorID = d.doctorID
+        LEFT JOIN Patient p ON a.patientID = p.patientID
+        LEFT JOIN Payment pay ON a.paymentID = pay.paymentID
+        WHERE a.appointmentID = @appointmentID";
 
                 SqlCommand cmd = new SqlCommand(query, conn);
                 cmd.Parameters.AddWithValue("@appointmentID", appointmentID);
@@ -53,11 +51,11 @@ namespace fyp1.Admin
                 if (reader.Read())
                 {
                     string patientID = reader["patientID"].ToString();
+
                     // Doctor Information
-                    txtDoctorName.Text = reader["DoctorName"].ToString();
-                    txtDoctorEmail.Text = reader["DoctorEmail"].ToString();
-                    txtDoctorPhone.Text = reader["DoctorPhone"].ToString();
-                    txtDoctorDepartment.Text = reader["DoctorDepartment"].ToString();
+                    string doctorGender = reader["DoctorGender"].ToString();
+                    txtDoctorGender.Text = doctorGender == "M" ? "Male" : "Female";
+                    iconDoctorGender.Attributes["class"] = doctorGender == "M" ? "bi bi-gender-male" : "bi bi-gender-female";
 
                     // Patient Information
                     txtPatientName.Text = reader["PatientName"].ToString();
@@ -69,18 +67,22 @@ namespace fyp1.Admin
                     txtPaymentAmount.Text = string.Format("{0:C}", reader["paymentAmount"]);
                     txtPaymentMethod.Text = reader["paymentMethod"].ToString();
                     txtPaymentDate.Text = reader["paymentDate"] != DBNull.Value
-                    ? Convert.ToDateTime(reader["paymentDate"]).ToString("dd/MM/yyyy")
-                    : "N/A";
+                        ? Convert.ToDateTime(reader["paymentDate"]).ToString("dd/MM/yyyy")
+                        : "N/A";
                     txtPaymentStatus.Text = reader["PaymentStatus"].ToString();
+
                     LoadAppointmentsHistory(patientID);
                 }
                 else
                 {
                     Response.Write("<script>alert('No appointment details found for this ID.');</script>");
                 }
+
                 conn.Close();
             }
         }
+
+
         private void LoadAppointmentsHistory(string patientID)
         {
             string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;

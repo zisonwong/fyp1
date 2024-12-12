@@ -17,6 +17,8 @@
             56-56 56s-56-25.1-56-56c0-25.4 16.9-46.8 40-53.7l0-59.1zM144 448a24 24 0 1 0 0-48 24 24 0 1 0 0 48z"/></svg>
     Add Doctor
 </asp:LinkButton>
+                <asp:Button ID="btnExportToExcel" runat="server" CssClass="btn btn-success fw-bold"
+            Text="Export to Excel" OnClick="btnExportToExcel_Click" />
             </div>
             <div class="mt-5">
                 <h3>Doctor</h3>

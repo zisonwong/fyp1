@@ -26,8 +26,8 @@
                                 <asp:Label ID="txtDoctorPhone" runat="server" Text="Contact" CssClass="ps-2"></asp:Label>
                             </div>
                             <div class="d-flex align-items-center">
-                                <i class="bi bi-building" style="font-size: 20px"></i>
-                                <asp:Label ID="txtDoctorDepartment" runat="server" Text="Department" CssClass="ps-2"></asp:Label>
+                                <i id="iconDoctorGender" runat="server" class="bi" style="font-size: 20px"></i>
+                                <asp:Label ID="txtDoctorGender" runat="server" Text="Gender" CssClass="ps-2"></asp:Label>
                             </div>
                         </div>
                     </div>

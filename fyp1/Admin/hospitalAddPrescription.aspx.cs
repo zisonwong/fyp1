@@ -83,7 +83,6 @@ namespace fyp1.Admin
                 FROM MedicalRecord MR
                 JOIN Patient P ON MR.patientID = P.patientID
                 LEFT JOIN Prescription PR ON MR.recordID = PR.recordID
-                WHERE PR.recordID IS NULL
                 ORDER BY MR.recordID ASC";
 
             using (SqlConnection conn = new SqlConnection(connectionString))

@@ -7,12 +7,15 @@
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
     <main class="content container">
         <div class="col-xxl-12 col-lg-12">
+             <% if (Session["Role"].ToString() == "Doctor" || Session["Role"].ToString() == "Admin")
+            { %>
             <div class="mb-2">
                 <asp:LinkButton CssClass="btn btn-primary fw-bold"
                     ID="lbAddMedicalRecord" runat="server" OnClick="lbAddMedicalRecord_Click">
                     <i class="bi bi-file-medical" style="color:white;"></i>
                     Add Medical Record
                 </asp:LinkButton>
+                 <% } %>
                 <div class="mt-5 d-flex">
                     <div class="me-auto">
                         <h3>Medical Record</h3>
@@ -62,7 +65,7 @@
                                         <td><%# Eval("recordID") %></td>
                                         <td><%# Eval("patientID") %></td>
                                         <td><%# Eval("doctorID") %></td>
-                                        <td><%# Eval("department") %></td>
+                                        <td><%# Eval("doctorName") %></td>
                                         <td><%# Eval("recordDate", "{0:dd/MM/yyyy}") %></td>
                                         <td>
                                             <asp:LinkButton ID="lbEdit" runat="server"

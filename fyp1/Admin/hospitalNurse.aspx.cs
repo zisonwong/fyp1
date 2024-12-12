@@ -22,7 +22,7 @@ namespace fyp1.Admin
         private void LoadNurse()
         {
             string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
-            string query = "SELECT nurseID, name, role, email, photo FROM Nurse";
+            string query = "SELECT nurseID, name, role, email, photo FROM Nurse WHERE status = 'Activate'";
 
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
@@ -101,7 +101,7 @@ namespace fyp1.Admin
                 string nurseID = e.CommandArgument.ToString();
 
                 string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
-                string query = "DELETE FROM Nurse WHERE nurseID = @NurseID";
+                string query = "UPDATE Nurse SET status = 'UnActivate' WHERE nurseID = @NurseID";
 
                 using (SqlConnection connection = new SqlConnection(connectionString))
                 {
@@ -113,16 +113,13 @@ namespace fyp1.Admin
                         int rowsAffected = command.ExecuteNonQuery();
                         if (rowsAffected > 0)
                         {
-                            // Show a success message
                             ClientScript.RegisterStartupScript(this.GetType(), "DeleteSuccess",
                                 "alert('Nurse deleted successfully.');", true);
 
-                            // Reload the doctors list to reflect the changes
                             LoadNurse();
                         }
                         else
                         {
-                            // Show an error message if the delete was unsuccessful
                             ClientScript.RegisterStartupScript(this.GetType(), "DeleteError",
                                 "alert('Error deleting nurse.');", true);
                         }

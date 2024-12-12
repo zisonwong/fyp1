@@ -47,11 +47,13 @@
                         </div>
                         <div class="col-md-4 mb-3">
                             <label for="txtDateOfBirth" class="form-label">Date of Birth</label>
-                            <asp:TextBox ID="txtDateOfBirth" runat="server" CssClass="form-control" TextMode="Date"></asp:TextBox>
+                            <asp:TextBox ID="txtDateOfBirth" runat="server" CssClass="form-control" 
+                                AutoPostBack="true" OnTextChanged="txtDateOfBirth_TextChanged" TextMode="Date"></asp:TextBox>
                         </div>
                         <div class="col-md-4 mb-3">
                             <label for="txtIc" class="form-label">IC Number</label>
-                            <asp:TextBox ID="txtIc" runat="server" CssClass="form-control" Placeholder="0123456-78-9012"></asp:TextBox>
+                            <asp:TextBox ID="txtIc" runat="server" CssClass="form-control" 
+                                 AutoPostBack="true" OnTextChanged="txtIc_TextChanged" Placeholder="0123456-78-9012"></asp:TextBox>
                         </div>
                         <div class="col-md-4 mb-3">
                             <label for="ddlGender" class="form-label">Gender</label>
@@ -85,9 +87,26 @@
                     <h5 class="mt-4">Employment Information</h5>
                     <div class="row">
                         <div class="col-md-4 mb-3">
-                            <label for="ddlDepartmentId" class="form-label">Department</label>
+                            <label for="ddlDepartmentId" class="form-label">First Department</label>
                             <div class="d-flex position-relative">
-                                <asp:DropDownList ID="ddlDepartmentId" runat="server" CssClass="form-control">
+                                <asp:DropDownList
+                                    ID="ddlDepartmentId"
+                                    runat="server"
+                                    CssClass="form-control"
+                                    AutoPostBack="true"
+                                    OnSelectedIndexChanged="ddlDepartmentId_SelectedIndexChanged">
+                                    <asp:ListItem Text="- Select -" Value=""></asp:ListItem>
+                                </asp:DropDownList>
+                                <i class="bi bi-chevron-down dropdown-icon"></i>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3" id="secondaryDepartmentContainer" runat="server" visible="false">
+                            <label for="ddlDepartmentId2" class="form-label">Second Department</label>
+                            <div class="d-flex position-relative">
+                                <asp:DropDownList
+                                    ID="ddlDepartmentId2"
+                                    runat="server"
+                                    CssClass="form-control">
                                     <asp:ListItem Text="- Select -" Value=""></asp:ListItem>
                                 </asp:DropDownList>
                                 <i class="bi bi-chevron-down dropdown-icon"></i>
@@ -118,7 +137,7 @@
         }
         function previewImage() {
             var fileUpload = document.getElementById('<%= FileUploadAvatar.ClientID %>');
-           var imgAvatar = document.getElementById('<%= imgAvatar.ClientID %>');
+            var imgAvatar = document.getElementById('<%= imgAvatar.ClientID %>');
             if (fileUpload.files && fileUpload.files[0]) {
                 var file = fileUpload.files[0];
                 var fileType = file.type.toLowerCase();

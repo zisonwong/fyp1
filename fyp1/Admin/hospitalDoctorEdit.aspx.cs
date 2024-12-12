@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web;
@@ -17,7 +18,7 @@ namespace fyp1.Admin
         {
             if (!IsPostBack)
             {
-                PopulateDepartmentDropdown();
+                PopulatePrimaryDepartmentDropdown();
                 PopulateGenderDropdown();
                 PopulateStatusDropdown();
 
@@ -34,71 +35,173 @@ namespace fyp1.Admin
             string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
-                string query = @"SELECT doctorID, name, DOB, ICNumber, gender, contactInfo, email, password,
-                         departmentID, role, status, photo FROM Doctor WHERE doctorID = @DoctorID";
+                string query = @"SELECT d.doctorID, d.name, d.DOB, d.ICNumber, d.gender, d.contactInfo, d.email, d.password,
+         d.role, d.status, d.photo, dd.departmentID, dep.name AS departmentName
+         FROM Doctor d 
+         LEFT JOIN DoctorDepartment dd ON d.doctorID = dd.doctorID
+         LEFT JOIN Department dep ON dd.departmentID = dep.departmentID
+         WHERE d.doctorID = @DoctorID";
+
                 SqlCommand cmd = new SqlCommand(query, conn);
                 cmd.Parameters.AddWithValue("@DoctorID", doctorID);
                 conn.Open();
                 SqlDataReader reader = cmd.ExecuteReader();
-                if (reader.Read())
+
+                List<Department> departments = new List<Department>();
+                string fullName = "";
+                string doctorIDFromDb = "";
+                DateTime? dob = null;
+                string icNumber = "";
+                string gender = "";
+                string contactInfo = "";
+                string email = "";
+                string password = "";
+                string role = "";
+                string status = "";
+                byte[] photo = null;
+                List<string> doctorDepartmentIDs = new List<string>(); 
+
+                while (reader.Read())
                 {
-                    // Split full name into first and last name
-                    // Split full name into first and last name
-                    string fullName = reader["name"].ToString();
-                    string[] nameParts = fullName.Split(' ');
+                    fullName = reader["name"].ToString();
+                    doctorIDFromDb = reader["doctorID"].ToString();
+                    dob = reader["DOB"] != DBNull.Value ? Convert.ToDateTime(reader["DOB"]) : (DateTime?)null;
+                    icNumber = reader["ICNumber"].ToString();
+                    gender = reader["gender"].ToString();
+                    contactInfo = reader["contactInfo"].ToString();
+                    email = reader["email"].ToString();
+                    password = reader["password"].ToString();  
+                    role = reader["role"].ToString();
+                    status = reader["status"].ToString();
+                    photo = reader["photo"] as byte[]; 
+                    string departmentID = reader["departmentID"].ToString(); 
 
-                    // Assign the last name (the first part)
-                    txtLastName.Text = nameParts.Length > 0 ? nameParts[0] : "";
+                    doctorDepartmentIDs.Add(departmentID); 
 
-                    // Join all parts (except the first one) for the first name
-                    txtFirstName.Text = nameParts.Length > 1 ? string.Join(" ", nameParts.Skip(1)) : "";
-                    txtEmployeeId.Text = reader["doctorID"].ToString();
-                    txtDateOfBirth.Text = Convert.ToDateTime(reader["DOB"]).ToString("yyyy-MM-dd");
-                    txtIc.Text = reader["ICNumber"].ToString();
-                    // Set the selected value for Gender dropdown
-                    ddlGender.SelectedValue = reader["gender"].ToString();
-                    txtContactInfo.Text = reader["contactInfo"].ToString();
-                    txtEmail.Text = reader["email"].ToString();
-                    txtPassword.Attributes["value"] = "***********"; // Mask Password Field
-                                                                     // Set the selected value for Department dropdown
-                    ddlDepartmentId.SelectedValue = reader["departmentID"].ToString();
-                    txtRole.Text = reader["role"].ToString();
-                    // Set the selected value for Status dropdown
-                    ddlStatus.SelectedValue = reader["status"].ToString();
-                    // Convert the binary photo data to a Base64 string and set it as the image source
-                    if (reader["photo"] != DBNull.Value)
+                    departments.Add(new Department
                     {
-                        byte[] photoData = (byte[])reader["photo"];
-                        string base64String = Convert.ToBase64String(photoData);
-                        imgAvatar.ImageUrl = "data:image/jpeg;base64," + base64String;
-                    }
-                    else
-                    {
-                        imgAvatar.ImageUrl = "~/hospitalImg/defaultAvatar.jpg"; // Fallback to default image if no photo is available
-                    }
+                        DepartmentID = departmentID,
+                        DepartmentName = reader["departmentName"].ToString()
+                    });
                 }
-                reader.Close();
+                reader.Close();  
+
+                string[] nameParts = fullName.Split(' ');
+
+                txtLastName.Text = nameParts.Length > 0 ? nameParts[0] : "";
+                txtFirstName.Text = nameParts.Length > 1 ? string.Join(" ", nameParts.Skip(1)) : "";
+                txtEmployeeId.Text = doctorIDFromDb;
+                txtDateOfBirth.Text = dob.HasValue ? dob.Value.ToString("yyyy-MM-dd") : "";
+                txtIc.Text = icNumber;
+                ddlGender.SelectedValue = gender;
+                txtContactInfo.Text = contactInfo;
+                txtEmail.Text = email;
+                txtPassword.Attributes["value"] = "***********";
+                txtRole.Text = role;
+                ddlStatus.SelectedValue = status;
+
+                PopulatePrimaryDepartmentDropdown();  
+
+                if (doctorDepartmentIDs.Count > 0)
+                {
+                    ddlPrimaryDepartment.SelectedValue = doctorDepartmentIDs[0];  
+                }
+
+                PopulateSecondaryDepartmentDropdown(doctorDepartmentIDs.Count > 0 ? doctorDepartmentIDs[0] : "");
+
+                if (doctorDepartmentIDs.Count > 1)
+                {
+                    ddlSecondaryDepartment.SelectedValue = doctorDepartmentIDs[1];  
+                }
+
+                // Handle photo
+                if (photo != null)
+                {
+                    string base64String = Convert.ToBase64String(photo);
+                    imgAvatar.ImageUrl = "data:image/jpeg;base64," + base64String;
+                }
+                else
+                {
+                    imgAvatar.ImageUrl = "~/hospitalImg/defaultAvatar.jpg";
+                }
             }
         }
-        private void PopulateDepartmentDropdown()
+
+
+
+        private void PopulatePrimaryDepartmentDropdown()
         {
-            // Populate Department dropdown from Department table
             string connString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
             using (SqlConnection conn = new SqlConnection(connString))
             {
                 conn.Open();
-                string query = "SELECT departmentID, name FROM Department";
+                string query = @"
+            SELECT d.departmentID, 
+                   d.name + ' - ' + b.name AS DisplayText
+            FROM Department d
+            LEFT JOIN Branch b ON d.branchID = b.branchID
+            WHERE d.status = 'Activated'";
+
                 SqlCommand cmd = new SqlCommand(query, conn);
                 SqlDataReader reader = cmd.ExecuteReader();
 
-                ddlDepartmentId.DataSource = reader;
-                ddlDepartmentId.DataTextField = "name";
-                ddlDepartmentId.DataValueField = "departmentID";
-                ddlDepartmentId.DataBind();
+                if (reader.HasRows)
+                {
+                    ddlPrimaryDepartment.DataSource = reader;
+                    ddlPrimaryDepartment.DataTextField = "DisplayText";
+                    ddlPrimaryDepartment.DataValueField = "departmentID";
+                    ddlPrimaryDepartment.DataBind();
+                }
+                else
+                {
+                    // If no data, add default item
+                    ddlPrimaryDepartment.Items.Clear();
+                    ddlPrimaryDepartment.Items.Add(new ListItem("- No departments available -", ""));
+                }
 
-                ddlDepartmentId.Items.Insert(0, new ListItem("- Select -", ""));
+                // Add a default "Select" option
+                ddlPrimaryDepartment.Items.Insert(0, new ListItem("- Select -", ""));
             }
         }
+
+        private void PopulateSecondaryDepartmentDropdown(string excludedDepartmentId)
+        {
+            string connString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
+            using (SqlConnection conn = new SqlConnection(connString))
+            {
+                conn.Open();
+                string query = @"
+            SELECT d.departmentID, 
+                   d.name + ' - ' + b.name AS DisplayText
+            FROM Department d
+            LEFT JOIN Branch b ON d.branchID = b.branchID
+            WHERE d.departmentID != @ExcludedDepartmentID AND d.status = 'Activated'";
+
+                SqlCommand cmd = new SqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@ExcludedDepartmentID", excludedDepartmentId);
+
+                SqlDataReader reader = cmd.ExecuteReader();
+
+                if (reader.HasRows)
+                {
+                    ddlSecondaryDepartment.DataSource = reader;
+                    ddlSecondaryDepartment.DataTextField = "DisplayText";
+                    ddlSecondaryDepartment.DataValueField = "departmentID";
+                    ddlSecondaryDepartment.DataBind();
+                }
+                else
+                {
+                    // If no data, add default item
+                    ddlSecondaryDepartment.Items.Clear();
+                    ddlSecondaryDepartment.Items.Add(new ListItem("- No departments available -", ""));
+                }
+
+                // Add a default "Select" option
+                ddlSecondaryDepartment.Items.Insert(0, new ListItem("- Select -", ""));
+            }
+        }
+
+
         private void PopulateGenderDropdown()
         {
             ddlGender.Items.Clear();
@@ -154,13 +257,14 @@ namespace fyp1.Admin
             string fullName = lastName + " " + firstName;
             string dob = txtDateOfBirth.Text.Trim();
             string icNumber = txtIc.Text.Trim();
-            string gender = ddlGender.SelectedValue; // "M" or "F"
+            string gender = ddlGender.SelectedValue; 
             string contactInfo = txtContactInfo.Text.Trim();
             string email = txtEmail.Text.Trim();
-            string departmentID = ddlDepartmentId.SelectedValue;
+            string primaryDepartmentID = ddlPrimaryDepartment.SelectedValue; 
+            string secondaryDepartmentID = ddlSecondaryDepartment.SelectedValue; 
             string role = txtRole.Text.Trim();
-            string status = ddlStatus.SelectedValue; // "Activated", "Deactivated", or "Deleted"
-            byte[] avatarData = null; // To store the image binary data
+            string status = ddlStatus.SelectedValue; 
+            byte[] avatarData = null; 
 
             if (!CheckFields())
             {
@@ -205,6 +309,14 @@ namespace fyp1.Admin
                     true);
                 return;
             }
+            if (primaryDepartmentID == secondaryDepartmentID)
+            {
+                Page.ClientScript.RegisterStartupScript(GetType(), "Department Error",
+                    "document.addEventListener('DOMContentLoaded', ()=> alert('First and Second Department cannot be the same.'));",
+                    true);
+                return;
+            }
+
 
             if (FileUploadAvatar.HasFile)
             {
@@ -218,25 +330,21 @@ namespace fyp1.Admin
             }
             else
             {
-                // No new photo uploaded, keep the current image in the database
-                avatarData = null; 
+                avatarData = null;
             }
 
             string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
-                // Dynamically build query based on whether password is "***********"
                 string query = "UPDATE Doctor SET name = @Name, DOB = @DOB, ICNumber = @ICNumber, gender = @Gender, " +
-                               "contactInfo = @ContactInfo, email = @Email, departmentID = @DepartmentID, role = @Role, " +
-                               "status = @Status";
-                
-                // Add photo field only if a new photo is provided
+                               "contactInfo = @ContactInfo, email = @Email, role = @Role, status = @Status";
+
                 if (avatarData != null)
                 {
                     query += ", photo = @Photo";
                 }
 
-                query += " WHERE doctorID = @DoctorID"; // Finalize the query
+                query += " WHERE doctorID = @DoctorID"; 
 
                 using (SqlCommand command = new SqlCommand(query, connection))
                 {
@@ -247,7 +355,6 @@ namespace fyp1.Admin
                     command.Parameters.AddWithValue("@Gender", gender);
                     command.Parameters.AddWithValue("@ContactInfo", contactInfo);
                     command.Parameters.AddWithValue("@Email", email);
-                    command.Parameters.AddWithValue("@DepartmentID", departmentID);
                     command.Parameters.AddWithValue("@Role", role);
                     command.Parameters.AddWithValue("@Status", status);
 
@@ -256,7 +363,6 @@ namespace fyp1.Admin
                         command.Parameters.Add("@Photo", SqlDbType.VarBinary).Value = avatarData;
                     }
 
-                    // Add the actual password only if it's not "***********"
                     if (txtPassword.Text.Trim() != "***********")
                     {
                         command.Parameters.AddWithValue("@Password", txtPassword.Text.Trim());
@@ -266,6 +372,7 @@ namespace fyp1.Admin
                     int rowsAffected = command.ExecuteNonQuery();
                     if (rowsAffected > 0)
                     {
+                        UpdateDoctorDepartments(doctorID, primaryDepartmentID, secondaryDepartmentID);
                         Response.Write("<script>alert('Doctor updated successfully.');</script>");
                     }
                     else
@@ -277,6 +384,85 @@ namespace fyp1.Admin
             LoadDoctorImage();
         }
 
+        private void UpdateDoctorDepartments(string doctorID, string primaryDepartmentID, string secondaryDepartmentID)
+        {
+            string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
+
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+
+                List<string> currentDepartments = new List<string>();
+                string currentDepartmentsQuery = "SELECT departmentID FROM DoctorDepartment WHERE doctorID = @DoctorID";
+
+                using (SqlCommand currentDepartmentsCommand = new SqlCommand(currentDepartmentsQuery, connection))
+                {
+                    currentDepartmentsCommand.Parameters.AddWithValue("@DoctorID", doctorID);
+                    using (SqlDataReader reader = currentDepartmentsCommand.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            currentDepartments.Add(reader.GetString(0));
+                        }
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(primaryDepartmentID))
+                {
+                    if (currentDepartments.Contains(primaryDepartmentID))
+                    {
+                        Console.WriteLine("Primary department exists, no action taken.");
+                    }
+                    else
+                    {
+                        string insertPrimaryQuery = "INSERT INTO DoctorDepartment (doctorID, departmentID) VALUES (@DoctorID, @PrimaryDepartmentID)";
+                        using (SqlCommand command = new SqlCommand(insertPrimaryQuery, connection))
+                        {
+                            command.Parameters.AddWithValue("@DoctorID", doctorID);
+                            command.Parameters.AddWithValue("@PrimaryDepartmentID", primaryDepartmentID);
+                            command.ExecuteNonQuery();
+                        }
+                    }
+                }
+
+                // Handle the secondary department
+                if (!string.IsNullOrEmpty(secondaryDepartmentID))
+                {
+                    if (currentDepartments.Contains(secondaryDepartmentID))
+                    {
+                        Console.WriteLine("Secondary department exists, no action taken.");
+                    }
+                    else
+                    {
+                        string insertSecondaryQuery = "INSERT INTO DoctorDepartment (doctorID, departmentID) VALUES (@DoctorID, @SecondaryDepartmentID)";
+                        using (SqlCommand command = new SqlCommand(insertSecondaryQuery, connection))
+                        {
+                            command.Parameters.AddWithValue("@DoctorID", doctorID);
+                            command.Parameters.AddWithValue("@SecondaryDepartmentID", secondaryDepartmentID);
+                            command.ExecuteNonQuery();
+                        }
+                    }
+                }
+
+                List<string> selectedDepartments = new List<string> { primaryDepartmentID, secondaryDepartmentID };
+
+                foreach (var dept in currentDepartments)
+                {
+                    if (!selectedDepartments.Contains(dept))
+                    {
+                        string deleteQuery = "DELETE FROM DoctorDepartment WHERE doctorID = @DoctorID AND departmentID = @DepartmentID";
+                        using (SqlCommand command = new SqlCommand(deleteQuery, connection))
+                        {
+                            command.Parameters.AddWithValue("@DoctorID", doctorID);
+                            command.Parameters.AddWithValue("@DepartmentID", dept);
+                            command.ExecuteNonQuery();
+                        }
+                    }
+                }
+            }
+        }
+
+
 
         private bool CheckFields()
         {
@@ -287,7 +473,7 @@ namespace fyp1.Admin
                    ddlGender.SelectedIndex > 0 &&
                    !string.IsNullOrWhiteSpace(txtContactInfo.Text) &&
                    !string.IsNullOrWhiteSpace(txtEmail.Text) &&
-                   ddlDepartmentId.SelectedIndex > 0 &&
+                   (ddlPrimaryDepartment.SelectedIndex > 0 || ddlSecondaryDepartment.SelectedIndex > 0) &&
                    ddlStatus.SelectedIndex > 0;
         }
 
@@ -375,5 +561,51 @@ namespace fyp1.Admin
                 }
             }
         }
+
+        protected void txtDateOfBirth_TextChanged(object sender, EventArgs e)
+        {
+            if (DateTime.TryParse(txtDateOfBirth.Text, out DateTime selectedDate))
+            {
+                string formattedDate = selectedDate.ToString("yyMMdd");
+
+                txtIc.Text = formattedDate;
+            }
+            else
+            {
+                txtIc.Text = string.Empty;
+            }
+        }
+        protected void txtIc_TextChanged(object sender, EventArgs e)
+        {
+            string icNumber = txtIc.Text.Trim();
+
+            if (icNumber.Length >= 6)
+            {
+                string yearPart = icNumber.Substring(0, 2);
+                string monthPart = icNumber.Substring(2, 2);
+                string dayPart = icNumber.Substring(4, 2);
+
+                int year = int.Parse(yearPart) < 50 ? 2000 + int.Parse(yearPart) : 1900 + int.Parse(yearPart);
+
+                if (DateTime.TryParse($"{year}-{monthPart}-{dayPart}", out DateTime dob))
+                {
+                    txtDateOfBirth.Text = dob.ToString("yyyy-MM-dd");
+                }
+                else
+                {
+                    txtDateOfBirth.Text = string.Empty;
+                }
+            }
+            else
+            {
+                txtDateOfBirth.Text = string.Empty;
+            }
+        }
     }
+    public class Department
+    {
+        public string DepartmentID { get; set; }
+        public string DepartmentName { get; set; }
+    }
+
 }

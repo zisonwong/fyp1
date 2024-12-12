@@ -24,24 +24,21 @@ namespace fyp1.Admin
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 string query = @"
-                SELECT 
-                    mr.recordID,
-                    mr.patientID,
-                    mr.doctorID,
-                    d.name AS department,
-                    mr.recordDate
-                FROM 
-                    MedicalRecord mr
-                LEFT JOIN 
-                    Doctor doc ON mr.doctorID = doc.doctorID
-                LEFT JOIN 
-                    Department d ON doc.departmentID = d.departmentID
-                ORDER BY 
-                    mr.recordID ASC";
+        SELECT 
+            mr.recordID,
+            mr.patientID,
+            mr.doctorID,
+            doc.name AS doctorName, 
+            mr.recordDate
+        FROM 
+            MedicalRecord mr
+        LEFT JOIN 
+            Doctor doc ON mr.doctorID = doc.doctorID
+        ORDER BY 
+            mr.recordID ASC";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
-
                     conn.Open();
                     SqlDataAdapter da = new SqlDataAdapter(cmd);
                     DataTable dt = new DataTable();
@@ -53,6 +50,8 @@ namespace fyp1.Admin
                 }
             }
         }
+
+
         protected void lvMedicalRecord_ItemCommand(object sender, ListViewCommandEventArgs e)
         {
             if (e.CommandName == "SelectRecord")

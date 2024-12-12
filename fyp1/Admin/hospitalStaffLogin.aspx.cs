@@ -17,7 +17,6 @@ namespace fyp1.Admin
         {
             if (!string.IsNullOrEmpty(Request.QueryString["signup"]) && Request.QueryString["signup"] == "success")
             {
-                // Display the signup success popup
                 ClientScript.RegisterStartupScript(this.GetType(), "SignupSuccessPopup",
                     "<script>alert('Sign up successful! You can now login with your credentials.');</script>");
             }
@@ -26,19 +25,53 @@ namespace fyp1.Admin
         {
             string loginInput = txtEmail.Text;
             string password = txtPassword.Text;
-            bool isValidUser = IsValidUser(loginInput, password, out string doctorID);
+            bool isValidUser = IsValidUser(loginInput, password, out string userID);
+
             if (isValidUser)
             {
-                // Set cookies and redirect
+                string role;
 
-                SetIDCookie(doctorID);
+                if (userID == "Admin")
+                {
+                    role = "Admin";
+                }
+                else
+                {
+                    role = DetermineRole(userID);
+                }
+
+                // Set cookies
+                SetIDCookie(userID);
                 SetEmailCookie(loginInput);
+                SetRoleCookie(role);
+
+                Session["Role"] = role;
+
                 Response.Redirect("~/Admin/adminHome.aspx");
             }
             else
             {
                 lblErrorMessage.Text = "Invalid username or password. Please try again.";
             }
+        }
+        private string DetermineRole(string userID)
+        {
+            if (userID.StartsWith("D"))
+                return "Doctor";
+            else if (userID.StartsWith("N"))
+                return "Nurse";
+
+            return "Unknown"; 
+        }
+        public void SetRoleCookie(string role)
+        {
+            HttpCookie roleCookie = new HttpCookie("Role", role)
+            {
+                HttpOnly = true,
+                Secure = true,
+                Expires = DateTime.Now.AddDays(1)
+            };
+            HttpContext.Current.Response.Cookies.Add(roleCookie);
         }
         public void SetIDCookie(string doctorID)
         {
@@ -61,19 +94,37 @@ namespace fyp1.Admin
             };
             HttpContext.Current.Response.Cookies.Add(emailCookie);
         }
-        private bool IsValidUser(string loginInput, string password, out string doctorID)
+        private bool IsValidUser(string loginInput, string password, out string userID)
         {
             bool isValid = false;
-            doctorID = null;
+            userID = null;
             string hashedPassword = HashPassword(password);
+
+            // Hardcoded admin credentials
+            const string adminEmail = "admin@gmail.com";
+            const string adminPassword = "admin123";
+
+            if (loginInput.Equals(adminEmail, StringComparison.OrdinalIgnoreCase) && password.Equals(adminPassword))
+            {
+                userID = "Admin"; 
+                isValid = true;
+                return isValid;
+            }
+
+            // If not admin, check against database
             string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
+
             using (SqlConnection con = new SqlConnection(connectionString))
             {
                 con.Open();
-                // Query to check if the input is name or email and validates against password
-                string query = @"SELECT doctorID 
-                                 FROM Doctor 
-                                 WHERE (email = @loginInput) AND password = @password";
+
+                string query = @"
+            SELECT doctorID AS UserID FROM Doctor 
+            WHERE (email = @loginInput) AND password = @password
+            UNION
+            SELECT nurseID AS UserID FROM Nurse 
+            WHERE (email = @loginInput) AND password = @password";
+
                 using (SqlCommand cmd = new SqlCommand(query, con))
                 {
                     cmd.Parameters.AddWithValue("@loginInput", loginInput);
@@ -81,11 +132,12 @@ namespace fyp1.Admin
                     object result = cmd.ExecuteScalar();
                     if (result != null)
                     {
-                        doctorID = result.ToString();
+                        userID = result.ToString();
                         isValid = true;
                     }
                 }
             }
+
             return isValid;
         }
         private string HashPassword(string password)

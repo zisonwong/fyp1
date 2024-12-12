@@ -31,14 +31,14 @@
             padding-left: 5px;
         }
 
-        .tab-link:hover {
-            color: #3182ce;
-            background-color: #e2e8f0;
-        }
+            .tab-link:hover {
+                color: #3182ce;
+                background-color: #e2e8f0;
+            }
 
-        .tab-link:focus {
-            outline: none;
-        }
+            .tab-link:focus {
+                outline: none;
+            }
 
         .logout-btn {
             background: none;
@@ -52,14 +52,14 @@
             padding-left: 5px;
         }
 
-        .logout-btn:hover {
-            color: #e53e3e;
-            background-color: #edabab;
-        }
+            .logout-btn:hover {
+                color: #e53e3e;
+                background-color: #edabab;
+            }
 
-        .logout-btn:focus {
-            outline: none;
-        }
+            .logout-btn:focus {
+                outline: none;
+            }
 
         .settings-panel {
             background-color: #f9fafb;
@@ -69,9 +69,9 @@
             transition: box-shadow 0.3s ease;
         }
 
-        .settings-card:hover {
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
+            .settings-card:hover {
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            }
 
         .settings-button {
             color: #1d4ed8;
@@ -109,6 +109,7 @@
 
                 <aside class="bg-gray-50 py-4 px-4 rounded-lg shadow-lg">
                     <div class="space-y-4">
+                        <asp:Button ID="btnHome" Text="Back to Home" CssClass="tab-link text-left w-full px-4 py-2 hover:bg-blue-200 transition ease-in-out duration-200" OnClick="btnHome_Click" runat="server" />
                         <asp:Button ID="btnProfile" Text="Profile Management" CssClass="tab-link text-left w-full px-4 py-2 hover:bg-blue-200 transition ease-in-out duration-200" OnClientClick="showTab('panelProfile', this); return false;" CausesValidation="false" runat="server" />
                         <asp:Button ID="btnAppointment" Text="Appointment Scheduling" CssClass="tab-link text-left w-full px-4 py-2 hover:bg-blue-200 transition ease-in-out duration-200" OnClientClick="showTab('panelAppointment', this); return false;" CausesValidation="false" runat="server" />
                         <asp:Button ID="btnEmergency" Text="Emergency Contact" CssClass="tab-link text-left w-full px-4 py-2 hover:bg-blue-200 transition ease-in-out duration-200" OnClientClick="showTab('panelEmergency', this); return false;" CausesValidation="false" runat="server" />
@@ -160,22 +161,34 @@
                                 <asp:Button ID="btnSave" runat="server" Text="Save" CssClass="bg-green-500 text-white py-2 px-4 rounded hidden" OnClick="btnSave_Click" />
                                 <asp:Button ID="btnCancel" runat="server" Text="Cancel" CssClass="bg-gray-500 text-white py-2 px-4 rounded hidden" OnClick="btnCancel_Click" />
                             </div>
-                            </div>
+                        </div>
                     </asp:Panel>
                     <!-- Appointment Scheduling Panel -->
                     <asp:Panel ID="panelAppointment" runat="server" CssClass="tab-content hidden bg-white shadow-md rounded-lg p-6 mb-8">
                         <div class="flex items-center mb-6">
                             <h3 class="text-3xl font-bold text-gray-800 mb-2">Appointment Scheduling</h3>
                         </div>
-                        <asp:GridView ID="gridAppointment" runat="server" AutoGenerateColumns="false" CssClass="table-auto w-full border border-gray-200 rounded-lg">
+                        <asp:GridView ID="gridAppointment" runat="server" AutoGenerateColumns="false" CssClass="table-auto w-full border border-gray-200 rounded-lg" OnRowCommand="gridAppointment_RowCommand" OnRowDataBound="gridAppointment_RowDataBound">
                             <Columns>
                                 <asp:BoundField DataField="AppointmentID" HeaderText="Appointment ID" HeaderStyle-CssClass="px-4 py-2 bg-gray-100 text-left font-semibold" ItemStyle-CssClass="px-4 py-2" />
                                 <asp:BoundField DataField="Name" HeaderText="Doctor Name" HeaderStyle-CssClass="px-4 py-2 bg-gray-100 text-left font-semibold" ItemStyle-CssClass="px-4 py-2" />
                                 <asp:BoundField DataField="AppointmentDate" HeaderText="Date" DataFormatString="{0:dd/MM/yyyy}" HeaderStyle-CssClass="px-4 py-2 bg-gray-100 text-left font-semibold" ItemStyle-CssClass="px-4 py-2" />
                                 <asp:BoundField DataField="StartTime" HeaderText="Time" HeaderStyle-CssClass="px-4 py-2 bg-gray-100 text-left font-semibold" ItemStyle-CssClass="px-4 py-2" />
                                 <asp:BoundField DataField="Status" HeaderText="Status" HeaderStyle-CssClass="px-4 py-2 bg-gray-100 text-left font-semibold" ItemStyle-CssClass="px-4 py-2" />
+                                <asp:TemplateField HeaderText="Actions">
+                                    <ItemTemplate>
+                                        <asp:Button ID="btnEdit" runat="server" Text="Edit" CommandName="EditAppointment" CommandArgument='<%# Eval("AppointmentID") %>' CssClass="bg-blue-500 text-white py-2 px-4 rounded" />
+                                        <asp:Button ID="btnPay" runat="server" Text="Pay" CommandName="PayAppointment" CommandArgument='<%# Eval("AppointmentID") %>' CssClass="bg-green-500 text-white py-2 px-4 rounded" />
+                                    </ItemTemplate>
+                                </asp:TemplateField>
                             </Columns>
                         </asp:GridView>
+
+
+                        <asp:Button ID="btnAddAppointment" runat="server" Text="Add Appointment" CssClass="bg-blue-500 text-white px-4 py-2 mt-2 rounded w-1/4" OnClick="btnAddAppointment_Click" />
+
+                        <asp:Label ID="lblNoAppointments" runat="server" Text="" CssClass="text-gray-500 italic" Visible="false"></asp:Label>
+
                     </asp:Panel>
                     <!-- Emergency Contact Panel -->
                     <asp:Panel ID="panelEmergency" runat="server" CssClass="tab-content hidden bg-white shadow-md rounded-lg p-6 mb-8">
@@ -210,7 +223,7 @@
                         <div class="settings-panel p-6 bg-gray-100 min-h-screen">
                             <h2 class="text-3xl font-bold text-gray-700 mb-6">Settings</h2>
 
-                            <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                            <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-2">
                                 <!-- Change Password Card -->
                                 <div class="bg-white rounded-lg shadow-lg p-5">
                                     <h3 class="text-xl font-semibold text-gray-800 mb-4">Change Password</h3>
@@ -219,25 +232,15 @@
                                         CssClass="text-blue-600 underline cursor-pointer hover:text-blue-800 transition duration-200"
                                         OnClientClick="toggleModal('changePasswordModal'); return false;" />
                                 </div>
-                                <!-- Notifications Card -->
+
+                                <!-- Profile Picture Card -->
                                 <div class="bg-white rounded-lg shadow-lg p-5">
-                                    <h3 class="text-xl font-semibold text-gray-800 mb-4">Notifications</h3>
-                                    <p class="text-gray-600 mb-4">Manage notification preferences.</p>
-                                    <asp:Button ID="btnNotificationSettings" runat="server" Text="Edit Notifications"
-                                        CssClass="text-blue-600 underline cursor-pointer hover:text-blue-800 transition duration-200"
-                                        OnClientClick="toggleModal('notificationModal'); return false;" />
-                                </div>
-                                <!-- Privacy Settings Card -->
-                                <div class="bg-white rounded-lg shadow-lg p-5">
-                                    <h3 class="text-xl font-semibold text-gray-800 mb-4">Privacy Settings</h3>
-                                    <p class="text-gray-600 mb-4">Adjust your privacy options.</p>
-                                    <asp:Button ID="btnPrivacySettings" runat="server" Text="Edit Privacy"
-                                        CssClass="text-blue-600 underline cursor-pointer hover:text-blue-800 transition duration-200"
-                                        OnClientClick="toggleModal('privacyModal'); return false;" />
+                                    <h3 class="text-xl font-semibold text-gray-800 mb-4">Change Profile</h3>
+                                    <asp:FileUpload ID="fileUploadProfile" runat="server" CssClass="mt-4" />
+                                    <asp:Button ID="btnUpload" runat="server" Text="Upload Profile Picture" OnClick="btnUpload_Click" CssClass="bg-blue-500 text-white px-4 py-2 mt-2 rounded w-1/2" />
                                 </div>
                             </div>
-                            <asp:FileUpload ID="fileUploadProfile" runat="server" CssClass="mt-4" />
-                            <asp:Button ID="btnUpload" runat="server" Text="Upload Profile Picture" OnClick="btnUpload_Click" CssClass="bg-blue-500 text-white px-4 py-2 mt-2 rounded w-1/4" />
+
                         </div>
                         <!-- Change Password Modal -->
                         <div id="changePasswordModal" class="fixed inset-0 hidden bg-gray-900 bg-opacity-50 flex items-center justify-center">
@@ -255,59 +258,6 @@
                                 <div class="flex justify-end mt-6">
                                     <button type="button" class="px-4 py-2 bg-gray-500 text-white rounded mr-2" onclick="toggleModal('changePasswordModal')">Cancel</button>
                                     <asp:Button ID="btnSubmitChangePassword" runat="server" Text="Save" CssClass="px-4 py-2 bg-blue-600 text-white rounded" OnClick="btnChangePassword_Click" />
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Notification Settings Modal -->
-                        <div id="notificationModal" class="fixed inset-0 hidden bg-gray-900 bg-opacity-50 flex items-center justify-center">
-                            <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
-                                <h3 class="text-2xl font-semibold text-gray-800 mb-4">Notification Settings</h3>
-                                <div class="form-row">
-                                    <asp:Label ID="lblEmailNotifications" runat="server" Text="Email Notifications:" CssClass="label"></asp:Label>
-                                    <asp:CheckBox ID="chkEmailNotifications" runat="server" CssClass="checkbox" />
-                                </div>
-                                <div class="form-row">
-                                    <asp:Label ID="lblSMSNotifications" runat="server" Text="SMS Notifications:" CssClass="label"></asp:Label>
-                                    <asp:CheckBox ID="chkSMSNotifications" runat="server" CssClass="checkbox" />
-                                </div>
-                                <div class="form-row">
-                                    <asp:Label ID="lblPushNotifications" runat="server" Text="Push Notifications:" CssClass="label"></asp:Label>
-                                    <asp:CheckBox ID="chkPushNotifications" runat="server" CssClass="checkbox" />
-                                </div>
-                                <div class="flex justify-end mt-6">
-                                    <button type="button" class="px-4 py-2 bg-gray-500 text-white rounded mr-2" onclick="toggleModal('notificationModal')">Cancel</button>
-                                    <asp:Button ID="btnSubmitNotificationSettings" runat="server" Text="Save" CssClass="px-4 py-2 bg-blue-600 text-white rounded" OnClick="btnNotificationSettings_Click" />
-                                </div>
-                            </div>
-                        </div>
-                        <!-- Privacy Settings Modal -->
-                        <div id="privacyModal" class="fixed inset-0 hidden bg-gray-900 bg-opacity-50 flex items-center justify-center">
-                            <div class="bg-white rounded-lg shadow-lg p-8 w-full max-w-lg">
-                                <h3 class="text-2xl font-semibold text-gray-800 mb-6">Privacy Settings</h3>
-                                <!-- Profile Visibility Dropdown -->
-                                <div class="mb-4">
-                                    <asp:Label ID="lblProfileVisibility" runat="server" Text="Profile Visibility:" CssClass="block text-gray-700 font-medium mb-2"></asp:Label>
-                                    <asp:DropDownList ID="ddlProfileVisibility" runat="server" CssClass="border border-gray-300 rounded-lg w-full px-3 py-2">
-                                        <asp:ListItem Text="Public" Value="Public"></asp:ListItem>
-                                        <asp:ListItem Text="Private" Value="Private"></asp:ListItem>
-                                        <asp:ListItem Text="Friends Only" Value="FriendsOnly"></asp:ListItem>
-                                    </asp:DropDownList>
-                                </div>
-                                <!-- Data Sharing Checkbox -->
-                                <div class="flex items-center mb-4">
-                                    <asp:Label ID="lblDataSharing" runat="server" Text="Data Sharing:" CssClass="text-gray-700 font-medium w-40"></asp:Label>
-                                    <asp:CheckBox ID="chkDataSharing" runat="server" Text="Allow data sharing with third-party services" CssClass="ml-2 text-gray-600" />
-                                </div>
-                                <!-- Ad Preferences Checkbox -->
-                                <div class="flex items-center mb-4">
-                                    <asp:Label ID="lblAdPreferences" runat="server" Text="Ad Preferences:" CssClass="text-gray-700 font-medium w-40"></asp:Label>
-                                    <asp:CheckBox ID="chkAdPreferences" runat="server" Text="Personalized Ads" CssClass="ml-2 text-gray-600" />
-                                </div>
-                                <!-- Action Buttons -->
-                                <div class="flex justify-end mt-6">
-                                    <button type="button" class="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500 mr-2" onclick="toggleModal('privacyModal')">Cancel</button>
-                                    <asp:Button ID="btnSubmitPrivacySettings" runat="server" Text="Save" CssClass="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700" OnClick="btnPrivacySettings_Click" />
                                 </div>
                             </div>
                         </div>

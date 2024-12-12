@@ -11,7 +11,7 @@ namespace fyp1.Client
 {
 
 
-    public partial class doctorAvailability
+    public partial class SymptomChecker
     {
 
         /// <summary>
@@ -24,93 +24,75 @@ namespace fyp1.Client
         protected global::System.Web.UI.HtmlControls.HtmlForm form1;
 
         /// <summary>
-        /// ddlBranch control.
+        /// lblInstructions control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlBranch;
+        protected global::System.Web.UI.WebControls.Label lblInstructions;
 
         /// <summary>
-        /// ddlDepartment control.
+        /// txtSymptoms control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlDepartment;
+        protected global::System.Web.UI.WebControls.TextBox txtSymptoms;
 
         /// <summary>
-        /// ddlConsultationType control.
+        /// btnCheckSymptoms control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlConsultationType;
+        protected global::System.Web.UI.WebControls.Button btnCheckSymptoms;
 
         /// <summary>
-        /// txtSelectedDate control.
+        /// btnClearText control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtSelectedDate;
+        protected global::System.Web.UI.WebControls.Button btnClearText;
 
         /// <summary>
-        /// imgDoctor control.
+        /// BackToHomeBtn control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Image imgDoctor;
+        protected global::System.Web.UI.WebControls.Button BackToHomeBtn;
 
         /// <summary>
-        /// lblDoctorName control.
+        /// pnlResults control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblDoctorName;
+        protected global::System.Web.UI.WebControls.Panel pnlResults;
 
         /// <summary>
-        /// lblDepartment control.
+        /// litResults control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblDepartment;
+        protected global::System.Web.UI.WebControls.Literal litResults;
 
         /// <summary>
-        /// lblBranch control.
+        /// lblDisclaimer control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblBranch;
-
-        /// <summary>
-        /// rptAvailableSlots control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Repeater rptAvailableSlots;
-
-        /// <summary>
-        /// lblSelectedAppointment control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblSelectedAppointment;
+        protected global::System.Web.UI.WebControls.Label lblDisclaimer;
     }
 }

@@ -116,7 +116,7 @@
             <h2>Patient Resources</h2>
             <ul>
                 <li class="resource-item">
-                    <a href="../Client/clientProfile.aspx">
+                    <a href="clientProfile.aspx">
                         <div class="resource-content">
                             <h3>Patient Portal</h3>
                             <p>Access your medical records and manage your appointments online.</p>
@@ -124,7 +124,7 @@
                     </a>
                 </li>
                 <li class="resource-item">
-                    <a href="#">
+                    <a href="InsuranceInformation.aspx">
                         <div class="resource-content">
                             <h3>Insurance Information</h3>
                             <p>Get information on accepted insurance plans and coverage details.</p>
@@ -132,7 +132,7 @@
                     </a>
                 </li>
                 <li class="resource-item">
-                    <a href="#">
+                    <a href="FAQs.aspx">
                         <div class="resource-content">
                             <h3>FAQs</h3>
                             <p>Find answers to common questions about our services and policies.</p>

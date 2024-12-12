@@ -6,15 +6,24 @@
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
     <form id="form1" runat="server">
         <div class="flex h-screen">
-            <!-- Sidebar for Search and Branch Selection -->
+            <!-- Sidebar for Search and Branch/Department Selection -->
             <div class="w-1/6 bg-gray-100 p-6 border-r border-gray-200 mt-16">
                 <div class="mb-8">
                     <h2 class="text-xl font-bold text-gray-700">Search and Filter</h2>
                 </div>
-                <!-- Branch Selection -->
+                <!-- Branch Filter -->
                 <div class="mb-6">
                     <asp:Label ID="lblBranch" runat="server" Text="Select Branch:" CssClass="block text-gray-700 font-semibold mb-2"></asp:Label>
                     <asp:DropDownList ID="ddlBranch" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlBranch_SelectedIndexChanged" CssClass="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></asp:DropDownList>
+                </div>
+
+                <!-- Department Filter -->
+                <div class="mb-6">
+                    <asp:Label ID="lblDepartment" runat="server" Text="Select Department:" CssClass="block text-gray-700 font-semibold mb-2"></asp:Label>
+                    <asp:DropDownList ID="ddlDepartment" runat="server" AutoPostBack="true"
+                        OnSelectedIndexChanged="ddlDepartment_SelectedIndexChanged"
+                        CssClass="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    </asp:DropDownList>
                 </div>
                 <!-- Doctor Search Filter -->
                 <div class="mb-6">
@@ -37,8 +46,13 @@
                                         ImageUrl='<%# ResolveUrl("~/Images/DoctorPhotos/" + Eval("photo")) %>' />
 
                                     <h3 class="text-lg font-semibold text-gray-900 mb-2"><%# Eval("name") %></h3>
-                                    <p class="text-sm text-gray-600 mb-1"><%# Eval("role") %></p>
-                                    <p class="text-sm text-gray-500 mb-4"><%# Eval("contactInfo") %></p>
+                                    <p class="text-sm text-gray-600">
+                                        Department: <%# string.IsNullOrEmpty(Eval("DepartmentNames").ToString()) ? "N/A" : Eval("DepartmentNames") %>
+                                    </p>
+                                    <p class="text-sm text-gray-600 mb-4">
+                                        Branch: <%# string.IsNullOrEmpty(Eval("BranchNames").ToString()) ? "N/A" : Eval("BranchNames") %>
+                                    </p>
+
                                     <div class="flex justify-between">
                                         <asp:Button ID="btnMakeAppointment" runat="server" Text="Make Appointment" CommandArgument='<%# Eval("doctorID") %>' OnClick="btnMakeAppointment_Click" CssClass="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500" />
                                         <asp:Button ID="btnChatOnline" runat="server" Text="Chat Online" CommandArgument='<%# Eval("doctorID") %>' OnClick="btnChatOnline_Click" CssClass="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" />

@@ -119,17 +119,33 @@
     <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.13.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
+
     <Reference Include="RBush, Version=4.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\RBush.4.0.0\lib\net47\RBush.dll</HintPath>
     </Reference>
     <Reference Include="SixLabors.Fonts, Version=1.0.0.0, Culture=neutral, PublicKeyToken=d998eea7b14cab13, processorArchitecture=MSIL">
       <HintPath>..\packages\SixLabors.Fonts.1.0.0\lib\netstandard2.0\SixLabors.Fonts.dll</HintPath>
     </Reference>
-    <Reference Include="Stripe.net, Version=47.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Stripe.net.47.0.0\lib\net461\Stripe.net.dll</HintPath>
+
+=======
+    <Reference Include="OpenAI, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b4187f3e65366280, processorArchitecture=MSIL">
+      <HintPath>..\packages\OpenAI.2.0.0\lib\netstandard2.0\OpenAI.dll</HintPath>
+    </Reference>
+    <Reference Include="PayPalCheckoutSdk, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\PayPalCheckoutSdk.1.0.4\lib\netstandard2.0\PayPalCheckoutSdk.dll</HintPath>
+    </Reference>
+    <Reference Include="PayPalHttp-Dotnet, Version=1.0.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\PayPalHttp.1.0.1\lib\netstandard2.0\PayPalHttp-Dotnet.dll</HintPath>
+    </Reference>
+    <Reference Include="Stripe.net, Version=47.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Stripe.net.47.1.0\lib\net461\Stripe.net.dll</HintPath>
+
     </Reference>
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ClientModel, Version=1.1.0.0, Culture=neutral, PublicKeyToken=92742159e12e44c8, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.ClientModel.1.1.0\lib\netstandard2.0\System.ClientModel.dll</HintPath>
     </Reference>
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Diagnostics.DiagnosticSource, Version=9.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
@@ -145,6 +161,9 @@
     </Reference>
     <Reference Include="System.Memory, Version=4.0.1.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Memory.4.5.5\lib\net461\System.Memory.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Memory.Data, Version=1.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Memory.Data.1.0.2\lib\net461\System.Memory.Data.dll</HintPath>
     </Reference>
     <Reference Include="System.Net.Http, Version=4.1.1.3, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Net.Http.4.3.4\lib\net46\System.Net.Http.dll</HintPath>
@@ -245,6 +264,7 @@
       <DependentUpon>IHMS.mdf</DependentUpon>
     </Content>
     <Content Include="Client\BranchDoctorSelection.aspx" />
+    <Content Include="Client\Checkout.aspx" />
     <Content Include="Client\clientAppointment.aspx" />
     <Content Include="Client\clientChat.aspx" />
     <Content Include="Client\clientHome.aspx" />
@@ -252,8 +272,13 @@
     <Content Include="Client\clientPayment.aspx" />
     <Content Include="Client\clientProfile.aspx" />
     <Content Include="Client\clientSignUp.aspx" />
-    <Content Include="Client\DoctorAvailability.aspx" />
+    <Content Include="Client\doctorAvailability.aspx" />
+    <Content Include="Client\EditAppointment.aspx" />
     <Content Include="Client\EmergencyPage.aspx" />
+    <Content Include="Client\FAQs.aspx" />
+    <Content Include="Client\InsuranceInformation.aspx" />
+    <Content Include="Client\SymptomChecker.aspx" />
+    <Content Include="Client\VideoCall.aspx" />
     <Content Include="CSS\clientAppointment.css" />
     <Content Include="CSS\clientProfile.css" />
     <Content Include="CSS\footer.css" />
@@ -427,6 +452,13 @@
     <Compile Include="Client\BranchDoctorSelection.aspx.designer.cs">
       <DependentUpon>BranchDoctorSelection.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Client\Checkout.aspx.cs">
+      <DependentUpon>Checkout.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Client\Checkout.aspx.designer.cs">
+      <DependentUpon>Checkout.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Client\clientAppointment.aspx.cs">
       <DependentUpon>clientAppointment.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -475,13 +507,6 @@
     </Compile>
     <Compile Include="Client\clientSignUp.aspx.designer.cs">
       <DependentUpon>clientSignUp.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="Client\DoctorAvailability.aspx.cs">
-      <DependentUpon>DoctorAvailability.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Client\DoctorAvailability.aspx.designer.cs">
-      <DependentUpon>DoctorAvailability.aspx</DependentUpon>
     </Compile>
     <Compile Include="Admin\hospitalAddDoctor.aspx.cs">
       <DependentUpon>hospitalAddDoctor.aspx</DependentUpon>
@@ -602,6 +627,20 @@
     <Compile Include="Admin\hospitalStaffLogin.aspx.designer.cs">
       <DependentUpon>hospitalStaffLogin.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Client\doctorAvailability.aspx.cs">
+      <DependentUpon>doctorAvailability.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Client\doctorAvailability.aspx.designer.cs">
+      <DependentUpon>doctorAvailability.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Client\EditAppointment.aspx.cs">
+      <DependentUpon>EditAppointment.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Client\EditAppointment.aspx.designer.cs">
+      <DependentUpon>EditAppointment.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Client\EmergencyPage.aspx.cs">
       <DependentUpon>EmergencyPage.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -615,6 +654,34 @@
     </Compile>
     <Compile Include="Admin\hospitalRecordDetails.aspx.designer.cs">
       <DependentUpon>hospitalRecordDetails.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Client\FAQs.aspx.cs">
+      <DependentUpon>FAQs.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Client\FAQs.aspx.designer.cs">
+      <DependentUpon>FAQs.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Client\InsuranceInformation.aspx.cs">
+      <DependentUpon>InsuranceInformation.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Client\InsuranceInformation.aspx.designer.cs">
+      <DependentUpon>InsuranceInformation.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Client\SymptomChecker.aspx.cs">
+      <DependentUpon>SymptomChecker.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Client\SymptomChecker.aspx.designer.cs">
+      <DependentUpon>SymptomChecker.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Client\VideoCall.aspx.cs">
+      <DependentUpon>VideoCall.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Client\VideoCall.aspx.designer.cs">
+      <DependentUpon>VideoCall.aspx</DependentUpon>
     </Compile>
     <Compile Include="NavFooter.Master.cs">
       <DependentUpon>NavFooter.Master</DependentUpon>

@@ -24,22 +24,13 @@ namespace fyp1.Client
         protected global::System.Web.UI.HtmlControls.HtmlForm form1;
 
         /// <summary>
-        /// lblTitle control.
+        /// lblBranchName control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblTitle;
-
-        /// <summary>
-        /// lblNearestBranch control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblNearestBranch;
+        protected global::System.Web.UI.WebControls.Label lblBranchName;
 
         /// <summary>
         /// lblBranchAddress control.
@@ -51,21 +42,21 @@ namespace fyp1.Client
         protected global::System.Web.UI.WebControls.Label lblBranchAddress;
 
         /// <summary>
-        /// lblAmbulanceTime control.
+        /// lblDistance control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblAmbulanceTime;
+        protected global::System.Web.UI.WebControls.Label lblDistance;
 
         /// <summary>
-        /// lblMessage control.
+        /// lblTime control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblMessage;
+        protected global::System.Web.UI.WebControls.Label lblTime;
     }
 }

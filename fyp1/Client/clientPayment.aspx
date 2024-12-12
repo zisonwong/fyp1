@@ -31,7 +31,7 @@
                         <strong>Time:</strong>
                         <asp:Label ID="lblAppointmentTime" runat="server" CssClass="text-gray-700"></asp:Label>
                     </p>
-                    <p class="text-lg font-bold text-gray-700 mt-4">Consultation Fee: RM<asp:Label ID="lblConsultationFee" runat="server" CssClass="text-gray-700"></asp:Label></p>
+                    <p class="text-lg font-bold text-gray-700 mt-4">Consultation Fee: RM <asp:Label ID="lblConsultationFee" runat="server" CssClass="text-gray-700"></asp:Label></p>
                 </div>
 
                 <!-- Payment Methods -->
@@ -92,5 +92,17 @@
                 </div>
             </div>
     </form>
+    <script src="https://js.stripe.com/v3/"></script>
+    <script>
+    document.getElementById("payButton").addEventListener("click", function () {
+        fetch("/Client/CreateCheckoutSession", { method: "POST" })
+            .then(response => response.json())
+            .then(session => {
+                const stripe = Stripe('your-publishable-key');
+                return stripe.redirectToCheckout({ sessionId: session.id });
+            })
+            .catch(error => console.error("Error:", error));
+    });
+</script>
 </body>
 </html>

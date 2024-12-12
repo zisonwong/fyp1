@@ -46,8 +46,6 @@
                             Dashboard
                         </a>
                     </li>
-                     <%if (Session["Role"].ToString() == "Admin")
-                    {  %>
                     <li class="nav-item">
                         <a href="hospitalBranch.aspx" class="nav-link text-black" style="display: flex; align-items: center;">
                             <i class="lni lni-dashboard me-3"></i>
@@ -60,12 +58,9 @@
                             Department
                         </a>
                     </li>
-                    <%  } %>
                     <div class="mt-1">
                         <h5 class="menu-title text-black">Management</h5>
                     </div>
-                     <%if (Session["Role"].ToString() == "Admin")
-                    {  %>
                     <li class="nav-item">
                         <a href="hospitalDoctor.aspx" class="nav-link text-black" style="display: flex; align-items: center;">
                             <i class="lni lni-heart me-3"></i>
@@ -78,22 +73,18 @@
                             Nurse
                         </a>
                     </li>
-                    <%  } %>
                     <li class="nav-item">
                         <a href="hospitalMedicine.aspx" class="nav-link text-black" style="display: flex; align-items: center;">
                             <i class="lni lni-user me-3"></i>
                             Medicine
                         </a>
                     </li>
-                     <%if (Session["Role"].ToString() == "Doctor")
-                    {  %>
                     <li class="nav-item">
                         <a href="hospitalDoctorAvailability.aspx" class="nav-link text-black" style="display: flex; align-items: center;">
                             <i class="lni lni-user me-3"></i>
                             Availability
                         </a>
                     </li>
-                    <%  } %>
                     <li class="nav-item">
                         <a href="hospitalAppointment.aspx" class="nav-link text-black" style="display: flex; align-items: center;">
                             <i class="lni lni-user me-3"></i>
@@ -112,24 +103,18 @@
                             Record
                         </a>
                     </li>
-                    <%if (Session["Role"].ToString() == "Doctor" || Session["Role"].ToString() == "Admin")
-                    {  %>
                     <li class="nav-item">
                         <a href="hospitalAddPrescription.aspx" class="nav-link text-black" style="display: flex; align-items: center;">
                             <i class="lni lni-user me-3"></i>
                             Prescription
                         </a>
                     </li>
-                     <%  } %>
-                     <%if (Session["Role"].ToString() == "Doctor")
-                    {  %>
                     <li class="nav-item">
                         <a href="hospitalDoctorChat.aspx" class="nav-link text-black" style="display: flex; align-items: center;">
                             <i class="lni lni-user me-3"></i>
                             Chat
                         </a>
                     </li>
-                    <%  } %>
                 </ul>
             </div>
             <div id="moveContent" class="main content-style transition">

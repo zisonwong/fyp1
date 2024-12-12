@@ -16,10 +16,10 @@
                                 <asp:Label ID="lblPatientName" runat="server" Text="Name"></asp:Label></h4>
                             <h6 class="card-subtitle mt-2">
                                 <asp:Label ID="lblPatientEmail" runat="server" Text="Email"></asp:Label></h6>
-                             <% if (Session["Role"].ToString() == "Doctor")
-                            { %>
+                            <%-- <% if (Session["Role"].ToString() == "Doctor")
+                            { %>--%>
                             <asp:LinkButton CssClass="mt-2 btn btn-primary" ID="btnSendMsg" runat="server">Send Message</asp:LinkButton>
-                             <% } %>
+                            <%-- //<% } %>--%>
                         </div>
                     </div>
                 </div>
@@ -130,7 +130,9 @@
 
                 <div class="tab-content mt-3" id="myTabContent">
                     <div class="tab-pane fade show active" id="upcoming" role="tabpanel" aria-labelledby="upcoming-pill">
-                        <asp:Repeater ID="rptUpcomingAppointments" runat="server">
+                        <asp:Repeater ID="rptUpcomingAppointments"
+                            OnItemCommand="rptUpcomingAppointments_ItemCommand"
+                            runat="server">
                             <ItemTemplate>
                                 <div class="card mb-3 shadow-sm">
                                     <div class="card-body p-0">
@@ -147,8 +149,8 @@
                                             </div>
                                             <div class="col-md-3 d-flex justify-content-center border-end">
                                                 <div>
-                                                    <p class="mb-0">Treatment Department:</p>
-                                                    <strong><%# Eval("departmentName") %></strong>
+                                                    <p class="mb-0">Doctor Email:</p>
+                                                    <strong><%# Eval("doctorEmail") %></strong>
                                                 </div>
                                             </div>
                                             <div class="col-md-2 d-flex justify-content-center">
@@ -165,11 +167,10 @@
                                             </div>
 
                                             <div class="col-md-2 d-flex justify-content-center">
-                                                <asp:LinkButton ID="btnDetails" CssClass="btn btn-primary" runat="server"
-                                                    OnCommand="btnDetails_Command"
-                                                    CommandName="Details" 
-                                                    CommandArgument='<%# Eval("appointmentID") %>' >
-                                                    See Details</asp:LinkButton>
+                                                <asp:LinkButton ID="btnSendEmail" runat="server" CssClass="btn btn-primary"
+                                                    CommandName="SendEmail" CommandArgument='<%# Eval("appointmentID") %>'>
+                                                    Notify
+                                                </asp:LinkButton>
                                             </div>
                                         </div>
                                     </div>

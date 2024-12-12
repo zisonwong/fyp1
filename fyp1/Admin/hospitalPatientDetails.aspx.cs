@@ -4,6 +4,8 @@ using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Net.Mail;
+using System.Net;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -43,15 +45,13 @@ namespace fyp1.Admin
                 av.availableTo AS endTime,
                 d.name AS DoctorName,
                 d.doctorID AS DoctorID,
-                dep.name AS DepartmentName
+                d.email AS DoctorEmail
             FROM 
                 Appointment a
             INNER JOIN 
                 Availability av ON a.availabilityID = av.availabilityID
             INNER JOIN 
                 Doctor d ON av.doctorID = d.doctorID
-            INNER JOIN 
-                Department dep ON d.departmentID = dep.departmentID
             WHERE 
                 a.patientID = @patientID
                 AND av.availableDate > CONVERT(date, GETDATE())
@@ -78,7 +78,6 @@ namespace fyp1.Admin
                             {
                                 rptUpcomingAppointments.DataSource = null;
                                 rptUpcomingAppointments.DataBind();
-                                Response.Write("No upcoming appointments found.");
                             }
                         }
                     }
@@ -137,15 +136,6 @@ namespace fyp1.Admin
             }
         }
 
-        protected void btnDetails_Command(object sender, CommandEventArgs e)
-        {
-            if (e.CommandArgument != null)
-            {
-                string appointmentID = e.CommandArgument.ToString();
-                Response.Redirect($"~/Admin/hospitalAppointmentDetails.aspx?appointmentID={appointmentID}");
-            }
-        }
-
         private void LoadPatientData(string patientID)
         {
             using (SqlConnection connection = new SqlConnection(connectionString))
@@ -190,7 +180,7 @@ namespace fyp1.Admin
                                 }
                                 else
                                 {
-                                    imgAvatar.ImageUrl = "../hospitalImg/defaultAvatar.jpg"; 
+                                    imgAvatar.ImageUrl = "../hospitalImg/defaultAvatar.jpg";
                                 }
                             }
                             else
@@ -207,5 +197,115 @@ namespace fyp1.Admin
                 }
             }
         }
+        protected void rptUpcomingAppointments_ItemCommand(object source, RepeaterCommandEventArgs e)
+        {
+            if (e.CommandName == "SendEmail")
+            {
+                string appointmentID = e.CommandArgument.ToString();
+                SendAppointmentEmail(appointmentID);
+            }
+        }
+
+        private void SendAppointmentEmail(string appointmentID)
+        {
+            string query = @"
+        SELECT 
+            p.email AS PatientEmail,
+            p.name AS PatientName,
+            av.availableDate AS AppointmentDate,
+            av.availableFrom AS StartTime,
+            av.availableTo AS EndTime,
+            d.name AS DoctorName
+        FROM 
+            Appointment a
+        INNER JOIN 
+            Availability av ON a.availabilityID = av.availabilityID
+        INNER JOIN 
+            Patient p ON a.patientID = p.patientID
+        INNER JOIN 
+            Doctor d ON av.doctorID = d.doctorID
+        WHERE 
+            a.appointmentID = @appointmentID";
+
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@appointmentID", appointmentID);
+
+                    try
+                    {
+                        conn.Open();
+                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                string patientEmail = reader["PatientEmail"].ToString();
+                                string patientName = reader["PatientName"].ToString();
+                                DateTime appointmentDate = Convert.ToDateTime(reader["AppointmentDate"]);
+                                TimeSpan startTime = (TimeSpan)reader["StartTime"];
+                                TimeSpan endTime = (TimeSpan)reader["EndTime"];
+                                string doctorName = reader["DoctorName"].ToString();
+
+                                string subject = "Appointment Reminder";
+                                string body = $@"
+                            Dear {patientName},
+                            
+                            This is a reminder for your upcoming appointment:
+                            - Date: {appointmentDate:dd/MM/yyyy}
+                            - Time: {startTime} to {endTime}
+                            - Doctor: {doctorName}
+
+                            Please contact us if you have any questions.
+
+                            Best regards,
+                            Trinity Medical Centre";
+
+                                using (MailMessage mail = new MailMessage())
+                                {
+                                    mail.From = new MailAddress("yhchan6@gmail.com");
+                                    mail.To.Add(patientEmail);
+                                    mail.Subject = subject;
+                                    mail.Body = body;
+                                    mail.IsBodyHtml = false;
+
+                                    using (SmtpClient smtp = new SmtpClient("smtp.gmail.com", 587))
+                                    {
+                                        smtp.Credentials = new NetworkCredential("yhchan6@gmail.com", "xhbwlasavhxfrtrz");
+                                        smtp.EnableSsl = true;
+                                        try
+                                        {
+                                            smtp.Send(mail);
+
+                                            string successScript = "alert('Email sent successfully!');";
+                                            ClientScript.RegisterStartupScript(this.GetType(), "SuccessMessage", successScript, true);
+                                        }
+                                        catch (SmtpException ex)
+                                        {
+                                            string errorScript = $"alert('SMTP Error: {ex.Message.Replace("'", "\\'")}');";
+                                            ClientScript.RegisterStartupScript(this.GetType(), "ErrorMessage", errorScript, true);
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            string errorScript = $"alert('Error: {ex.Message.Replace("'", "\\'")}');";
+                                            ClientScript.RegisterStartupScript(this.GetType(), "ErrorMessage", errorScript, true);
+                                        }
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                Response.Write("Appointment not found.");
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Response.Write("Error: " + ex.Message);
+                    }
+                }
+            }
+        }
+
     }
 }

@@ -19,9 +19,15 @@ namespace fyp1.Admin
         {
             if (!IsPostBack)
             {
+                PopulateDoctorDropdown();
                 if (Request.Cookies["DoctorID"] == null)
                 {
                     Response.Redirect("~/Admin/hospitalStaffLogin.aspx");
+                }
+                else
+                {
+                    String doctorID = GetDoctorID();
+                    PopulateDoctorBranch(doctorID);
                 }
 
                 if (ViewState["CurrentMonth"] == null || ViewState["CurrentYear"] == null)
@@ -30,8 +36,6 @@ namespace fyp1.Admin
                     ViewState["CurrentYear"] = DateTime.Now.Year;
                 }
 
-                PopulateTimeDropdown(ddlAvailableFrom, "Choose Time");
-                PopulateTimeDropdown(ddlAvailableTo, "Choose Time");
                 PopulateIntervalDropdown(ddlIntervalTime, "Choose Duration");
 
                 DisplayCalendar();
@@ -49,12 +53,18 @@ namespace fyp1.Admin
 
                 rbNoRepeat.Checked = true;
                 pnlRepeatDays.Visible = false;
+                txtXMonth.Visible = false;
+                txtDisplayMonthText.Visible = true;
                 lblMonth2.Text = new DateTime(currentYear, currentMonth, 1).ToString("MMMM yyyy");
             }
-
             // Attach event handlers for radio buttons
             rbRepeat.CheckedChanged += new EventHandler(RadioButton_CheckedChanged);
             rbNoRepeat.CheckedChanged += new EventHandler(RadioButton_CheckedChanged);
+            rbRepeatMonth.CheckedChanged += new EventHandler(RadioButton_CheckedChanged);
+            rbRepeat3Month.CheckedChanged += new EventHandler(RadioButton_CheckedChanged);
+            rbRepeat6Month.CheckedChanged += new EventHandler(RadioButton_CheckedChanged);
+            rbRepeatYear.CheckedChanged += new EventHandler(RadioButton_CheckedChanged);
+            rbXMonth.CheckedChanged += new EventHandler(RadioButton_CheckedChanged);
         }
 
 
@@ -81,7 +91,7 @@ namespace fyp1.Admin
 
             // Render the calendar and update lblMonth text using JavaScript
             string monthYearText = new DateTime(currentYear, currentMonth, 1).ToString("MMMM yyyy");
-            ScriptManager.RegisterStartupScript(this, this.GetType(), "updateMonth", $"document.getElementById('lblMonth').textContent = '{monthYearText}';", true);
+            ScriptManager.RegisterStartupScript(this, this.GetType(), "updateMonth", $"document.getElementById('<%= lblMonth2.ClientID %>').textContent = '{monthYearText}';", true);
 
             // Refresh the calendar display with the updated month and year
             DisplayCalendar();
@@ -110,7 +120,7 @@ namespace fyp1.Admin
 
             // Render the calendar and update lblMonth text using JavaScript
             string monthYearText = new DateTime(currentYear, currentMonth, 1).ToString("MMMM yyyy");
-            ScriptManager.RegisterStartupScript(this, this.GetType(), "updateMonth", $"document.getElementById('lblMonth').textContent = '{monthYearText}';", true);
+            ScriptManager.RegisterStartupScript(this, this.GetType(), "updateMonth", $"document.getElementById('<%= lblMonth2.ClientID %>').textContent = '{monthYearText}';", true);
 
             // Refresh the calendar display with the updated month and year
             DisplayCalendar();
@@ -119,26 +129,20 @@ namespace fyp1.Admin
 
         private void UpdateMonthLabel()
         {
-            // Get the month and year from ViewState
             int currentMonth = (int)ViewState["CurrentMonth"];
             int currentYear = (int)ViewState["CurrentYear"];
 
-            // Set the label text with the current month and year
             lblMonth2.Text = new DateTime(currentYear, currentMonth, 1).ToString("MMMM yyyy");
-            // Make sure the label is visible for JS to access
             lblMonth2.Visible = true;
         }
 
         private void DisplayCalendar()
         {
-            string doctorID = null;
-            if (Request.Cookies["DoctorID"] != null)
+            string doctorID = GetDoctorID();
+
+            if (string.IsNullOrEmpty(doctorID))
             {
-                doctorID = Request.Cookies["DoctorID"].Value;
-            }
-            else
-            {
-                ClientScript.RegisterStartupScript(this.GetType(), "alert", "alert('Doctor ID not found. Please log in again.');", true);
+                ClientScript.RegisterStartupScript(this.GetType(), "alert", "alert('Doctor ID not found. Please select a doctor or log in again.');", true);
                 return;
             }
 
@@ -197,10 +201,10 @@ namespace fyp1.Admin
 
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
-                string query = @"SELECT availabilityID, availableFrom, availableTo 
-                 FROM Availability 
-                 WHERE availableDate = @date AND doctorID = @doctorID
-                 ORDER BY availableFrom ASC";
+                string query = @"SELECT availabilityID, availableFrom, availableTo, branchID 
+                         FROM Availability 
+                         WHERE availableDate = @date AND doctorID = @doctorID
+                         ORDER BY branchID, availableFrom ASC";
 
                 SqlCommand cmd = new SqlCommand(query, conn);
                 cmd.Parameters.AddWithValue("@date", date);
@@ -209,62 +213,80 @@ namespace fyp1.Admin
                 conn.Open();
                 using (SqlDataReader reader = cmd.ExecuteReader())
                 {
-                    TimeSpan? currentStartTime = null;
-                    TimeSpan? currentEndTime = null;
-                    List<string> currentAvailableIDs = new List<string>();
+                    Dictionary<string, List<AvailabilitySlot>> branchAvailability = new Dictionary<string, List<AvailabilitySlot>>();
 
                     while (reader.Read())
                     {
-                        if (!reader.IsDBNull(0) && !reader.IsDBNull(1) && !reader.IsDBNull(2))
+                        if (!reader.IsDBNull(0) && !reader.IsDBNull(1) && !reader.IsDBNull(2) && !reader.IsDBNull(3))
                         {
                             string availableID = reader["availabilityID"].ToString();
                             TimeSpan startTime = (TimeSpan)reader["availableFrom"];
                             TimeSpan endTime = (TimeSpan)reader["availableTo"];
+                            string branchID = reader["branchID"].ToString();
 
-                            if (currentEndTime == null)
-                            {
-                                currentStartTime = startTime;
-                                currentEndTime = endTime;
-                                currentAvailableIDs.Add(availableID);
-                            }
-                            else if (currentEndTime.Value >= startTime)
-                            {
-                                currentEndTime = currentEndTime > endTime ? currentEndTime : endTime;
-                                currentAvailableIDs.Add(availableID);
-                            }
-                            else
-                            {
-                                string fromFormatted = (new DateTime(1, 1, 1) + currentStartTime.Value).ToString("hh:mm tt");
-                                string toFormatted = (new DateTime(1, 1, 1) + currentEndTime.Value).ToString("hh:mm tt");
-                                availabilitySlots.Add(new AvailabilitySlot
-                                {
-                                    TimeSlot = $"{fromFormatted} - {toFormatted}",
-                                    AvailableIDs = string.Join(",", currentAvailableIDs)
-                                });
+                            string fromFormatted = (new DateTime(1, 1, 1) + startTime).ToString("hh:mm tt");
+                            string toFormatted = (new DateTime(1, 1, 1) + endTime).ToString("hh:mm tt");
 
-                                currentStartTime = startTime;
-                                currentEndTime = endTime;
-                                currentAvailableIDs.Clear();
-                                currentAvailableIDs.Add(availableID);
+                            // Group availability slots by branch
+                            if (!branchAvailability.ContainsKey(branchID))
+                            {
+                                branchAvailability[branchID] = new List<AvailabilitySlot>();
                             }
+
+                            branchAvailability[branchID].Add(new AvailabilitySlot
+                            {
+                                TimeSlot = $"{fromFormatted} - {toFormatted}",
+                                AvailableIDs = availableID,
+                                BranchID = branchID
+                            });
                         }
                     }
 
-                    // Add the last time slot
-                    if (currentStartTime.HasValue && currentEndTime.HasValue)
+                    // Merge overlapping slots within each branch
+                    foreach (var branchSlots in branchAvailability)
                     {
-                        string fromFormatted = (new DateTime(1, 1, 1) + currentStartTime.Value).ToString("hh:mm tt");
-                        string toFormatted = (new DateTime(1, 1, 1) + currentEndTime.Value).ToString("hh:mm tt");
-                        availabilitySlots.Add(new AvailabilitySlot
-                        {
-                            TimeSlot = $"{fromFormatted} - {toFormatted}",
-                            AvailableIDs = string.Join(",", currentAvailableIDs)
-                        });
+                        availabilitySlots.AddRange(MergeOverlappingSlots(branchSlots.Value));
                     }
                 }
             }
 
             return availabilitySlots;
+        }
+
+        private List<AvailabilitySlot> MergeOverlappingSlots(List<AvailabilitySlot> slots)
+        {
+            if (slots == null || slots.Count == 0) return new List<AvailabilitySlot>();
+
+            // Sort slots by start time
+            slots = slots.OrderBy(s => DateTime.ParseExact(s.TimeSlot.Split('-')[0].Trim(), "hh:mm tt", CultureInfo.InvariantCulture)).ToList();
+
+            List<AvailabilitySlot> mergedSlots = new List<AvailabilitySlot>();
+            AvailabilitySlot currentSlot = slots[0];
+
+            for (int i = 1; i < slots.Count; i++)
+            {
+                DateTime currentStart = DateTime.ParseExact(currentSlot.TimeSlot.Split('-')[0].Trim(), "hh:mm tt", CultureInfo.InvariantCulture);
+                DateTime currentEnd = DateTime.ParseExact(currentSlot.TimeSlot.Split('-')[1].Trim(), "hh:mm tt", CultureInfo.InvariantCulture);
+
+                DateTime nextStart = DateTime.ParseExact(slots[i].TimeSlot.Split('-')[0].Trim(), "hh:mm tt", CultureInfo.InvariantCulture);
+                DateTime nextEnd = DateTime.ParseExact(slots[i].TimeSlot.Split('-')[1].Trim(), "hh:mm tt", CultureInfo.InvariantCulture);
+
+                if (nextStart <= currentEnd)
+                {
+                    // Merge slots
+                    currentSlot.TimeSlot = $"{currentStart.ToString("hh:mm tt")} - {(nextEnd > currentEnd ? nextEnd : currentEnd).ToString("hh:mm tt")}";
+                    currentSlot.AvailableIDs += "," + slots[i].AvailableIDs;
+                }
+                else
+                {
+                    mergedSlots.Add(currentSlot);
+                    currentSlot = slots[i];
+                }
+            }
+
+            mergedSlots.Add(currentSlot);
+
+            return mergedSlots;
         }
 
 
@@ -378,17 +400,27 @@ namespace fyp1.Admin
         protected void RadioButton_CheckedChanged(object sender, EventArgs e)
         {
             pnlRepeatDays.Visible = rbRepeat.Checked;
+            txtXMonth.Visible = rbXMonth.Checked;
+            txtDisplayMonthText.Visible = rbXMonth.Checked;
 
             if (rbRepeat.Checked)
             {
                 pnlRepeatDays.Visible = true;
+                txtDisplayMonthText.Visible = true;
+            }
+            else if (rbXMonth.Checked)
+            {
+                txtXMonth.Visible = true;
+                txtDisplayMonthText.Visible = false;
             }
             else
             {
                 pnlRepeatDays.Visible=false;
+                txtDisplayMonthText.Visible = true;
             }
         }
-        private void PopulateTimeDropdown(DropDownList ddl, string defaultText = "")
+
+        private void PopulateTimeDropdown(DropDownList ddl, string branchID, string defaultText = "")
         {
             ddl.Items.Clear();
             if (!string.IsNullOrEmpty(defaultText))
@@ -396,25 +428,64 @@ namespace fyp1.Admin
                 ddl.Items.Add(new ListItem(defaultText, ""));
             }
 
-            DateTime startTime = DateTime.Parse("08:00 AM");
-            DateTime endTime = DateTime.Parse("06:00 PM");
-
-            while (startTime <= endTime)
+            if (string.IsNullOrEmpty(branchID))
             {
-                // Check if the current time is 1:30 PM
-                if (startTime.Hour == 13 && startTime.Minute == 30)
+                ddl.Items.Add(new ListItem("No branch selected", ""));
+                return;
+            }
+
+            using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString))
+            {
+                conn.Open();
+                string query = "SELECT openTime, closeTime FROM Branch WHERE branchID = @BranchID";
+                using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
-                    startTime = startTime.AddMinutes(30); // Skip this time slot
-                    continue;
+                    cmd.Parameters.AddWithValue("@BranchID", branchID);
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            TimeSpan startTime = (TimeSpan)reader["openTime"];
+                            TimeSpan closeTime = (TimeSpan)reader["closeTime"];
+
+                            DateTime currentTime = DateTime.Today.Add(startTime);
+                            DateTime endDateTime = DateTime.Today.Add(closeTime);
+
+                            while (currentTime <= endDateTime)
+                            {
+                                if (currentTime.Hour == 13 && currentTime.Minute == 30)
+                                {
+                                    currentTime = currentTime.AddMinutes(30);
+                                    continue;
+                                }
+                                ddl.Items.Add(new ListItem(
+                                    currentTime.ToString("hh:mm tt"),
+                                    currentTime.ToString("HH:mm")
+                                ));
+                                currentTime = currentTime.AddMinutes(30);
+                            }
+                        }
+                        else
+                        {
+                            ddl.Items.Add(new ListItem("No times available", ""));
+                        }
+                    }
                 }
-
-                // Add the time to the dropdown
-                ddl.Items.Add(new ListItem(startTime.ToString("hh:mm tt"), startTime.ToString("HH:mm")));
-
-                // Increment time by 30 minutes
-                startTime = startTime.AddMinutes(30);
             }
         }
+        protected void ddlDoctorBranch_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            PopulateTimeDropdown(ddlAvailableFrom, ddlDoctorBranch.SelectedValue, "Choose Time");
+            PopulateTimeDropdown(ddlAvailableTo, ddlDoctorBranch.SelectedValue, "Choose Time");
+        }
+
+        protected void ddlDeleteDoctorBranch_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            PopulateTimeDropdown(ddlDeleteAvailableFrom, ddlDeleteDoctorBranch.SelectedValue, "Choose Time");
+            PopulateTimeDropdown(ddlDeleteAvailableTo, ddlDeleteDoctorBranch.SelectedValue, "Choose Time");
+        }
+
+
         private void PopulateIntervalDropdown(DropDownList ddl, string defaultText = "")
         {
             ddl.Items.Clear();
@@ -429,7 +500,7 @@ namespace fyp1.Admin
             ddl.Items.Add(new ListItem("45 minutes", "45"));
             ddl.Items.Add(new ListItem("60 minutes", "60"));
         }
-        private void GenerateAvailabilityRecords(string doctorID, DateTime date, DateTime availableFrom, DateTime availableTo, int interval)
+        private void GenerateAvailabilityRecords(string doctorID, string branchID, DateTime date, DateTime availableFrom, DateTime availableTo, int interval)
         {
             DateTime currentStartTime = availableFrom;
 
@@ -443,7 +514,7 @@ namespace fyp1.Admin
                 DateTime currentEndTime = currentStartTime.AddMinutes(interval);
 
                 // Save this availability record into the database
-                SaveRecordToDatabase(availabilityID, doctorID, date, currentStartTime, currentEndTime, interval);
+                SaveRecordToDatabase(availabilityID, doctorID, branchID, date, currentStartTime, currentEndTime, interval);
 
                 // Update the start time for the next interval
                 currentStartTime = currentEndTime;
@@ -451,18 +522,33 @@ namespace fyp1.Admin
         }
 
 
-        private void SaveRecordToDatabase(string availabilityID, string doctorID, DateTime date, DateTime fromTime, DateTime toTime, int interval)
+
+        private void SaveRecordToDatabase(string availabilityID, string doctorID, string branchID, DateTime date, DateTime fromTime, DateTime toTime, int interval)
         {
             string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
 
+            string availabilityType;
+            if (fromTime.TimeOfDay >= new TimeSpan(8, 0, 0) && toTime.TimeOfDay <= new TimeSpan(13, 0, 0))
+            {
+                availabilityType = "Walk-in";
+            }
+            else if (fromTime.TimeOfDay >= new TimeSpan(14, 0, 0) && toTime.TimeOfDay <= new TimeSpan(18, 0, 0))
+            {
+                availabilityType = "Online Consultation";
+            }
+            else
+            {
+                availabilityType = "Undefined"; 
+            }
+
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
-                // Check if the record already exists for the same doctor, date, and time range
-                string checkQuery = "SELECT COUNT(1) FROM Availability WHERE doctorID = @doctorID AND availableDate = @date AND availableFrom = @availableFrom AND availableTo = @availableTo";
+                string checkQuery = "SELECT COUNT(1) FROM Availability WHERE doctorID = @doctorID AND branchID = @branchID AND availableDate = @date AND availableFrom = @availableFrom AND availableTo = @availableTo";
 
                 using (SqlCommand checkCmd = new SqlCommand(checkQuery, conn))
                 {
                     checkCmd.Parameters.AddWithValue("@doctorID", doctorID);
+                    checkCmd.Parameters.AddWithValue("@branchID", branchID);
                     checkCmd.Parameters.AddWithValue("@date", date);
                     checkCmd.Parameters.AddWithValue("@availableFrom", fromTime.TimeOfDay);
                     checkCmd.Parameters.AddWithValue("@availableTo", toTime.TimeOfDay);
@@ -472,28 +558,30 @@ namespace fyp1.Admin
 
                     if (count > 0)
                     {
-                        // If the record already exists, exit early
                         return;
                     }
                 }
 
-                // If the record doesn't exist, proceed with inserting the new availability record
-                string insertQuery = "INSERT INTO Availability (availabilityID, doctorID, availableDate, availableFrom, availableTo, intervalTime, status) " +
-                                     "VALUES (@availabilityID, @doctorID, @date, @availableFrom, @availableTo, @intervalTime, @status)";
+                string insertQuery = "INSERT INTO Availability (availabilityID, doctorID, branchID, availableDate, availableFrom, availableTo, intervalTime, status, type) " +
+                                     "VALUES (@availabilityID, @doctorID, @branchID, @date, @availableFrom, @availableTo, @intervalTime, @status, @type)";
 
                 using (SqlCommand cmd = new SqlCommand(insertQuery, conn))
                 {
                     cmd.Parameters.AddWithValue("@availabilityID", availabilityID);
                     cmd.Parameters.AddWithValue("@doctorID", doctorID);
+                    cmd.Parameters.AddWithValue("@branchID", branchID);
                     cmd.Parameters.AddWithValue("@date", date);
                     cmd.Parameters.AddWithValue("@availableFrom", fromTime.TimeOfDay);
                     cmd.Parameters.AddWithValue("@availableTo", toTime.TimeOfDay);
                     cmd.Parameters.AddWithValue("@intervalTime", TimeSpan.FromMinutes(interval));
                     cmd.Parameters.AddWithValue("@status", "Available"); // Default status
+                    cmd.Parameters.AddWithValue("@type", availabilityType); // Set the type
                     cmd.ExecuteNonQuery();
                 }
             }
         }
+
+
 
         protected void btnSave_Click(object sender, EventArgs e)
         {
@@ -515,10 +603,16 @@ namespace fyp1.Admin
                 return;
             }
 
+            if (string.IsNullOrEmpty(ddlDoctorBranch.SelectedValue))
+            {
+                ClientScript.RegisterStartupScript(this.GetType(), "alert", "alert('Please select a branch.');", true);
+                return;
+            }
+
             string doctorID = null;
             if (Request.Cookies["DoctorID"] != null)
             {
-                doctorID = Request.Cookies["DoctorID"].Value;
+                doctorID = GetDoctorID();
             }
             else
             {
@@ -529,8 +623,8 @@ namespace fyp1.Admin
             DateTime date = DateTime.Parse(txtDate.Text);
             DateTime availableFrom = DateTime.Parse(ddlAvailableFrom.SelectedValue);
             DateTime availableTo = DateTime.Parse(ddlAvailableTo.SelectedValue);
+            string branchID = ddlDoctorBranch.SelectedValue;
 
-            // Validate that start time is earlier than end time
             if (availableFrom >= availableTo)
             {
                 ClientScript.RegisterStartupScript(this.GetType(), "alert", "alert('Start time must be earlier than end time.');", true);
@@ -539,7 +633,69 @@ namespace fyp1.Admin
 
             int intervalMinutes = int.Parse(ddlIntervalTime.SelectedValue);
 
-            if (rbRepeat.Checked)
+            if (rbRepeatYear.Checked)
+            {
+                for (int month = 1; month <= 12; month++)
+                {
+                    int daysInMonth = DateTime.DaysInMonth(date.Year, month);
+                    for (int day = 1; day <= daysInMonth; day++)
+                    {
+                        DateTime currentDay = new DateTime(date.Year, month, day);
+                        GenerateAvailabilityRecords(doctorID, branchID, currentDay, availableFrom, availableTo, intervalMinutes);
+                    }
+                }
+            }
+            else if (rbRepeat3Month.Checked || rbRepeat6Month.Checked)
+            {
+                int monthsToRepeat = rbRepeat3Month.Checked ? 3 : 6;
+
+                for (int i = 0; i < monthsToRepeat; i++)
+                {
+                    DateTime currentMonth = date.AddMonths(i);
+                    int daysInMonth = DateTime.DaysInMonth(currentMonth.Year, currentMonth.Month);
+
+                    for (int day = 1; day <= daysInMonth; day++)
+                    {
+                        DateTime currentDay = new DateTime(currentMonth.Year, currentMonth.Month, day);
+                        GenerateAvailabilityRecords(doctorID, branchID, currentDay, availableFrom, availableTo, intervalMinutes);
+                    }
+                }
+            }
+            else if (rbXMonth.Checked)
+            {
+                int numOfMonths = 0;
+
+                bool isValid = int.TryParse(txtXMonth.Text, out numOfMonths);
+
+                if (!isValid || numOfMonths <= 0)
+                {
+                    ClientScript.RegisterStartupScript(this.GetType(), "alert", "alert('Please enter a valid positive number of months.');", true);
+                    return;
+                }
+
+                for (int i = 0; i < numOfMonths; i++)
+                {
+                    DateTime currentMonth = date.AddMonths(i);
+                    int daysInMonth = DateTime.DaysInMonth(currentMonth.Year, currentMonth.Month);
+
+                    for (int day = 1; day <= daysInMonth; day++)
+                    {
+                        DateTime currentDay = new DateTime(currentMonth.Year, currentMonth.Month, day);
+                        GenerateAvailabilityRecords(doctorID, branchID, currentDay, availableFrom, availableTo, intervalMinutes);
+                    }
+                }
+            }
+            else if (rbRepeatMonth.Checked)
+            {
+                int daysInMonth = DateTime.DaysInMonth(date.Year, date.Month);
+
+                for (int i = 1; i <= daysInMonth; i++)
+                {
+                    DateTime currentDay = new DateTime(date.Year, date.Month, i);
+                    GenerateAvailabilityRecords(doctorID, branchID, currentDay, availableFrom, availableTo, intervalMinutes);
+                }
+            }
+            else if (rbRepeat.Checked)
             {
                 if (SelectedDayIndices.Count == 0)
                 {
@@ -552,18 +708,16 @@ namespace fyp1.Admin
                 foreach (int index in SelectedDayIndices)
                 {
                     DateTime repeatDate = weekDates[index];
-                    GenerateAvailabilityRecords(doctorID, repeatDate, availableFrom, availableTo, intervalMinutes);
+                    GenerateAvailabilityRecords(doctorID, branchID, repeatDate, availableFrom, availableTo, intervalMinutes);
                 }
             }
             else
             {
-                GenerateAvailabilityRecords(doctorID, date, availableFrom, availableTo, intervalMinutes);
+                GenerateAvailabilityRecords(doctorID, branchID, date, availableFrom, availableTo, intervalMinutes);
             }
 
             DisplayCalendar();
-
             ClearSection();
-
             SelectedDayIndices.Clear();
 
             ClientScript.RegisterStartupScript(this.GetType(), "alert", "alert('Availability saved successfully.');", true);
@@ -606,11 +760,20 @@ namespace fyp1.Admin
             ddlAvailableFrom.SelectedIndex = 0;
             ddlAvailableTo.SelectedIndex = 0;
             ddlIntervalTime.SelectedIndex = 0;
+            ddlDoctorBranch.SelectedIndex = 0;
+            txtXMonth.Text = "";
 
             SelectedDayIndices.Clear();
             BindDaysOfWeek(DateTime.Parse(txtDate.Text));
         }
-
+        private void ClearSection2()
+        {
+            ddlDeleteAvailableFrom.SelectedIndex = 0;
+            ddlDeleteAvailableTo.SelectedIndex = 0;
+            ddlDeleteDoctorBranch.SelectedIndex = 0;
+            txtDeleteStartDate.Text = "";
+            txtDeleteEndDate.Text = "";
+        }
         protected void btnSaveEdit_Click(object sender, EventArgs e)
         {
             try
@@ -762,6 +925,7 @@ namespace fyp1.Admin
         protected void ddlAvailableFrom_SelectedIndexChanged(object sender, EventArgs e)
         {
             string selectedTime = ddlAvailableFrom.SelectedValue;
+            string branchID = ddlDoctorBranch.SelectedValue; 
 
             // Clear existing items
             ddlAvailableTo.Items.Clear();
@@ -772,42 +936,368 @@ namespace fyp1.Admin
                 return; // Exit if no time is selected
             }
 
-            DateTime selectedDateTime;
-            if (DateTime.TryParse(selectedTime, out selectedDateTime))
+            using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString))
             {
-                // Populate ddlAvailableTo with time slots based on selected time
-                if (selectedDateTime.Hour >= 8 && selectedDateTime.Hour < 13)
+                conn.Open();
+                string query = "SELECT openTime, closeTime FROM Branch WHERE branchID = @BranchID";
+                using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
-                    // Available times from 8 AM to 1 PM, excluding 1:30 PM
-                    for (int hour = 8; hour <= 13; hour++)
+                    cmd.Parameters.AddWithValue("@BranchID", branchID);
+                    using (SqlDataReader reader = cmd.ExecuteReader())
                     {
-                        for (int minute = 0; minute < 60; minute += 30)
+                        if (reader.Read())
                         {
-                            // Skip 1:30 PM
-                            if (hour == 13 && minute == 30)
-                                continue;
+                            TimeSpan openTime = (TimeSpan)reader["openTime"];
+                            TimeSpan closeTime = (TimeSpan)reader["closeTime"];
 
-                            DateTime timeSlot = new DateTime(selectedDateTime.Year, selectedDateTime.Month, selectedDateTime.Day, hour, minute, 0);
-                            ddlAvailableTo.Items.Add(new ListItem(timeSlot.ToString("hh:mm tt"), timeSlot.ToString("HH:mm")));
-                        }
-                    }
-                }
-                else if (selectedDateTime.Hour >= 14)
-                {
-                    for (int hour = 14; hour <= 18; hour++)
-                    {
-                        for (int minute = 0; minute < 60; minute += 30)
-                        {
-                            if (hour == 18 && minute == 30)
-                                continue;
+                            DateTime selectedDateTime;
+                            if (DateTime.TryParse(selectedTime, out selectedDateTime))
+                            {
+                                DateTime startDateTime = DateTime.Today.Add(openTime);
+                                DateTime endDateTime = DateTime.Today.Add(closeTime);
+                                DateTime currentTime = DateTime.Today.Add(selectedDateTime.TimeOfDay);
 
-                            DateTime timeSlot = new DateTime(selectedDateTime.Year, selectedDateTime.Month, selectedDateTime.Day, hour, minute, 0);
-                            ddlAvailableTo.Items.Add(new ListItem(timeSlot.ToString("hh:mm tt"), timeSlot.ToString("HH:mm")));
+                                if (currentTime.TimeOfDay == new TimeSpan(13, 0, 0)) 
+                                {
+                                    ddlAvailableTo.Items.Clear();
+                                    ddlAvailableTo.Items.Add(new ListItem("No available times", ""));
+                                    return;
+                                }
+
+                                DateTime endTimeStart;
+                                DateTime endTimeEnd;
+
+                                if (currentTime.TimeOfDay < new TimeSpan(13, 0, 0)) 
+                                {
+                                    endTimeStart = currentTime;
+                                    endTimeEnd = DateTime.Today.Add(new TimeSpan(13, 0, 0)); 
+                                }
+                                else 
+                                {
+                                    endTimeStart = currentTime;
+                                    endTimeEnd = endDateTime; 
+                                }
+
+                                while (endTimeStart < endTimeEnd)
+                                {
+                                    endTimeStart = endTimeStart.AddMinutes(30);
+
+                                    if (endTimeStart.TimeOfDay > closeTime)
+                                        break;
+
+                                    ddlAvailableTo.Items.Add(new ListItem(
+                                        endTimeStart.ToString("hh:mm tt"),
+                                        endTimeStart.ToString("HH:mm")
+                                    ));
+                                }
+                            }
                         }
                     }
                 }
             }
         }
+
+        protected void PopulateDoctorBranch(string doctorID)
+        {
+            // Clear existing branches in the delete branch dropdown
+            ddlDeleteDoctorBranch.Items.Clear();
+            ddlDeleteDoctorBranch.Items.Add(new ListItem("Select Branch", "")); // Add default item
+
+            ddlDoctorBranch.Items.Clear();
+            ddlDoctorBranch.Items.Add(new ListItem("Choose Branch", "")); // Add default item
+
+            string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
+
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                string query = @"
+            SELECT DISTINCT b.branchID, b.name 
+            FROM Branch b
+            INNER JOIN Department d ON b.branchID = d.branchID
+            INNER JOIN DoctorDepartment dd ON d.departmentID = dd.departmentID
+            WHERE dd.doctorID = @DoctorID AND b.status = 'Activated'";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@DoctorID", doctorID);
+
+                    try
+                    {
+                        conn.Open();
+                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                string branchID = reader["branchID"].ToString();
+                                string branchName = reader["name"].ToString();
+
+                                ddlDoctorBranch.Items.Add(new ListItem(branchName, branchID));
+                                ddlDeleteDoctorBranch.Items.Add(new ListItem(branchName, branchID));
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("Error: " + ex.Message);
+                    }
+                }
+            }
+        }
+
+        public string GetBranchColorClass(object branchID)
+        {
+            if (branchID == null) return "badge-default";
+
+            string branchIdStr = branchID.ToString();
+
+            int selectedIndex = ddlDoctorBranch.Items.IndexOf(ddlDoctorBranch.Items.FindByValue(branchIdStr));
+
+            if (selectedIndex == -1) return "badge-secondary"; 
+
+            string[] colorClasses = { "", "badge-primary", "badge-danger", "badge-success", "badge-warning", "badge-secondary" };
+
+            return colorClasses[selectedIndex % colorClasses.Length];
+        }
+        public string GetBranchName(object branchID)
+        {
+            if (branchID == null) return "Unknown Branch";
+
+            string branchIdStr = branchID.ToString();
+            ListItem branchItem = ddlDoctorBranch.Items.FindByValue(branchIdStr);
+
+            return branchItem != null ? branchItem.Text : "Unknown Branch";
+        }
+        protected void btnDeleteAvailability_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                DateTime startDate = DateTime.Parse(txtDeleteStartDate.Text);
+                DateTime endDate = DateTime.Parse(txtDeleteEndDate.Text);
+                string branchID = ddlDeleteDoctorBranch.SelectedValue;
+
+                // Safely parse start time and end time as TimeSpan, using nullable TimeSpan (TimeSpan?)
+                TimeSpan? startTime = null;
+                TimeSpan? endTime = null;
+
+                // Only parse if there's a valid value in the dropdown
+                if (!string.IsNullOrEmpty(ddlDeleteAvailableFrom.SelectedValue))
+                {
+                    startTime = TimeSpan.Parse(ddlDeleteAvailableFrom.SelectedValue);
+                }
+
+                if (!string.IsNullOrEmpty(ddlDeleteAvailableTo.SelectedValue))
+                {
+                    endTime = TimeSpan.Parse(ddlDeleteAvailableTo.SelectedValue);
+                }
+
+                if (string.IsNullOrEmpty(txtDeleteStartDate.Text))
+                {
+                    ClientScript.RegisterStartupScript(this.GetType(), "alert", "alert('Please select a start date.');", true);
+                    return;
+                }
+
+                if (string.IsNullOrEmpty(txtDeleteEndDate.Text))
+                {
+                    ClientScript.RegisterStartupScript(this.GetType(), "alert", "alert('Please select a end date.');", true);
+                    return;
+                }
+
+                if (startDate > endDate)
+                {
+                    ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "alert('Start date must be earlier than end date.');", true);
+                    return;
+                }
+
+                if (string.IsNullOrEmpty(ddlDeleteDoctorBranch.SelectedValue))
+                {
+                    ClientScript.RegisterStartupScript(this.GetType(), "alert", "alert('Please select a branch.');", true);
+                    return;
+                }
+
+                if (string.IsNullOrEmpty(ddlDeleteAvailableFrom.SelectedValue))
+                {
+                    ClientScript.RegisterStartupScript(this.GetType(), "alert", "alert('Please select a start time.');", true);
+                    return;
+                }
+
+                if (string.IsNullOrEmpty(ddlDeleteAvailableTo.SelectedValue))
+                {
+                    ClientScript.RegisterStartupScript(this.GetType(), "alert", "alert('Please select a end time.');", true);
+                    return;
+                }
+
+                if (startTime >= endTime)
+                {
+                    ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "alert('Start time must be earlier than end time.');", true);
+                    return;
+                }
+
+                string doctorID = GetDoctorID();
+
+                if (string.IsNullOrEmpty(doctorID))
+                {
+                    ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "alert('Doctor ID not found. Please select a doctor or log in again.');", true);
+                    return;
+                }
+
+                if (Request.Cookies["DoctorID"] == null && string.IsNullOrEmpty(ddlSelectDoctor.SelectedValue))
+                {
+                    ClientScript.RegisterStartupScript(this.GetType(), "alert", "alert('Please select a doctor to proceed.');", true);
+                    return;
+                }
+
+                using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString))
+                {
+                    conn.Open();
+
+                    // SQL query to check if status is "Available"
+                    string checkStatusQuery = @"
+                SELECT COUNT(*) FROM Availability
+                WHERE doctorID = @DoctorID
+                AND branchID = @BranchID
+                AND availableDate BETWEEN @StartDate AND @EndDate
+                AND availableFrom >= @StartTime
+                AND availableTo <= @EndTime
+                AND status != 'Available'";  // Check if status is not "Available"
+
+                    using (SqlCommand cmd = new SqlCommand(checkStatusQuery, conn))
+                    {
+                        // Add parameters for the query
+                        cmd.Parameters.AddWithValue("@DoctorID", doctorID);
+                        cmd.Parameters.AddWithValue("@BranchID", branchID);
+                        cmd.Parameters.AddWithValue("@StartDate", startDate);
+                        cmd.Parameters.AddWithValue("@EndDate", endDate);
+                        cmd.Parameters.AddWithValue("@StartTime", startTime);
+                        cmd.Parameters.AddWithValue("@EndTime", endTime);
+
+                        int nonAvailableCount = (int)cmd.ExecuteScalar();
+
+                        if (nonAvailableCount > 0)
+                        {
+                            // If there are records with status not equal to "Available"
+                            ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "alert('Cannot delete availability records because some records' status is not \"Available\".');", true);
+                            return; // Exit without deleting
+                        }
+                    }
+
+                    // SQL query to delete availability records if status is "Available"
+                    string deleteQuery = @"
+                DELETE FROM Availability
+                WHERE doctorID = @DoctorID
+                AND branchID = @BranchID
+                AND availableDate BETWEEN @StartDate AND @EndDate
+                AND (@StartTime IS NULL OR availableFrom >= @StartTime)
+                AND (@EndTime IS NULL OR availableTo <= @EndTime)";
+
+                    using (SqlCommand cmd = new SqlCommand(deleteQuery, conn))
+                    {
+                        // Add parameters for the delete query
+                        cmd.Parameters.AddWithValue("@DoctorID", doctorID);
+                        cmd.Parameters.AddWithValue("@BranchID", branchID);
+                        cmd.Parameters.AddWithValue("@StartDate", startDate);
+                        cmd.Parameters.AddWithValue("@EndDate", endDate);
+                        cmd.Parameters.AddWithValue("@StartTime", startTime);
+                        cmd.Parameters.AddWithValue("@EndTime", endTime);
+
+                        int rowsAffected = cmd.ExecuteNonQuery();
+
+                        // Provide feedback
+                        if (rowsAffected > 0)
+                        {
+                            string successMessage = $"{rowsAffected} availability record(s) deleted successfully.";
+                            ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", $"alert('{successMessage}');", true);
+                        }
+                        else
+                        {
+                            ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "alert('No availability records found matching the criteria.');", true);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Handle errors
+                string errorMessage = $"An error occurred: {ex.Message}";
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", $"alert('{errorMessage}');", true);
+            }
+            DisplayCalendar();
+            ClearSection2();
+        }
+        private void PopulateDoctorDropdown()
+        {
+            ddlSelectDoctor.Items.Clear();
+            ddlSelectDoctor.Items.Add(new ListItem("Select Doctor", ""));
+
+            string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
+
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                string query = @"
+            SELECT doctorID, name 
+            FROM Doctor
+            WHERE status = 'Activate'";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    try
+                    {
+                        conn.Open();
+                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                string doctorID = reader["doctorID"].ToString();
+                                string doctorName = reader["name"].ToString();
+
+                                ddlSelectDoctor.Items.Add(new ListItem($"{doctorName} - {doctorID}", doctorID));
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error populating doctor dropdown: {ex.Message}");
+                    }
+                }
+            }
+        }
+
+        protected void ddlSelectDoctor_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            string selectedDoctorID = ddlSelectDoctor.SelectedValue;
+
+            if (!string.IsNullOrEmpty(selectedDoctorID))
+            {
+                PopulateDoctorBranch(selectedDoctorID);
+
+                DisplayCalendar();
+            }
+            else
+            {
+                ddlDoctorBranch.Items.Clear();
+                ddlDeleteDoctorBranch.Items.Clear();
+                DisplayCalendar();
+            }
+        }
+
+
+        private string GetDoctorID()
+        {
+            if (!string.IsNullOrEmpty(ddlSelectDoctor.SelectedValue))
+            {
+                Console.WriteLine($"Dropdown Selected DoctorID: {ddlSelectDoctor.SelectedValue}");
+                return ddlSelectDoctor.SelectedValue;
+            }
+
+            if (Request.Cookies["DoctorID"] != null)
+            {
+                Console.WriteLine($"Cookie DoctorID: {Request.Cookies["DoctorID"].Value}");
+                return Request.Cookies["DoctorID"].Value;
+            }
+
+            Console.WriteLine("No Doctor ID found.");
+            return null;
+        }
+
 
     }
     public class CalendarDay
@@ -815,7 +1305,7 @@ namespace fyp1.Admin
         public string Day { get; set; }
         public bool IsPlaceholder { get; set; }
         public List<AvailabilitySlot> AvailabilityTimes { get; set; }
-        public string Badge { get; set; } // New property to hold the badge text
+        public string Badge { get; set; } 
     }
 
     public class TimeSlot
@@ -827,6 +1317,7 @@ namespace fyp1.Admin
     {
         public string TimeSlot { get; set; }
         public string AvailableIDs { get; set; }
+        public string BranchID { get; set; }
     }
     public class DayItem
     {

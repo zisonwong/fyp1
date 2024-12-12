@@ -24,6 +24,15 @@ namespace fyp1.Admin
         protected global::System.Web.UI.WebControls.LinkButton lbAddDoctor;
 
         /// <summary>
+        /// btnExportToExcel control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnExportToExcel;
+
+        /// <summary>
         /// lvStaff control.
         /// </summary>
         /// <remarks>

@@ -92,11 +92,13 @@
         .checkbox {
             margin-left: 8px;
         }
+
     </style>
 </head>
 
 <body class="bg-gray">
     <form id="form1" runat="server">
+        <asp:ScriptManager runat="server" />
         <div class="flex h-full w-screen">
 
             <!-- Sidebar -->
@@ -184,26 +186,96 @@
                             </Columns>
                         </asp:GridView>
 
-
                         <asp:Button ID="btnAddAppointment" runat="server" Text="Add Appointment" CssClass="bg-blue-500 text-white px-4 py-2 mt-2 rounded w-1/4" OnClick="btnAddAppointment_Click" />
 
                         <asp:Label ID="lblNoAppointments" runat="server" Text="" CssClass="text-gray-500 italic" Visible="false"></asp:Label>
-
                     </asp:Panel>
+
                     <!-- Emergency Contact Panel -->
                     <asp:Panel ID="panelEmergency" runat="server" CssClass="tab-content hidden bg-white shadow-md rounded-lg p-6 mb-8">
-                        <div class="flex items-center mb-6">
-                            <h3 class="text-3xl font-bold text-gray-800 mb-2">Emergency Contact</h3>
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-3xl font-bold text-gray-800">Emergency Contact</h3>
                         </div>
-                        <asp:GridView ID="gridEmergency" runat="server" AutoGenerateColumns="false" CssClass="table-auto w-full border border-gray-200 rounded-lg">
-                            <Columns>
-                                <asp:BoundField DataField="ContactName" HeaderText="Contact Name" HeaderStyle-CssClass="px-4 py-2 bg-gray-100 text-left font-semibold" ItemStyle-CssClass="px-4 py-2" />
-                                <asp:BoundField DataField="Relationship" HeaderText="Relationship" HeaderStyle-CssClass="px-4 py-2 bg-gray-100 text-left font-semibold" ItemStyle-CssClass="px-4 py-2" />
-                                <asp:BoundField DataField="Phone" HeaderText="Phone" HeaderStyle-CssClass="px-4 py-2 bg-gray-100 text-left font-semibold" ItemStyle-CssClass="px-4 py-2" />
-                                <asp:BoundField DataField="Email" HeaderText="Email" HeaderStyle-CssClass="px-4 py-2 bg-gray-100 text-left font-semibold" ItemStyle-CssClass="px-4 py-2" />
-                            </Columns>
-                        </asp:GridView>
+
+                        <asp:UpdatePanel ID="UpdatePanelEmergency" runat="server" UpdateMode="Conditional">
+                            <ContentTemplate>
+                                <asp:GridView ID="gridEmergency" runat="server" AutoGenerateColumns="false"
+                                    CssClass="table-auto w-full border border-gray-200 rounded-lg"
+                                    DataKeyNames="ContactID"
+                                    OnRowEditing="gridEmergency_RowEditing"
+                                    OnRowUpdating="gridEmergency_RowUpdating"
+                                    OnRowCancelingEdit="gridEmergency_RowCancelingEdit"
+                                    OnRowDeleting="gridEmergency_RowDeleting">
+                                    <Columns>
+                                        <asp:TemplateField HeaderText="Contact Name">
+                                            <HeaderStyle CssClass="px-4 py-2 bg-gray-100 text-left font-semibold" />
+                                            <ItemStyle CssClass="px-4 py-2" />
+                                            <EditItemTemplate>
+                                                <asp:TextBox ID="txtContactName" runat="server" Text='<%# Bind("ContactName") %>' CssClass="border rounded w-full p-2" />
+                                            </EditItemTemplate>
+                                            <ItemTemplate>
+                                                <asp:Label ID="lblContactName" runat="server" Text='<%# Eval("ContactName") %>' CssClass="text-gray-700" />
+                                            </ItemTemplate>
+                                        </asp:TemplateField>
+                                        <asp:TemplateField HeaderText="Relationship">
+                                            <HeaderStyle CssClass="px-4 py-2 bg-gray-100 text-left font-semibold" />
+                                            <ItemStyle CssClass="px-4 py-2" />
+                                            <EditItemTemplate>
+                                                <asp:TextBox ID="txtRelationship" runat="server" Text='<%# Bind("Relationship") %>' CssClass="border rounded w-full p-2" />
+                                            </EditItemTemplate>
+                                            <ItemTemplate>
+                                                <asp:Label ID="lblRelationship" runat="server" Text='<%# Eval("Relationship") %>' CssClass="text-gray-700" />
+                                            </ItemTemplate>
+                                        </asp:TemplateField>
+                                        <asp:TemplateField HeaderText="Phone">
+                                            <HeaderStyle CssClass="px-4 py-2 bg-gray-100 text-left font-semibold" />
+                                            <ItemStyle CssClass="px-4 py-2" />
+                                            <EditItemTemplate>
+                                                <asp:TextBox ID="txtPhone" runat="server" Text='<%# Bind("Phone") %>' CssClass="border rounded w-full p-2" />
+                                            </EditItemTemplate>
+                                            <ItemTemplate>
+                                                <asp:Label ID="lblPhone" runat="server" Text='<%# Eval("Phone") %>' CssClass="text-gray-700" />
+                                            </ItemTemplate>
+                                        </asp:TemplateField>
+                                        <asp:TemplateField HeaderText="Email">
+                                            <HeaderStyle CssClass="px-4 py-2 bg-gray-100 text-left font-semibold" />
+                                            <ItemStyle CssClass="px-4 py-2" />
+                                            <EditItemTemplate>
+                                                <asp:TextBox ID="txtEmail" runat="server" Text='<%# Bind("Email") %>' CssClass="border rounded w-full p-2" />
+                                            </EditItemTemplate>
+                                            <ItemTemplate>
+                                                <asp:Label ID="lblEmail" runat="server" Text='<%# Eval("Email") %>' CssClass="text-gray-700" />
+                                            </ItemTemplate>
+                                        </asp:TemplateField>
+                                        <asp:CommandField ShowEditButton="true" ShowDeleteButton="true"
+                                            EditText="Edit" DeleteText="Delete" ButtonType="Button"
+                                            ItemStyle-CssClass="text-center space-x-2" />
+                                    </Columns>
+                                </asp:GridView>
+
+
+                                <asp:Button ID="btnAddContact" runat="server" Text="Add New Contact" CssClass="bg-blue-500 text-white px-4 py-2 mt-2 rounded w-1/4" OnClick="btnAddContact_Click" />
+
+                                <asp:Panel ID="panelAddContact" runat="server" CssClass="mt-6">
+                                    <h4 class="text-xl font-bold mb-4">Add New Contact</h4>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <asp:TextBox ID="txtNewName" runat="server" CssClass="border rounded-lg p-2" Placeholder="Contact Name" />
+                                        <asp:TextBox ID="txtNewRelationship" runat="server" CssClass="border rounded-lg p-2" Placeholder="Relationship" />
+                                        <asp:TextBox ID="txtNewPhone" runat="server" CssClass="border rounded-lg p-2" Placeholder="Phone" />
+                                        <asp:TextBox ID="txtNewEmail" runat="server" CssClass="border rounded-lg p-2" Placeholder="Email" />
+                                    </div>
+                                    <asp:Button ID="btnSaveContact" runat="server" Text="Save" CssClass="btn bg-green-500 text-white mt-4 px-4 py-2 rounded-md" OnClick="btnSaveContact_Click" />
+                                </asp:Panel>
+                            </ContentTemplate>
+                            <Triggers>
+                                <asp:AsyncPostBackTrigger ControlID="btnAddContact" EventName="Click" />
+                                <asp:AsyncPostBackTrigger ControlID="btnSaveContact" EventName="Click" />
+                            </Triggers>
+                        </asp:UpdatePanel>
+
                     </asp:Panel>
+
+
                     <!-- Payment Panel -->
                     <asp:Panel ID="panelPayment" runat="server" CssClass="tab-content hidden bg-white shadow-md rounded-lg p-6 mb-8">
                         <div class="flex items-center mb-6">
@@ -212,7 +284,13 @@
                         <asp:GridView ID="gridPayment" runat="server" AutoGenerateColumns="false" CssClass="table-auto w-full border border-gray-200 rounded-lg">
                             <Columns>
                                 <asp:BoundField DataField="PaymentID" HeaderText="Payment ID" HeaderStyle-CssClass="px-4 py-2 bg-gray-100 text-left font-semibold" ItemStyle-CssClass="px-4 py-2" />
-                                <asp:BoundField DataField="PaymentAmount" HeaderText="Amount" DataFormatString="{0:C}" HeaderStyle-CssClass="px-4 py-2 bg-gray-100 text-left font-semibold" ItemStyle-CssClass="px-4 py-2" />
+                                <asp:BoundField
+                                    DataField="PaymentAmount"
+                                    HeaderText="Amount (RM)"
+                                    HeaderStyle-CssClass="px-4 py-2 bg-gray-100 text-left font-semibold"
+                                    ItemStyle-CssClass="px-4 py-2"
+                                    DataFormatString="{0:N2}" />
+
                                 <asp:BoundField DataField="PaymentDate" HeaderText="Date" DataFormatString="{0:MM/dd/yyyy}" HeaderStyle-CssClass="px-4 py-2 bg-gray-100 text-left font-semibold" ItemStyle-CssClass="px-4 py-2" />
                                 <asp:BoundField DataField="PaymentMethod" HeaderText="Payment Method" HeaderStyle-CssClass="px-4 py-2 bg-gray-100 text-left font-semibold" ItemStyle-CssClass="px-4 py-2" />
                             </Columns>

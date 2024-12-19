@@ -14,8 +14,17 @@ namespace fyp1.Client
     {
         protected void Page_Load(object sender, EventArgs e)
         {
+
+            HttpCookie CookieID = Request.Cookies["PatientID"];
+            if (CookieID == null || string.IsNullOrEmpty(CookieID.Value))
+            {
+                Response.Redirect("clientLogin.aspx");
+            }
+
             if (!IsPostBack)
             {
+
+
                 LoadBranches();
                 LoadDepartments();
                 LoadDoctors();
@@ -38,7 +47,7 @@ namespace fyp1.Client
         private void LoadDoctors(string filter = "", string branchID = "", string departmentID = "")
         {
             string query = @"
-                        SELECT 
+                        SELECT
                     d.doctorID, 
                     d.name, 
                     d.role, 

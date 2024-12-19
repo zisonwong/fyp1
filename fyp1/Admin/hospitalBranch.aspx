@@ -1,4 +1,4 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Admin/adminSideBar.Master" AutoEventWireup="true" CodeBehind="hospitalBranch.aspx.cs" Inherits="fyp1.Admin.hospitalBranch" %>
+﻿<%@ Page Title="Branch" Language="C#" MasterPageFile="~/Admin/adminSideBar.Master" AutoEventWireup="true" CodeBehind="hospitalBranch.aspx.cs" Inherits="fyp1.Admin.hospitalBranch" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
     <script src="layout/time.js"></script>
@@ -40,6 +40,7 @@
                     </div>
                 </div>
             </div>
+
             <div class="card borer-0 shadow mb-4">
                 <div class="card-body p-3">
                     <div class="table-responsive-md">
@@ -50,6 +51,7 @@
                             OnItemInserting="lvBranch_ItemInserting"
                             OnItemUpdating="lvBranch_ItemUpdating"
                             OnItemEditing="lvBranch_ItemEditing"
+                            OnPagePropertiesChanging="lvBranch_PagePropertiesChanging"
                             OnDataBound="lvBranch_DataBound"
                             OnItemCommand="lvBranch_ItemCommand">
                             <LayoutTemplate>
@@ -96,8 +98,8 @@
                                                     0 24-10.7 24-24s-10.7-24-24-24L88 64z"/></svg>
                                         </asp:LinkButton>
                                         <asp:LinkButton ID="lbDelete" runat="server"
-                                            CommandName="Unactivate" 
-                                            CommandArgument='<%# Eval("branchID") %>' 
+                                            CommandName="Unactivate"
+                                            CommandArgument='<%# Eval("branchID") %>'
                                             OnClientClick="return confirm('Are you sure you want to delete this record?');">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 16 16">
                                         <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 
@@ -106,7 +108,7 @@
                                             8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 
                                             0 0 1 .528-.47M8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5"/>
                                         </svg>
-                                            </asp:LinkButton>
+                                        </asp:LinkButton>
                                     </td>
                                 </tr>
                             </ItemTemplate>
@@ -183,6 +185,15 @@
                         </asp:ListView>
                     </div>
                 </div>
+            </div>
+            <div class="pagination-container">
+                <asp:DataPager ID="dpBranch" runat="server" PagedControlID="lvBranch" PageSize="10" class="pagination">
+                    <Fields>
+                        <asp:NextPreviousPagerField ButtonType="Button" ShowFirstPageButton="False" ShowNextPageButton="False" ShowPreviousPageButton="True" PreviousPageText="<" />
+                        <asp:NumericPagerField CurrentPageLabelCssClass="active" ButtonCount="5" />
+                        <asp:NextPreviousPagerField ButtonType="Button" ShowLastPageButton="False" ShowNextPageButton="True" ShowPreviousPageButton="False" NextPageText=">" />
+                    </Fields>
+                </asp:DataPager>
             </div>
         </div>
     </main>

@@ -15,15 +15,6 @@ namespace fyp1.Admin
     {
 
         /// <summary>
-        /// ddlFilter control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlFilter;
-
-        /// <summary>
         /// lvPatient control.
         /// </summary>
         /// <remarks>
@@ -31,5 +22,14 @@ namespace fyp1.Admin
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.ListView lvPatient;
+
+        /// <summary>
+        /// dpPatient control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DataPager dpPatient;
     }
 }

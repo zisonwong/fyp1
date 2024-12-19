@@ -10,6 +10,7 @@ using System.Web.UI.WebControls;
 using System.Drawing;
 using System.IO;
 using ClosedXML.Excel;
+using OfficeOpenXml;
 
 namespace fyp1.Admin
 {
@@ -140,76 +141,64 @@ namespace fyp1.Admin
         }
         protected void btnExportToExcel_Click(object sender, EventArgs e)
         {
-            try
+            string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
+            DataTable doctorTable = new DataTable();
+
+            using (SqlConnection conn = new SqlConnection(connectionString))
             {
-                string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
+                string query = "SELECT doctorID, ICNumber, name, CAST(DOB AS DATE) AS DOB, gender, role, email, contactInfo, status, date FROM Doctor";
 
-                DataTable doctorTable = new DataTable();
-
-                using (SqlConnection conn = new SqlConnection(connectionString))
+                using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
-                    string query = @"
-    SELECT doctorID, ICNumber, name, CAST(DOB AS DATE) AS DOB, gender, role, email, contactInfo, status 
-    FROM Doctor";
-
-                    using (SqlCommand cmd = new SqlCommand(query, conn))
+                    conn.Open();
+                    using (SqlDataAdapter adapter = new SqlDataAdapter(cmd))
                     {
-                        conn.Open();
-                        using (SqlDataAdapter adapter = new SqlDataAdapter(cmd))
-                        {
-                            adapter.Fill(doctorTable);
-                        }
+                        adapter.Fill(doctorTable);
                     }
-                }
-
-                if (doctorTable.Rows.Count > 0)
-                {
-                    using (XLWorkbook workbook = new XLWorkbook())
-                    {
-                        var worksheet = workbook.Worksheets.Add(doctorTable, "Doctors");
-
-                        // Optional: Style the header
-                        var headerRange = worksheet.Range(1, 1, 1, doctorTable.Columns.Count);
-                        headerRange.Style.Font.Bold = true;
-                        headerRange.Style.Fill.BackgroundColor = XLColor.LightGray;
-
-                        foreach (var column in doctorTable.Columns.Cast<DataColumn>())
-                        {
-                            if (column.ColumnName == "DOB")
-                            {
-                                var dateRange = worksheet.Column(column.Ordinal + 1);
-                                dateRange.Style.DateFormat.Format = "yyyy-MM-dd"; 
-                            }
-                        }
-
-                        worksheet.Columns().AdjustToContents();
-
-                        using (MemoryStream memoryStream = new MemoryStream())
-                        {
-                            workbook.SaveAs(memoryStream);
-                            byte[] byteArray = memoryStream.ToArray();
-
-                            Response.Clear();
-                            Response.Buffer = true;
-                            Response.ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-                            Response.AddHeader("content-disposition", "attachment;filename=DoctorData.xlsx");
-                            Response.BinaryWrite(byteArray);
-                            Response.End();
-                        }
-                    }
-                }
-                else
-                {
-                    ClientScript.RegisterStartupScript(this.GetType(), "alert", "alert('No doctor data found to export.');", true);
                 }
             }
-            catch (Exception ex)
+
+            if (doctorTable.Rows.Count > 0)
             {
-                // Error handling
-                string errorMessage = $"An error occurred: {ex.Message}";
-                ClientScript.RegisterStartupScript(this.GetType(), "alert", $"alert('{errorMessage}');", true);
+                using (var package = new ExcelPackage())
+                {
+                    var worksheet = package.Workbook.Worksheets.Add("Doctors");
+
+                    worksheet.Cells["A1"].LoadFromDataTable(doctorTable, true);
+
+                    using (var range = worksheet.Cells["A1:J1"]) 
+                    {
+                        range.Style.Font.Bold = true;
+                        range.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                        range.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
+                    }
+
+                    var dobColumn = worksheet.Column(4);
+                    dobColumn.Style.Numberformat.Format = "yyyy-MM-dd";
+
+                    var dateColumn = worksheet.Column(10);
+                    dateColumn.Style.Numberformat.Format = "yyyy-MM-dd";
+
+                    worksheet.Cells[worksheet.Dimension.Address].AutoFitColumns();
+
+                    using (MemoryStream memoryStream = new MemoryStream())
+                    {
+                        package.SaveAs(memoryStream);
+                        byte[] byteArray = memoryStream.ToArray();
+
+                        Response.Clear();
+                        Response.Buffer = true;
+                        Response.ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+                        Response.AddHeader("content-disposition", "attachment;filename=DoctorData.xlsx");
+                        Response.BinaryWrite(byteArray);
+                        Response.End();
+                    }
+                }
+            }
+            else
+            {
+                ClientScript.RegisterStartupScript(this.GetType(), "alert", "alert('No doctor data found to export.');", true);
             }
         }
-
     }
 }

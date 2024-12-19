@@ -25,7 +25,7 @@
                     <asp:Button CssClass="btnLogin" ID="btnLogin" runat="server" Text="Login" OnClick="btnLogin_Click"/>
                 </div>
                 <div class="form-group forget-password">
-                    <a class="forgetPW" href="forgetPassword.aspx">Forgot Password?</a>
+                    <a class="forgetPW" href="../Client/clientForgotPassword.aspx">Forgot Password?</a>
                 </div>
                 <br>
                 <br>

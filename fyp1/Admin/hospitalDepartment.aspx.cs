@@ -552,6 +552,21 @@ namespace fyp1.Admin
                     LoadDataWithFilters(searchTerm, selectBranchID);
                 }
             }
+
+        }
+        protected void lvDepartment_PagePropertiesChanging(object sender, PagePropertiesChangingEventArgs e)
+        {
+            dpDepartment.SetPageProperties(e.StartRowIndex, e.MaximumRows, false);
+
+            string searchTerm = ViewState["SearchTerm"] as string;
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                LoadFilteredData(searchTerm);
+            }
+            else
+            {
+                LoadDepartmentData();
+            }
         }
         public class Department
         {

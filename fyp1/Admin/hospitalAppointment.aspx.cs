@@ -7,6 +7,7 @@ using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using static fyp1.Admin.hospitalMedicine;
 
 namespace fyp1.Admin
 {
@@ -103,6 +104,20 @@ namespace fyp1.Admin
             {
                 string appointmentID = e.CommandArgument.ToString();
                 Response.Redirect("~/Admin/hospitalAppointmentDetails.aspx?appointmentID=" + appointmentID);
+            }
+        }
+        protected void lvAppointment_PagePropertiesChanging(object sender, PagePropertiesChangingEventArgs e)
+        {
+            dpAppointment.SetPageProperties(e.StartRowIndex, e.MaximumRows, false);
+
+            string searchTerm = ViewState["SearchTerm"] as string;
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                LoadFilteredData(searchTerm);
+            }
+            else
+            {
+                LoadAppointments();
             }
         }
     }

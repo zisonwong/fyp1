@@ -27,6 +27,7 @@ namespace fyp1.Admin
                     LoadUpcomingAppointments(patientID);
                     LoadPastAppointments(patientID);
                     LoadPatientData(patientID);
+                    LoadMedicalRecords(patientID);
                 }
                 else
                 {
@@ -147,8 +148,7 @@ namespace fyp1.Admin
                     string patientQuery = @"
                     SELECT p.name, p.ICNumber, p.DOB, p.gender, p.contactInfo, p.email, p.address, p.bloodtype, p.photo,
                            (SELECT COUNT(*) FROM MedicalRecord WHERE patientID = @patientID) AS MedicalRecordCount,
-                           (SELECT COUNT(*) FROM Appointment WHERE patientID = @patientID) AS AppointmentRecordCount,
-                           (SELECT COUNT(*) FROM MedicineDelivery WHERE patientID = @patientID) AS DeliveryRecordCount
+                           (SELECT COUNT(*) FROM Appointment WHERE patientID = @patientID) AS AppointmentRecordCount
                     FROM Patient p
                     WHERE p.patientID = @patientID";
 
@@ -170,7 +170,6 @@ namespace fyp1.Admin
                                 lblAddress.Text = reader["address"].ToString();
                                 lblMedical.Text = reader["MedicalRecordCount"].ToString();
                                 lblAppointment.Text = reader["AppointmentRecordCount"].ToString();
-                                lblDelivery.Text = reader["DeliveryRecordCount"].ToString();
 
                                 if (reader["photo"] != DBNull.Value)
                                 {
@@ -303,6 +302,64 @@ namespace fyp1.Admin
                     {
                         Response.Write("Error: " + ex.Message);
                     }
+                }
+            }
+        }
+        private void LoadMedicalRecords(string patientID)
+        {
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                // Query to fetch medical records along with the count of prescriptions
+                string query = @"
+        SELECT 
+            mr.recordID,
+            mr.patientID,
+            mr.doctorID,
+            doc.name AS doctorName, 
+            mr.recordDate,
+            (SELECT COUNT(*) 
+             FROM Prescription p 
+             WHERE p.recordID = mr.recordID) AS prescriptionNumber
+        FROM 
+            MedicalRecord mr
+        LEFT JOIN 
+            Doctor doc ON mr.doctorID = doc.doctorID
+        WHERE 
+            mr.patientID = @PatientID
+        ORDER BY 
+            mr.recordID ASC";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    // Add parameter for patientID
+                    cmd.Parameters.AddWithValue("@PatientID", patientID);
+
+                    conn.Open();
+                    SqlDataAdapter da = new SqlDataAdapter(cmd);
+                    DataTable dt = new DataTable();
+                    da.Fill(dt);
+
+                    // Bind data to ListView
+                    lvMedicalRecord.DataSource = dt;
+                    lvMedicalRecord.DataBind();
+                }
+            }
+        }
+        protected void btnCheckDetails_Click(object sender, EventArgs e)
+        {
+            LinkButton btn = sender as LinkButton;
+
+            if (btn != null)
+            {
+                string recordID = btn.CommandArgument;
+
+                if (!string.IsNullOrEmpty(recordID))
+                {
+                    Response.Redirect($"~/Admin/hospitalRecordDetails.aspx?recordID={HttpUtility.UrlEncode(recordID)}");
+                }
+                else
+                {
+                    ClientScript.RegisterStartupScript(this.GetType(), "alert", "alert('Record ID not found.');", true);
                 }
             }
         }

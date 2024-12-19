@@ -1,4 +1,4 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Admin/adminSideBar.Master" AutoEventWireup="true" CodeBehind="hospitalMedicine.aspx.cs" Inherits="fyp1.Admin.hospitalMedicine" %>
+﻿<%@ Page Title="Medicine" Language="C#" MasterPageFile="~/Admin/adminSideBar.Master" AutoEventWireup="true" CodeBehind="hospitalMedicine.aspx.cs" Inherits="fyp1.Admin.hospitalMedicine" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
     <link href="~/layout/PageStyle.css" rel="stylesheet" />
@@ -18,14 +18,14 @@
                         0-160-71.6-160-160c0-28.9 7.7-56 21.1-79.4c7.1-12.3 23.7-13.1 33.8-3.1L498.5 425.1c10 10 9.3 26.7-3.1 
                         33.8z"/></svg>
                 Add Medicine
-            </asp:LinkButton>
+                </asp:LinkButton>
             </div>
             <div class="mt-5 d-flex">
                 <div class="me-auto">
                     <h3>Medicine</h3>
                 </div>
                 <div class="d-flex py-2 position-relative dropdown-size">
-                    <asp:DropDownList ID="ddlFilterMedicineType" CssClass="form-control" AutoPostBack="true" runat="server" 
+                    <asp:DropDownList ID="ddlFilterMedicineType" CssClass="form-control" AutoPostBack="true" runat="server"
                         OnSelectedIndexChanged="ddlFilterMedicineType_SelectedIndexChanged">
                     </asp:DropDownList>
                     <i class="bi bi-chevron-down dropdown-icon"></i>
@@ -40,6 +40,7 @@
                             OnItemEditing="lvBranch_ItemEditing"
                             OnItemUpdating="lvMedicine_ItemUpdating"
                             OnItemDataBound="lvMedicine_ItemDataBound"
+                            OnPagePropertiesChanging="lvMedicine_PagePropertiesChanging"
                             ID="lvMedicine" runat="server">
                             <LayoutTemplate>
                                 <table class="table table-responsive-md table-hover">
@@ -86,7 +87,7 @@
                     48.6 39.4 88 88 88l272 0c48.6 0 88-39.4 88-88l0-112c0-13.3-10.7-24-24-24s-24 10.7-24 24l0 
                     112c0 22.1-17.9 40-40 40L88 464c-22.1 0-40-17.9-40-40l0-272c0-22.1 17.9-40 40-40l112 0c13.3 
                     0 24-10.7 24-24s-10.7-24-24-24L88 64z"/></svg>
-        </asp:LinkButton>
+                                        </asp:LinkButton>
                                     </td>
                                 </tr>
                             </ItemTemplate>
@@ -151,6 +152,15 @@
                         </asp:ListView>
                     </div>
                 </div>
+            </div>
+            <div class="pagination-container">
+                <asp:DataPager ID="dpMedicine" runat="server" PagedControlID="lvMedicine" PageSize="10" class="pagination">
+                    <Fields>
+                        <asp:NextPreviousPagerField ButtonType="Button" ShowFirstPageButton="False" ShowNextPageButton="False" ShowPreviousPageButton="True" PreviousPageText="<" />
+                        <asp:NumericPagerField CurrentPageLabelCssClass="active" ButtonCount="5" />
+                        <asp:NextPreviousPagerField ButtonType="Button" ShowLastPageButton="False" ShowNextPageButton="True" ShowPreviousPageButton="False" NextPageText=">" />
+                    </Fields>
+                </asp:DataPager>
             </div>
         </div>
     </main>

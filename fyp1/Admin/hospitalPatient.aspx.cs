@@ -181,5 +181,19 @@ namespace fyp1.Admin
                 }
             }
         }
+        protected void lvPatient_PagePropertiesChanging(object sender, PagePropertiesChangingEventArgs e)
+        {
+            dpPatient.SetPageProperties(e.StartRowIndex, e.MaximumRows, false);
+
+            string searchTerm = ViewState["SearchTerm"] as string;
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                LoadFilteredData(searchTerm);
+            }
+            else
+            {
+                LoadPatient();
+            }
+        }
     }
 }

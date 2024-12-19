@@ -40,10 +40,12 @@ namespace fyp1.Admin
                     role = DetermineRole(userID);
                 }
 
+
                 // Set cookies
                 SetIDCookie(userID);
                 SetEmailCookie(loginInput);
                 SetRoleCookie(role);
+                SetIDCookie2(userID);
 
                 Session["Role"] = role;
 
@@ -76,6 +78,17 @@ namespace fyp1.Admin
         public void SetIDCookie(string doctorID)
         {
             HttpCookie IDCookie = new HttpCookie("DoctorID", doctorID)
+            {
+                HttpOnly = true,
+                Secure = true,
+                Expires = DateTime.Now.AddDays(1)
+            };
+            HttpContext.Current.Response.Cookies.Add(IDCookie);
+        }
+
+        public void SetIDCookie2(string nurseID)
+        {
+            HttpCookie IDCookie = new HttpCookie("nurseID", nurseID)
             {
                 HttpOnly = true,
                 Secure = true,
@@ -148,5 +161,6 @@ namespace fyp1.Admin
                 return BitConverter.ToString(hashedBytes).Replace("-", "").ToLower();
             }
         }
+
     }
 }

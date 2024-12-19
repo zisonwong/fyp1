@@ -1,4 +1,4 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Admin/adminSideBar.Master" AutoEventWireup="true" CodeBehind="hospitalDepartment.aspx.cs" Inherits="fyp1.Admin.hospitalDepartment" %>
+﻿<%@ Page Title="Department" Language="C#" MasterPageFile="~/Admin/adminSideBar.Master" AutoEventWireup="true" CodeBehind="hospitalDepartment.aspx.cs" Inherits="fyp1.Admin.hospitalDepartment" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
     <link href="~/layout/PageStyle.css" rel="stylesheet" />
@@ -42,6 +42,7 @@
                             OnItemDataBound="lvDepartment_ItemDataBound"
                             OnItemUpdating="lvDepartment_ItemUpdating"
                             OnItemCommand="lvDepartment_ItemCommand"
+                            OnPagePropertiesChanging="lvDepartment_PagePropertiesChanging"
                             ID="lvDepartment" runat="server">
                             <LayoutTemplate>
                                 <table class="table table-responsive-md table-hover">
@@ -166,6 +167,15 @@
                         </asp:ListView>
                     </div>
                 </div>
+            </div>
+            <div class="pagination-container">
+                <asp:DataPager ID="dpDepartment" runat="server" PagedControlID="lvDepartment" PageSize="10" class="pagination">
+                    <Fields>
+                        <asp:NextPreviousPagerField ButtonType="Button" ShowFirstPageButton="False" ShowNextPageButton="False" ShowPreviousPageButton="True" PreviousPageText="<" />
+                        <asp:NumericPagerField CurrentPageLabelCssClass="active" ButtonCount="5" />
+                        <asp:NextPreviousPagerField ButtonType="Button" ShowLastPageButton="False" ShowNextPageButton="True" ShowPreviousPageButton="False" NextPageText=">" />
+                    </Fields>
+                </asp:DataPager>
             </div>
         </div>
     </main>

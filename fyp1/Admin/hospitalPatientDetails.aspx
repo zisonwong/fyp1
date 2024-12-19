@@ -1,4 +1,4 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Admin/adminSidebar.Master" AutoEventWireup="true" CodeBehind="hospitalPatientDetails.aspx.cs" Inherits="fyp1.Admin.hospitalPatientDetails" %>
+﻿<%@ Page Title="Patient Details" Language="C#" MasterPageFile="~/Admin/adminSidebar.Master" AutoEventWireup="true" CodeBehind="hospitalPatientDetails.aspx.cs" Inherits="fyp1.Admin.hospitalPatientDetails" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
     <script src="../layout/bootstrap.bundle.min.js"></script>
@@ -17,9 +17,9 @@
                             <h6 class="card-subtitle mt-2">
                                 <asp:Label ID="lblPatientEmail" runat="server" Text="Email"></asp:Label></h6>
                             <%-- <% if (Session["Role"].ToString() == "Doctor")
-                            { %>--%>
+                            { %>
                             <asp:LinkButton CssClass="mt-2 btn btn-primary" ID="btnSendMsg" runat="server">Send Message</asp:LinkButton>
-                            <%-- //<% } %>--%>
+                             <% } %>--%>
                         </div>
                     </div>
                 </div>
@@ -89,14 +89,6 @@
                                     </div>
                                     <div>
                                         <asp:Label ID="lblAppointment" runat="server" Text="0"></asp:Label>
-                                    </div>
-                                </div>
-                                <div class="col-md-4 ">
-                                    <div>
-                                        <h6>Medicine Delivery Record</h6>
-                                    </div>
-                                    <div>
-                                        <asp:Label ID="lblDelivery" runat="server" Text="0"></asp:Label>
                                     </div>
                                 </div>
                             </div>
@@ -183,7 +175,7 @@
                             OnItemCommand="lvPastAppointment_ItemCommand"
                             ID="lvPastAppointment" runat="server">
                             <LayoutTemplate>
-                                <table class="table table-responsive-md">
+                                <table class="table table-responsive-md table-hover">
                                     <thead>
                                         <tr>
                                             <th>
@@ -230,7 +222,55 @@
                         </asp:ListView>
                     </div>
                     <div class="tab-pane fade" id="medical" role="tabpanel" aria-labelledby="medical-pill">
-                        <h5>Nothing here</h5>
+                        <asp:ListView
+                            ID="lvMedicalRecord" runat="server">
+                            <LayoutTemplate>
+                                <table class="table table-responsive-md table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>
+                                                <asp:LinkButton runat="server" CssClass="sortable-header">Record ID</asp:LinkButton></th>
+                                            <th>
+                                                <asp:LinkButton runat="server" CssClass="sortable-header">Doctor ID</asp:LinkButton></th>
+                                            <th>
+                                                <asp:LinkButton runat="server" CssClass="sortable-header">Doctor Name</asp:LinkButton></th>
+                                            <th>
+                                                <asp:LinkButton runat="server" CssClass="sortable-header">Date</asp:LinkButton></th>
+                                            <th>
+                                                <asp:LinkButton runat="server" CssClass="sortable-header">Medicine</asp:LinkButton></th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <asp:PlaceHolder ID="itemPlaceholder" runat="server"></asp:PlaceHolder>
+                                    </tbody>
+                                </table>
+                            </LayoutTemplate>
+                            <ItemTemplate>
+                                <tr>
+                                    <td><%# Eval("recordID") %></td>
+                                    <td><%# Eval("doctorID") %></td>
+                                    <td><%# Eval("doctorName") %></td>
+                                    <td><%# Eval("recordDate", "{0:dd/MM/yyyy}") %></td>
+                                    <td><%# Eval("prescriptionNumber") %></td>
+                                    <td>
+                                        <asp:LinkButton ID="btnCheckDetails"
+                                            CssClass="btn btn-primary fw-bold"
+                                            runat="server"
+                                            OnClick="btnCheckDetails_Click"
+                                            CommandArgument='<%# Eval("recordID") %>'>
+                                        Check Details
+                                        </asp:LinkButton>
+
+                                    </td>
+                                </tr>
+                            </ItemTemplate>
+                            <EmptyDataTemplate>
+                                <tr>
+                                    <td colspan="6" class="text-center">No data here...</td>
+                                </tr>
+                            </EmptyDataTemplate>
+                        </asp:ListView>
                     </div>
                 </div>
             </div>

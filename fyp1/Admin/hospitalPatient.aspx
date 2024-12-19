@@ -1,4 +1,4 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Admin/adminSidebar.Master" AutoEventWireup="true" CodeBehind="hospitalPatient.aspx.cs" Inherits="fyp1.Admin.hospitalPatient" %>
+﻿<%@ Page Title="Patient" Language="C#" MasterPageFile="~/Admin/adminSidebar.Master" AutoEventWireup="true" CodeBehind="hospitalPatient.aspx.cs" Inherits="fyp1.Admin.hospitalPatient" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
     <link href="~/layout/PageStyle.css" rel="stylesheet" />
@@ -6,15 +6,10 @@
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
     <main class="content container">
-        <main class="content">
             <div class="col-xxl-12 col-lg-12">
                 <div class="d-flex">
                     <div class="me-auto">
                         <h3>Patient</h3>
-                    </div>
-                    <div class="d-flex py-2">
-                        <asp:DropDownList ID="ddlFilter" AutoPostBack="true" runat="server">
-                        </asp:DropDownList>
                     </div>
                 </div>
                 <div class="card border-0 shadow mb-4">
@@ -25,6 +20,7 @@
                                 OnItemEditing="lvPatient_ItemEditing"
                                 OnItemUpdating="lvPatient_ItemUpdating"
                                 OnItemCanceling="lvPatient_ItemCanceling"
+                                OnPagePropertiesChanging="lvPatient_PagePropertiesChanging"
                                 ID="lvPatient" runat="server">
                                 <LayoutTemplate>
                                     <table class="table table-responsive-md table-hover">
@@ -112,7 +108,15 @@
                         </div>
                     </div>
                 </div>
+                <div class="pagination-container">
+                    <asp:DataPager ID="dpPatient" runat="server" PagedControlID="lvPatient" PageSize="10" class="pagination">
+                        <Fields>
+                            <asp:NextPreviousPagerField ButtonType="Button" ShowFirstPageButton="False" ShowNextPageButton="False" ShowPreviousPageButton="True" PreviousPageText="<" />
+                            <asp:NumericPagerField CurrentPageLabelCssClass="active" ButtonCount="5" />
+                            <asp:NextPreviousPagerField ButtonType="Button" ShowLastPageButton="False" ShowNextPageButton="True" ShowPreviousPageButton="False" NextPageText=">" />
+                        </Fields>
+                    </asp:DataPager>
+                </div>
             </div>
         </main>
-    </main>
 </asp:Content>

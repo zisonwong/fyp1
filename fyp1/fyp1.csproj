@@ -55,6 +55,15 @@
     <Reference Include="DocumentFormat.OpenXml.Framework, Version=3.1.1.0, Culture=neutral, PublicKeyToken=8fb06cb64d019a17, processorArchitecture=MSIL">
       <HintPath>..\packages\DocumentFormat.OpenXml.Framework.3.1.1\lib\net46\DocumentFormat.OpenXml.Framework.dll</HintPath>
     </Reference>
+    <Reference Include="EPPlus, Version=7.5.2.0, Culture=neutral, PublicKeyToken=ea159fdaa78159a1, processorArchitecture=MSIL">
+      <HintPath>..\packages\EPPlus.7.5.2\lib\net462\EPPlus.dll</HintPath>
+    </Reference>
+    <Reference Include="EPPlus.Interfaces, Version=7.5.0.0, Culture=neutral, PublicKeyToken=a694d7f3b0907a61, processorArchitecture=MSIL">
+      <HintPath>..\packages\EPPlus.Interfaces.7.5.0\lib\net462\EPPlus.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="EPPlus.System.Drawing, Version=7.5.0.0, Culture=neutral, PublicKeyToken=2308d35469c9bac0, processorArchitecture=MSIL">
+      <HintPath>..\packages\EPPlus.System.Drawing.7.5.0\lib\net462\EPPlus.System.Drawing.dll</HintPath>
+    </Reference>
     <Reference Include="ExcelNumberFormat, Version=1.1.0.0, Culture=neutral, PublicKeyToken=23c6f5d73be07eca, processorArchitecture=MSIL">
       <HintPath>..\packages\ExcelNumberFormat.1.1.0\lib\net20\ExcelNumberFormat.dll</HintPath>
     </Reference>
@@ -116,9 +125,13 @@
     <Reference Include="Microsoft.Extensions.Primitives, Version=9.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Extensions.Primitives.9.0.0\lib\net462\Microsoft.Extensions.Primitives.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.IO.RecyclableMemoryStream, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.IO.RecyclableMemoryStream.3.0.1\lib\netstandard2.0\Microsoft.IO.RecyclableMemoryStream.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.13.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="PresentationCore" />
     <Reference Include="RBush, Version=4.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\RBush.4.0.0\lib\net47\RBush.dll</HintPath>
     </Reference>
@@ -137,15 +150,21 @@
     <Reference Include="Stripe.net, Version=47.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Stripe.net.47.1.0\lib\net461\Stripe.net.dll</HintPath>
     </Reference>
-    <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
+    <Reference Include="System.Buffers, Version=4.0.4.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Buffers.4.6.0\lib\net462\System.Buffers.dll</HintPath>
     </Reference>
     <Reference Include="System.ClientModel, Version=1.1.0.0, Culture=neutral, PublicKeyToken=92742159e12e44c8, processorArchitecture=MSIL">
       <HintPath>..\packages\System.ClientModel.1.1.0\lib\netstandard2.0\System.ClientModel.dll</HintPath>
     </Reference>
+    <Reference Include="System.ComponentModel.Annotations, Version=4.2.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.ComponentModel.Annotations.5.0.0\lib\net461\System.ComponentModel.Annotations.dll</HintPath>
+    </Reference>
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Diagnostics.DiagnosticSource, Version=9.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Diagnostics.DiagnosticSource.9.0.0\lib\net462\System.Diagnostics.DiagnosticSource.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Drawing.Common, Version=8.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Drawing.Common.8.0.4\lib\net462\System.Drawing.Common.dll</HintPath>
     </Reference>
     <Reference Include="System.IO, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.IO.4.3.0\lib\net462\System.IO.dll</HintPath>
@@ -156,7 +175,7 @@
       <HintPath>..\packages\System.IO.Pipelines.9.0.0\lib\net462\System.IO.Pipelines.dll</HintPath>
     </Reference>
     <Reference Include="System.Memory, Version=4.0.1.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Memory.4.5.5\lib\net461\System.Memory.dll</HintPath>
+      <HintPath>..\packages\System.Memory.4.6.0\lib\net462\System.Memory.dll</HintPath>
     </Reference>
     <Reference Include="System.Memory.Data, Version=1.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Memory.Data.1.0.2\lib\net461\System.Memory.Data.dll</HintPath>
@@ -175,22 +194,23 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Numerics" />
-    <Reference Include="System.Numerics.Vectors, Version=4.1.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Numerics.Vectors.4.5.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
+    <Reference Include="System.Numerics.Vectors, Version=4.1.5.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Numerics.Vectors.4.6.0\lib\net462\System.Numerics.Vectors.dll</HintPath>
     </Reference>
     <Reference Include="System.Runtime, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Runtime.4.3.0\lib\net462\System.Runtime.dll</HintPath>
       <Private>True</Private>
       <Private>True</Private>
     </Reference>
-    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.6.0.0\lib\net461\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=6.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.6.1.0\lib\net462\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
     </Reference>
     <Reference Include="System.Runtime.InteropServices.RuntimeInformation, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Runtime.InteropServices.RuntimeInformation.4.3.0\lib\net45\System.Runtime.InteropServices.RuntimeInformation.dll</HintPath>
       <Private>True</Private>
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.Security" />
     <Reference Include="System.Security.Cryptography.Algorithms, Version=4.2.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Security.Cryptography.Algorithms.4.3.0\lib\net463\System.Security.Cryptography.Algorithms.dll</HintPath>
       <Private>True</Private>
@@ -251,10 +271,15 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Admin\adminHome.aspx" />
+    <Content Include="Admin\error404.html" />
     <Content Include="Admin\hospitalAddMedicalRecord.aspx" />
     <Content Include="Admin\hospitalAddPrescription.aspx" />
     <Content Include="Admin\hospitalDoctorChat.aspx" />
+    <Content Include="Admin\hospitalEditMedicalRecord.aspx" />
     <Content Include="Admin\hospitalMedicalRecord.aspx" />
+    <Content Include="Admin\hospitalStaffForgotPassword.aspx" />
+    <Content Include="Admin\hospitalStaffResetPassword.aspx" />
+    <Content Include="Admin\hospitalStaffSettings.aspx" />
     <Content Include="App_Data\IHMS.mdf" />
     <Content Include="App_Data\IHMS_log.ldf">
       <DependentUpon>IHMS.mdf</DependentUpon>
@@ -262,10 +287,12 @@
     <Content Include="Client\BranchDoctorSelection.aspx" />
     <Content Include="Client\Checkout.aspx" />
     <Content Include="Client\clientChat.aspx" />
+    <Content Include="Client\clientForgotPassword.aspx" />
     <Content Include="Client\clientHome.aspx" />
     <Content Include="Client\clientLogin.aspx" />
     <Content Include="Client\clientPayment.aspx" />
     <Content Include="Client\clientProfile.aspx" />
+    <Content Include="Client\clientResetPassword.aspx" />
     <Content Include="Client\clientSignUp.aspx" />
     <Content Include="Client\doctorAvailability.aspx" />
     <Content Include="Client\EditAppointment.aspx" />
@@ -291,7 +318,10 @@
     <Content Include="Admin\hospitalDoctorDetails.aspx" />
     <Content Include="Admin\hospitalDoctorEdit.aspx" />
     <Content Include="hospitalImg\admin.png" />
+    <Content Include="hospitalImg\appointment.png" />
     <Content Include="hospitalImg\defaultAvatar.jpg" />
+    <Content Include="Admin\Icon\menu.png" />
+    <Content Include="hospitalImg\patient.png" />
     <Content Include="hospitalImg\pngtree-young-afro-professional-doctor-png-image_13227671.png" />
     <Content Include="Admin\hospitalMedicine.aspx" />
     <Content Include="Admin\hospitalNurse.aspx" />
@@ -301,6 +331,7 @@
     <Content Include="Admin\hospitalPatientDetails.aspx" />
     <Content Include="Admin\hospitalStaffLogin.aspx" />
     <Content Include="Admin\hospitalRecordDetails.aspx" />
+    <Content Include="hospitalImg\staff.png" />
     <Content Include="Images\calendar.svg" />
     <Content Include="Images\right-arrow.svg" />
     <Content Include="Images\sliderImage1.jpg" />
@@ -321,6 +352,8 @@
     <Content Include="layout\availability.js" />
     <Content Include="layout\bootstrap.bundle.min.js" />
     <Content Include="layout\bootstrap.min.css" />
+    <Content Include="layout\error.css" />
+    <Content Include="layout\highcharts.js" />
     <Content Include="layout\PageStyle.css" />
     <Content Include="layout\sidebar.js" />
     <Content Include="layout\time.js" />
@@ -433,12 +466,40 @@
     <Compile Include="Admin\hospitalDoctorChat.aspx.designer.cs">
       <DependentUpon>hospitalDoctorChat.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Admin\hospitalEditMedicalRecord.aspx.cs">
+      <DependentUpon>hospitalEditMedicalRecord.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\hospitalEditMedicalRecord.aspx.designer.cs">
+      <DependentUpon>hospitalEditMedicalRecord.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Admin\hospitalMedicalRecord.aspx.cs">
       <DependentUpon>hospitalMedicalRecord.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Admin\hospitalMedicalRecord.aspx.designer.cs">
       <DependentUpon>hospitalMedicalRecord.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\hospitalStaffForgotPassword.aspx.cs">
+      <DependentUpon>hospitalStaffForgotPassword.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\hospitalStaffForgotPassword.aspx.designer.cs">
+      <DependentUpon>hospitalStaffForgotPassword.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\hospitalStaffResetPassword.aspx.cs">
+      <DependentUpon>hospitalStaffResetPassword.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\hospitalStaffResetPassword.aspx.designer.cs">
+      <DependentUpon>hospitalStaffResetPassword.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\hospitalStaffSettings.aspx.cs">
+      <DependentUpon>hospitalStaffSettings.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\hospitalStaffSettings.aspx.designer.cs">
+      <DependentUpon>hospitalStaffSettings.aspx</DependentUpon>
     </Compile>
     <Compile Include="Client\BranchDoctorSelection.aspx.cs">
       <DependentUpon>BranchDoctorSelection.aspx</DependentUpon>
@@ -460,6 +521,13 @@
     </Compile>
     <Compile Include="Client\clientChat.aspx.designer.cs">
       <DependentUpon>clientChat.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Client\clientForgotPassword.aspx.cs">
+      <DependentUpon>clientForgotPassword.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Client\clientForgotPassword.aspx.designer.cs">
+      <DependentUpon>clientForgotPassword.aspx</DependentUpon>
     </Compile>
     <Compile Include="Client\clientHome.aspx.cs">
       <DependentUpon>clientHome.aspx</DependentUpon>
@@ -488,6 +556,13 @@
     </Compile>
     <Compile Include="Client\clientProfile.aspx.designer.cs">
       <DependentUpon>clientProfile.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Client\clientResetPassword.aspx.cs">
+      <DependentUpon>clientResetPassword.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Client\clientResetPassword.aspx.designer.cs">
+      <DependentUpon>clientResetPassword.aspx</DependentUpon>
     </Compile>
     <Compile Include="Client\clientSignUp.aspx.cs">
       <DependentUpon>clientSignUp.aspx</DependentUpon>

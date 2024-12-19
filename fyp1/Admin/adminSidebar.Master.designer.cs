@@ -78,6 +78,15 @@ namespace hospital
         protected global::System.Web.UI.WebControls.LinkButton lBtnSearch;
 
         /// <summary>
+        /// imgDoctor control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Image imgDoctor;
+
+        /// <summary>
         /// lblStaffName control.
         /// </summary>
         /// <remarks>
@@ -85,6 +94,15 @@ namespace hospital
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Label lblStaffName;
+
+        /// <summary>
+        /// btnLogOut control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnLogOut;
 
         /// <summary>
         /// UpdatePanel1 control.

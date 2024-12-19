@@ -34,8 +34,8 @@
                             AutoPostBack="true"
                             OnSelectedIndexChanged="ddlConsultationType_SelectedIndexChanged"
                             CssClass="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                            <asp:ListItem Text="Walk-in" Value="WalkIn" />
-                            <asp:ListItem Text="Online Consultation" Value="Online" />
+                            <asp:ListItem Text="Walk-in" Value="Walk-in" />
+                            <asp:ListItem Text="Online Consultation" Value="Online Consultation" />
                         </asp:DropDownList>
                     </div>
 
@@ -48,6 +48,8 @@
                             CssClass="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                         </asp:TextBox>
                     </div>
+
+                    <asp:Label ID="lblError" runat="server"></asp:Label>
                 </div>
 
                 <!-- Doctor Details Card -->
@@ -71,40 +73,26 @@
 
                 <!-- Available Slots Repeater -->
                 <asp:Repeater ID="rptAvailableSlots" runat="server" OnItemCommand="rptAvailableSlots_ItemCommand">
-                    <HeaderTemplate>
-                        <div class="space-y-4">
-                            <div class="grid grid-cols-6 bg-gray-100 p-3 font-bold text-gray-700 rounded-t-lg">
-                                <div>Branch</div>
-                                <div>Department</div>
-                                <div>Date</div>
-                                <div>Time</div>
-                                <div>Consultation Type</div>
-                                <div>Actions</div>
-                            </div>
-                    </HeaderTemplate>
                     <ItemTemplate>
-                        <div class="grid grid-cols-6 items-center bg-white p-3 border-b hover:bg-gray-50 transition-colors">
-                            <div><%# Eval("BranchName") %></div>
-                            <div><%# Eval("DepartmentName") %></div>
-                            <div><%# Eval("AvailableDate", "{0:dd MMM yyyy}") %></div>
-                            <div><%# Eval("AvailableTime") %></div>
-                            <div><%# Eval("ConsultationType") %></div>
+                        <div class="slot flex items-center justify-between bg-white border rounded-lg shadow-md p-4 mb-3 hover:shadow-lg transition-shadow">
                             <div>
-                                <asp:Button ID="btnSelectSlot" runat="server"
-                                    Text="Select"
-                                    CommandName="SelectSlot"
-                                    CommandArgument='<%# Eval("AvailabilityID") %>'
-                                    CssClass="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2" />
+                                <p class="text-lg font-semibold text-gray-800">
+                                    <span class="text-blue-600">Time:</span>
+                                    <%# Eval("AvailableFromTime") %> - <%# Eval("AvailableToTime") %>
+                                </p>
                             </div>
+                            <asp:Button
+                                ID="btnSelectSlot"
+                                runat="server"
+                                Text="Select"
+                                CommandName="SelectSlot"
+                                CommandArgument='<%# Eval("availabilityID") %>'
+                                CssClass="btn bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg shadow-md transition-all" />
                         </div>
                     </ItemTemplate>
-                    <FooterTemplate>
-                        </div>
-                        <asp:Label ID="lblNoSlots" runat="server"
-                            Text="No available slots match your selection."
-                            CssClass='<%# ((Repeater)Container.NamingContainer).Items.Count == 0 ? "block text-center text-gray-500 p-4 bg-gray-50 rounded-b-lg" : "hidden" %>' />
-                    </FooterTemplate>
                 </asp:Repeater>
+
+
             </div>
             <div class="bg-gray-50 shadow-md rounded-lg p-6 mt-6">
                 <h2 class="text-xl font-semibold text-gray-800 mb-4">Selected Appointment</h2>
@@ -112,8 +100,15 @@
                     ID="lblSelectedAppointment"
                     runat="server"
                     Text="No appointment selected yet."
-                    CssClass="block text-lg text-gray-600">
+                    CssClass="block text-lg text-gray-600 mb-4">
     </asp:Label>
+                <asp:Button
+                    ID="btnConfirmAppointment"
+                    runat="server"
+                    Text="Confirm Appointment"
+                    OnClick="btnConfirmAppointment_Click"
+                    Visible="false"
+                    CssClass="btn btn-primary bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"></asp:Button>
             </div>
         </div>
     </form>

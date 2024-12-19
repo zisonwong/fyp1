@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data.SqlClient;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -19,38 +20,39 @@ namespace fyp1.Client
     {
         private const string GOOGLE_API_KEY = "AIzaSyAbFkinyyHf8XwboZ1KHr7yupFq2yo_ufo";
 
-        public string BranchName { get; private set; }
-        public string BranchAddress { get; private set; }
-        public string Distance { get; private set; }
-        public string EstimatedTime { get; private set; }
-        public double BranchLatitude { get; private set; }
-        public double BranchLongitude { get; private set; }
-        public double PatientLatitude { get; private set; }
-        public double PatientLongitude { get; private set; }
-
         protected void Page_Load(object sender, EventArgs e)
         {
-            string userAddress = Request.Cookies["UserAddress"]?.Value;
-            if (!string.IsNullOrEmpty(userAddress))
+            string branchAddress = Request.QueryString["branchAddress"];
+            string branchName = Request.QueryString["branchName"];
+            string distance = Request.QueryString["distance"];
+            string time = Request.QueryString["time"];
+
+            if (!string.IsNullOrEmpty(branchAddress))
             {
-                userAddress = HttpUtility.UrlDecode(userAddress);
-            }
-            else
-            {
-                Response.Write("User address not found.");
+                try
+                {
+                    // Geocode branch address
+                    var (lat, lng) = GetBranchLatLng(HttpUtility.UrlDecode(branchAddress));
+
+                    // Pass data to JavaScript
+                    ClientScript.RegisterStartupScript(this.GetType(), "MapScript",
+                        $"const BRANCH_LAT = {lat.ToString(CultureInfo.InvariantCulture)};" +
+                        $"const BRANCH_LNG = {lng.ToString(CultureInfo.InvariantCulture)};" +
+                        $"const BRANCH_ADDRESS = '{HttpUtility.JavaScriptStringEncode(branchAddress)}';" +
+                        $"const DISTANCE = '{distance}';" +
+                        $"const TIME = '{time}';" +
+                        "initMap();", true);
+                }
+                catch (Exception ex)
+                {
+                    // Handle geocoding failure
+                    ClientScript.RegisterStartupScript(this.GetType(), "ErrorScript",
+                        $"alert('Failed to find branch location: {HttpUtility.JavaScriptStringEncode(ex.Message)}');", true);
+                }
             }
 
             if (!IsPostBack)
             {
-
-
-                // Retrieve query string parameters
-                string branchName = Request.QueryString["branchName"];
-                string branchAddress = Request.QueryString["branchAddress"];
-                string distance = Request.QueryString["distance"];
-                string time = Request.QueryString["time"];
-
-                // Set the labels
                 lblBranchName.Text = !string.IsNullOrEmpty(branchName) ? branchName : "N/A";
                 lblBranchAddress.Text = !string.IsNullOrEmpty(branchAddress) ? branchAddress : "N/A";
                 lblDistance.Text = !string.IsNullOrEmpty(distance) ? $"{distance} km" : "N/A";
@@ -58,29 +60,28 @@ namespace fyp1.Client
             }
         }
 
-        private async Task<string> GetDistanceFromBranchAsync(string userAddress, double userLat, double userLng, List<Branch> branches)
+        private (double, double) GetBranchLatLng(string branchAddress)
         {
-            string origins = HttpUtility.UrlEncode(userAddress);  // The user's address
-            string destinations = string.Join("|", branches.Select(b => HttpUtility.UrlEncode(b.Address)));
+            string requestUrl = $"https://maps.googleapis.com/maps/api/geocode/json?address={Uri.EscapeDataString(branchAddress)}&key={GOOGLE_API_KEY}";
 
-            string url = $"https://maps.googleapis.com/maps/api/distancematrix/json?origins={origins}&destinations={destinations}&key={GOOGLE_API_KEY}";
-
-            using (var client = new HttpClient())
+            using (HttpClient client = new HttpClient())
             {
-                var response = await client.GetStringAsync(url);
-                dynamic result = JsonConvert.DeserializeObject(response);
+                var response = client.GetStringAsync(requestUrl).Result;
+                dynamic jsonResponse = Newtonsoft.Json.JsonConvert.DeserializeObject(response);
 
-                // Check for errors in the API response
-                if (result?.status?.ToString() != "OK")
+                if (jsonResponse.status == "OK")
                 {
-                    return "Error: Could not calculate distance.";
+                    double lat = jsonResponse.results[0].geometry.location.lat;
+                    double lng = jsonResponse.results[0].geometry.location.lng;
+                    return (lat, lng);
                 }
-
-                // You can now process the result and extract the distance and time.
-                // Example: result.rows[0].elements[i].distance.text, result.rows[0].elements[i].duration.text
-                return "Distance information retrieved successfully.";
+                else
+                {
+                    // Log the error for debugging
+                    System.Diagnostics.Debug.WriteLine($"Geocoding failed: {jsonResponse.status}");
+                    throw new Exception($"Unable to geocode address: {branchAddress}");
+                }
             }
         }
-
     }
 }

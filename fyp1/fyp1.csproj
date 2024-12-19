@@ -264,7 +264,6 @@
     <Content Include="Client\clientChat.aspx" />
     <Content Include="Client\clientHome.aspx" />
     <Content Include="Client\clientLogin.aspx" />
-    <Content Include="Client\clientPayment.aspx" />
     <Content Include="Client\clientProfile.aspx" />
     <Content Include="Client\clientSignUp.aspx" />
     <Content Include="Client\doctorAvailability.aspx" />
@@ -474,13 +473,6 @@
     </Compile>
     <Compile Include="Client\clientLogin.aspx.designer.cs">
       <DependentUpon>clientLogin.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="Client\clientPayment.aspx.cs">
-      <DependentUpon>clientPayment.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Client\clientPayment.aspx.designer.cs">
-      <DependentUpon>clientPayment.aspx</DependentUpon>
     </Compile>
     <Compile Include="Client\clientProfile.aspx.cs">
       <DependentUpon>clientProfile.aspx</DependentUpon>

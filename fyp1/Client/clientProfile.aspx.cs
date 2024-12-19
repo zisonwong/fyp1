@@ -119,7 +119,7 @@ namespace fyp1.Client
                             }
                             else
                             {
-                                imgProfilePicture.ImageUrl = "https://via.placeholder.com/100"; // Placeholder image
+                                imgProfilePicture.ImageUrl = "https://via.placeholder.com/100";
                             }
                         }
                     }
@@ -254,18 +254,14 @@ namespace fyp1.Client
                         return;
                     }
                 }
-
-                // Compare hashed version of input current password with the stored hashed password
                 if (!VerifyHashedPassword(currentStoredPassword, currentPassword))
                 {
                     lblErrorMessage.Text = "The current password is incorrect!";
                     return;
                 }
 
-                // Hash the new password
                 string hashedNewPassword = HashPassword(newPassword);
 
-                // Update the password in the database
                 using (SqlCommand cmd = new SqlCommand("UPDATE Patient SET password = @newPassword WHERE patientID = @patientID", conn))
                 {
                     cmd.Parameters.AddWithValue("@newPassword", hashedNewPassword);
@@ -390,8 +386,7 @@ namespace fyp1.Client
                         DateTime fromTime = appointmentDate.Add(fromTimeSpan);
                         DateTime toTime = appointmentDate.Add(toTimeSpan);
 
-                        // Construct the redirection URL
-                        string redirectUrl = $"clientPayment.aspx?doctorName={HttpUtility.UrlEncode(doctorName)}" +
+                        string redirectUrl = $"Checkout.aspx?doctorName={HttpUtility.UrlEncode(doctorName)}" +
                                              $"&appointmentDate={HttpUtility.UrlEncode(appointmentDate.ToString("yyyy-MM-dd"))}" +
                                              $"&appointmentTime={HttpUtility.UrlEncode($"{fromTime:hh:mm tt} - {toTime:hh:mm tt}")}" +
                                              $"&appointmentID={appointmentID}";
@@ -559,12 +554,10 @@ namespace fyp1.Client
                 {
                     conn.Open();
 
-                    // Update query to set all fields
                     string query = "UPDATE EmergencyContact SET ContactName = @ContactName, Relationship = @Relationship, Phone = @Phone, Email = @Email WHERE ContactID = @ContactID AND PatientID = @PatientID";
 
                     SqlCommand cmd = new SqlCommand(query, conn);
 
-                    // Add parameters
                     cmd.Parameters.AddWithValue("@ContactName", newName ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@Relationship", newRelationship ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@Phone", newPhone ?? (object)DBNull.Value);
@@ -572,7 +565,6 @@ namespace fyp1.Client
                     cmd.Parameters.AddWithValue("@ContactID", contactID);
                     cmd.Parameters.AddWithValue("@PatientID", patientID);
 
-                    // Execute query
                     int rowsAffected = cmd.ExecuteNonQuery();
                     if (rowsAffected > 0)
                     {
@@ -682,7 +674,6 @@ namespace fyp1.Client
             // Hide the Edit button
             btnEdit.CssClass = "hidden";
         }
-
 
         protected void btnSave_Click(object sender, EventArgs e)
         {

@@ -117,6 +117,7 @@ namespace fyp1.Admin
             string role = txtRole.Text.Trim();
             string status = ddlStatus.SelectedValue; 
             byte[] avatarData = null; // To store the image binary data
+            DateTime joinDate = DateTime.Now;
 
             if (!CheckFields())
             {
@@ -188,8 +189,8 @@ namespace fyp1.Admin
                 connection.Open();
 
                 // Insert into Doctor table
-                string insertDoctorQuery = "INSERT INTO Doctor (doctorID, name, DOB, ICNumber, gender, contactInfo, email, password, role, status, photo) " +
-                                            "VALUES (@DoctorID, @Name, @DOB, @ICNumber, @Gender, @ContactInfo, @Email, @Password, @Role, @Status, @Photo)";
+                string insertDoctorQuery = "INSERT INTO Doctor (doctorID, name, DOB, ICNumber, gender, contactInfo, email, password, role, status, photo, date) " +
+                                            "VALUES (@DoctorID, @Name, @DOB, @ICNumber, @Gender, @ContactInfo, @Email, @Password, @Role, @Status, @Photo, @JoinDate)";
                 using (SqlCommand doctorCommand = new SqlCommand(insertDoctorQuery, connection))
                 {
                     doctorCommand.Parameters.AddWithValue("@DoctorID", doctorID);
@@ -203,6 +204,7 @@ namespace fyp1.Admin
                     doctorCommand.Parameters.AddWithValue("@Role", role);
                     doctorCommand.Parameters.AddWithValue("@Status", status);
                     doctorCommand.Parameters.Add("@Photo", SqlDbType.VarBinary).Value = avatarData;
+                    doctorCommand.Parameters.AddWithValue("@JoinDate", joinDate);
 
                     doctorCommand.ExecuteNonQuery();
                 }

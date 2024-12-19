@@ -1,4 +1,4 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Admin/adminSidebar.Master" AutoEventWireup="true" CodeBehind="hospitalAppointmentDetails.aspx.cs" Inherits="fyp1.Admin.hospitalAppointmentDetails" %>
+﻿<%@ Page Title="Patient Appointment Details" Language="C#" MasterPageFile="~/Admin/adminSidebar.Master" AutoEventWireup="true" CodeBehind="hospitalAppointmentDetails.aspx.cs" Inherits="fyp1.Admin.hospitalAppointmentDetails" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
@@ -81,12 +81,12 @@
             </div>
             <div class="card border-0 shadow mb-4">
                 <div class="card-body p-3">
-                    <div class="table-responsive-md">
+                    <div class="table-responsive-md table-hover">
                         <asp:ListView
                             OnItemCommand="lvAppointmentHistory_ItemCommand"
                             ID="lvAppointmentHistory" runat="server">
                             <LayoutTemplate>
-                                <table class="table table-responsive-md">
+                                <table class="table table-responsive-md table-hover">
                                     <thead>
                                         <tr>
                                             <th>

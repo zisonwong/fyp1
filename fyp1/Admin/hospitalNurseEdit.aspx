@@ -1,4 +1,4 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Admin/adminSideBar.Master" AutoEventWireup="true" CodeBehind="hospitalNurseEdit.aspx.cs" Inherits="fyp1.Admin.hospitalNurseEdit" %>
+﻿<%@ Page Title="Nurse Edit" Language="C#" MasterPageFile="~/Admin/adminSideBar.Master" AutoEventWireup="true" CodeBehind="hospitalNurseEdit.aspx.cs" Inherits="fyp1.Admin.hospitalNurseEdit" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
     <link href="~/layout/PageStyle.css" rel="stylesheet" />

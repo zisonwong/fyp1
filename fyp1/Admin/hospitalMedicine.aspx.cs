@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DocumentFormat.OpenXml.Bibliography;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -420,7 +421,20 @@ namespace fyp1.Admin
                 }
             }
         }
+        protected void lvMedicine_PagePropertiesChanging(object sender, PagePropertiesChangingEventArgs e)
+        {
+            dpMedicine.SetPageProperties(e.StartRowIndex, e.MaximumRows, false);
 
+            string searchTerm = ViewState["SearchTerm"] as string;
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                LoadFilteredData(searchTerm);
+            }
+            else
+            {
+                LoadMedicineData();
+            }
+        }
         public class Medicine
         {
             public string MedicineID { get; set; }

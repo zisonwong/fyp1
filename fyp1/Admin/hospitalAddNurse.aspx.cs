@@ -104,6 +104,7 @@ namespace fyp1.Admin
             string role = txtRole.Text.Trim();
             string status = ddlStatus.SelectedValue; // "Activated", "Deactivated"
             byte[] avatarData = null; // To store the image binary data
+            DateTime joinDate = DateTime.Now;
 
             if (!CheckFields())
             {
@@ -173,8 +174,8 @@ namespace fyp1.Admin
             string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
-                string query = "INSERT INTO Nurse (nurseID, name, DOB, ICNumber, gender, contactInfo, email, password, branchID, role, status, photo) " +
-                               "VALUES (@NurseID, @Name, @DOB, @ICNumber, @Gender, @ContactInfo, @Email, @Password, @branchID, @Role, @Status, @Photo)";
+                string query = "INSERT INTO Nurse (nurseID, name, DOB, ICNumber, gender, contactInfo, email, password, branchID, role, status, photo, date) " +
+                               "VALUES (@NurseID, @Name, @DOB, @ICNumber, @Gender, @ContactInfo, @Email, @Password, @branchID, @Role, @Status, @Photo, @JoinDate)";
 
                 using (SqlCommand command = new SqlCommand(query, connection))
                 {
@@ -189,6 +190,7 @@ namespace fyp1.Admin
                     command.Parameters.AddWithValue("@BranchID", branchID);
                     command.Parameters.AddWithValue("@Role", role);
                     command.Parameters.AddWithValue("@Status", status);
+                    command.Parameters.AddWithValue("@JoinDate", joinDate);
 
                     // Add the avatar data (either the uploaded image or the default image)
                     command.Parameters.Add("@Photo", SqlDbType.VarBinary).Value = avatarData;

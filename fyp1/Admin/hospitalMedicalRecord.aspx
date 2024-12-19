@@ -1,4 +1,4 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Admin/adminSidebar.Master" AutoEventWireup="true" CodeBehind="hospitalMedicalRecord.aspx.cs" Inherits="fyp1.Admin.hospitalMedicalRecord" %>
+﻿<%@ Page Title="Medical Record" Language="C#" MasterPageFile="~/Admin/adminSidebar.Master" AutoEventWireup="true" CodeBehind="hospitalMedicalRecord.aspx.cs" Inherits="fyp1.Admin.hospitalMedicalRecord" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
     <link href="../layout/PageStyle.css" rel="stylesheet" />
@@ -15,14 +15,10 @@
                     <i class="bi bi-file-medical" style="color:white;"></i>
                     Add Medical Record
                 </asp:LinkButton>
-                 <% } %>
                 <div class="mt-5 d-flex">
+                      <% } %>
                     <div class="me-auto">
                         <h3>Medical Record</h3>
-                    </div>
-                    <div class="d-flex py-2">
-                        <asp:DropDownList ID="ddlFilter" AutoPostBack="true" runat="server">
-                        </asp:DropDownList>
                     </div>
                 </div>
                 <div class="card border-0 shadow mb-4">
@@ -30,6 +26,7 @@
                         <div class="table-responsive-md">
                             <asp:ListView
                                 OnItemCommand="lvMedicalRecord_ItemCommand"
+                                OnPagePropertiesChanging="lvMedicalRecord_PagePropertiesChanging"
                                 ID="lvMedicalRecord" runat="server">
                                 <LayoutTemplate>
                                     <table class="table table-responsive-md table-hover">
@@ -42,10 +39,9 @@
                                                 <th>
                                                     <asp:LinkButton runat="server" CssClass="sortable-header">Doctor ID</asp:LinkButton></th>
                                                 <th>
-                                                    <asp:LinkButton runat="server" CssClass="sortable-header">Department</asp:LinkButton></th>
+                                                    <asp:LinkButton runat="server" CssClass="sortable-header">Doctor Name</asp:LinkButton></th>
                                                 <th>
                                                     <asp:LinkButton runat="server" CssClass="sortable-header">Date</asp:LinkButton></th>
-                                                <th>Action</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -67,9 +63,9 @@
                                         <td><%# Eval("doctorID") %></td>
                                         <td><%# Eval("doctorName") %></td>
                                         <td><%# Eval("recordDate", "{0:dd/MM/yyyy}") %></td>
-                                        <td>
+                                        <%--<td>
                                             <asp:LinkButton ID="lbEdit" runat="server"
-                                                CommandName="Edit">
+                                                CommandName="Edit" CommandArgument='<%# Eval("recordID") %>'>
 <svg xmlns="http://www.w3.org/2000/svg" height="28" width="28" viewBox="0 0 512 512">
     <path fill="#000000" d="M441 58.9L453.1 71c9.4 9.4 9.4 24.6 0 33.9L424 134.1 
         377.9 88 407 58.9c9.4-9.4 24.6-9.4 33.9 0zM209.8 256.2L344 121.9 390.1 
@@ -80,7 +76,7 @@
         48.6 39.4 88 88 88l272 0c48.6 0 88-39.4 88-88l0-112c0-13.3-10.7-24-24-24s-24 10.7-24 24l0 
         112c0 22.1-17.9 40-40 40L88 464c-22.1 0-40-17.9-40-40l0-272c0-22.1 17.9-40 40-40l112 0c13.3 
         0 24-10.7 24-24s-10.7-24-24-24L88 64z"/></svg>
-                                            </asp:LinkButton></td>
+                                            </asp:LinkButton></td>--%>
                                     </tr>
                                 </ItemTemplate>
                                 <EmptyDataTemplate>
@@ -93,5 +89,15 @@
                     </div>
                 </div>
             </div>
+            <div class="pagination-container">
+                <asp:DataPager ID="dpMedicalRecord" runat="server" PagedControlID="lvMedicalRecord" PageSize="10" class="pagination">
+                    <Fields>
+                        <asp:NextPreviousPagerField ButtonType="Button" ShowFirstPageButton="False" ShowNextPageButton="False" ShowPreviousPageButton="True" PreviousPageText="<" />
+                        <asp:NumericPagerField CurrentPageLabelCssClass="active" ButtonCount="5" />
+                        <asp:NextPreviousPagerField ButtonType="Button" ShowLastPageButton="False" ShowNextPageButton="True" ShowPreviousPageButton="False" NextPageText=">" />
+                    </Fields>
+                </asp:DataPager>
+            </div>
+        </div>
     </main>
 </asp:Content>

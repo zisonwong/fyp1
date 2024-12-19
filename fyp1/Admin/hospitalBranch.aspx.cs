@@ -449,6 +449,20 @@ namespace fyp1.Admin
                 }
             }
         }
+        protected void lvBranch_PagePropertiesChanging(object sender, PagePropertiesChangingEventArgs e)
+        {
+            dpBranch.SetPageProperties(e.StartRowIndex, e.MaximumRows, false);
+
+            string searchTerm = ViewState["SearchTerm"] as string;
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                LoadFilteredData(searchTerm);
+            }
+            else
+            {
+                LoadBranchData();
+            }
+        }
 
     }
     public class Branch

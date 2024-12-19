@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ClosedXML.Excel;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -21,7 +22,7 @@ namespace fyp1.Client
 
         protected void Page_Load(object sender, EventArgs e)
         {
-
+            panelAddContact.Visible = false;
             if (Request.Cookies["Username"] == null)
             {
                 Response.Redirect("clientLogin.aspx");
@@ -35,9 +36,8 @@ namespace fyp1.Client
                 SetFieldsReadOnly(true);
                 LoadProfileData();
                 LoadAppointmentData();
-                LoadEmergencyContactData();
+                BindEmergencyGrid();
                 LoadPaymentData();
-
                 lblErrorMessage.Text = "";
             }
         }
@@ -89,7 +89,7 @@ namespace fyp1.Client
 
         private void LoadProfileData()
         {
-            HttpCookie IDCookie = HttpContext.Current.Request.Cookies["PatientID"];
+            HttpCookie IDCookie = Request.Cookies["PatientID"];
             string query = "SELECT name, DOB, email, contactInfo,bloodType,photo, ICNumber FROM Patient WHERE patientID = @PatientID";
 
             string patientID = IDCookie.Value;
@@ -130,7 +130,7 @@ namespace fyp1.Client
         protected void signOut()
         {
             FormsAuthentication.SignOut();
-            HttpCookie cookie = HttpContext.Current.Request.Cookies["Username"];
+            HttpCookie cookie = Request.Cookies["Username"];
 
             if (cookie != null)
             {
@@ -148,7 +148,7 @@ namespace fyp1.Client
 
         private void LoadPatientData()
         {
-            HttpCookie IDCookie = HttpContext.Current.Request.Cookies["PatientID"];
+            HttpCookie IDCookie = Request.Cookies["PatientID"];
             string patientID = IDCookie.Value;
             string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
             using (SqlConnection con = new SqlConnection(connectionString))
@@ -326,7 +326,9 @@ namespace fyp1.Client
                     LEFT JOIN 
                         Payment pm ON a.paymentID = pm.paymentID
                     WHERE 
-                        patientID = @patientID";
+                        patientID = @patientID
+                    ORDER BY 
+                        a.appointmentID DESC";
 
             using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ConnectionString"].ToString()))
             using (SqlCommand cmd = new SqlCommand(query, conn))
@@ -430,7 +432,6 @@ namespace fyp1.Client
             }
         }
 
-
         protected void gridAppointment_RowCommand(object sender, GridViewCommandEventArgs e)
         {
             if (e.CommandName == "EditAppointment")
@@ -453,130 +454,205 @@ namespace fyp1.Client
             Response.Redirect("BranchDoctorSelection.aspx");
         }
 
-
-        private void LoadEmergencyContactData()
+        protected void BindEmergencyGrid()
         {
-            HttpCookie IDCookie = HttpContext.Current.Request.Cookies["PatientID"];
-            string patientID = IDCookie.Value;
-            string query = "SELECT ContactName, Relationship, Phone, Email FROM EmergencyContact WHERE patientID = @patientID";
-
-            using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ConnectionString"].ToString()))
-            using (SqlCommand cmd = new SqlCommand(query, conn))
+            HttpCookie IDCookie = Request.Cookies["PatientID"];
+            string patientID = IDCookie?.Value;
+            string query = "SELECT ContactID, ContactName, Relationship, Phone, Email FROM EmergencyContact WHERE PatientID = @patientID";
+            using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString))
             {
+                SqlCommand cmd = new SqlCommand(query, conn);
                 cmd.Parameters.AddWithValue("@patientID", patientID);
-                SqlDataAdapter adapter = new SqlDataAdapter(cmd);
+                SqlDataAdapter da = new SqlDataAdapter(cmd);
                 DataTable dt = new DataTable();
-                adapter.Fill(dt);
-
+                da.Fill(dt);
                 gridEmergency.DataSource = dt;
                 gridEmergency.DataBind();
             }
         }
-
         protected void gridEmergency_RowEditing(object sender, GridViewEditEventArgs e)
         {
             gridEmergency.EditIndex = e.NewEditIndex;
-            LoadEmergencyContacts();  // Reload grid data to reflect editing mode
+            BindEmergencyGrid();
         }
-
         protected void gridEmergency_RowCancelingEdit(object sender, GridViewCancelEditEventArgs e)
         {
             gridEmergency.EditIndex = -1;
-            LoadEmergencyContacts();  // Reload grid data to cancel editing
+            BindEmergencyGrid();
         }
-
         protected void gridEmergency_RowUpdating(object sender, GridViewUpdateEventArgs e)
         {
-            // Retrieve updated values
-            string contactID = gridEmergency.DataKeys[e.RowIndex].Value.ToString();  // Get contact ID for updating
-            string contactName = ((TextBox)gridEmergency.Rows[e.RowIndex].FindControl("txtEditContactName")).Text;
-            string relationship = ((TextBox)gridEmergency.Rows[e.RowIndex].FindControl("txtEditRelationship")).Text;
-            string phone = ((TextBox)gridEmergency.Rows[e.RowIndex].FindControl("txtEditPhone")).Text;
-            string email = ((TextBox)gridEmergency.Rows[e.RowIndex].FindControl("txtEditEmail")).Text;
+            string contactID = gridEmergency.DataKeys[e.RowIndex].Value.ToString();
 
-            // Update logic here, e.g., update the database
-            string query = @"UPDATE EmergencyContacts SET ContactName = @ContactName, Relationship = @Relationship, 
-                    Phone = @Phone, Email = @Email WHERE ContactID = @ContactID";
-
-            using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["connectionString"].ToString()))
-            using (SqlCommand cmd = new SqlCommand(query, conn))
+            string newName = null;
+            TextBox txtContactName = (TextBox)gridEmergency.Rows[e.RowIndex].FindControl("txtContactName");
+            if (txtContactName != null)
             {
-                cmd.Parameters.AddWithValue("@ContactID", contactID);
-                cmd.Parameters.AddWithValue("@ContactName", contactName);
-                cmd.Parameters.AddWithValue("@Relationship", relationship);
-                cmd.Parameters.AddWithValue("@Phone", phone);
-                cmd.Parameters.AddWithValue("@Email", email);
-
-                conn.Open();
-                cmd.ExecuteNonQuery();
+                newName = txtContactName.Text;
+                System.Diagnostics.Debug.WriteLine($"newName: {newName}");
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine("txtContactName not found.");
             }
 
+            string newRelationship = null;
+            TextBox txtRelationship = (TextBox)gridEmergency.Rows[e.RowIndex].FindControl("txtRelationship");
+            if (txtRelationship != null)
+            {
+                newRelationship = txtRelationship.Text;
+                System.Diagnostics.Debug.WriteLine($"newRelationship: {newRelationship}");
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine("txtRelationship not found.");
+            }
+
+            string newPhone = null;
+            TextBox txtPhone = (TextBox)gridEmergency.Rows[e.RowIndex].FindControl("txtPhone");
+            if (txtPhone != null)
+            {
+                newPhone = txtPhone.Text;
+                System.Diagnostics.Debug.WriteLine($"newPhone: {newPhone}");
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine("txtPhone not found.");
+            }
+
+            string newEmail = null;
+            TextBox txtEmail = (TextBox)gridEmergency.Rows[e.RowIndex].FindControl("txtEmail");
+            if (txtEmail != null)
+            {
+                newEmail = txtEmail.Text;
+                System.Diagnostics.Debug.WriteLine($"newEmail: {newEmail}");
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine("txtEmail not found.");
+            }
+
+            // Ensure that newName is not null or empty
+            if (string.IsNullOrWhiteSpace(newName))
+            {
+                System.Diagnostics.Debug.WriteLine("ContactName cannot be null or empty.");
+                Response.Write("<script>alert('ContactName cannot be null or empty.');</script>");
+                return;
+            }
+
+            // Update contact
+            UpdateContact(contactID, newName, newRelationship, newPhone, newEmail);
+
+            // Exit edit mode and rebind the grid
             gridEmergency.EditIndex = -1;
-            LoadEmergencyContacts();  // Reload grid data after updating
+            BindEmergencyGrid();
+            System.Diagnostics.Debug.WriteLine("RowUpdating event fired.");
+        }
+        private void UpdateContact(string contactID, string newName, string newRelationship, string newPhone, string newEmail)
+        {
+            HttpCookie CookieID = Request.Cookies["PatientID"];
+            string patientID = CookieID.Value;
+
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString))
+                {
+                    conn.Open();
+
+                    // Update query to set all fields
+                    string query = "UPDATE EmergencyContact SET ContactName = @ContactName, Relationship = @Relationship, Phone = @Phone, Email = @Email WHERE ContactID = @ContactID AND PatientID = @PatientID";
+
+                    SqlCommand cmd = new SqlCommand(query, conn);
+
+                    // Add parameters
+                    cmd.Parameters.AddWithValue("@ContactName", newName ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Relationship", newRelationship ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Phone", newPhone ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Email", newEmail ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@ContactID", contactID);
+                    cmd.Parameters.AddWithValue("@PatientID", patientID);
+
+                    // Execute query
+                    int rowsAffected = cmd.ExecuteNonQuery();
+                    if (rowsAffected > 0)
+                    {
+                        System.Diagnostics.Debug.WriteLine("Contact updated successfully.");
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine("No rows affected. Update failed.");
+                    }
+                }
+            }
+            catch (SqlException ex)
+            {
+                // Log the exception details
+                System.Diagnostics.Debug.WriteLine($"SQL Error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"SQL Error Number: {ex.Number}");
+                System.Diagnostics.Debug.WriteLine($"SQL Error State: {ex.State}");
+                System.Diagnostics.Debug.WriteLine($"SQL Error Procedure: {ex.Procedure}");
+                System.Diagnostics.Debug.WriteLine($"SQL Error Line Number: {ex.LineNumber}");
+
+                // Handle exceptions
+                Response.Write($"<script>alert('SQL Error: {ex.Message}');</script>");
+            }
+            catch (Exception ex)
+            {
+                // Handle other exceptions
+                System.Diagnostics.Debug.WriteLine($"Error: {ex.Message}");
+                Response.Write($"<script>alert('Error: {ex.Message}');</script>");
+            }
         }
 
         protected void gridEmergency_RowDeleting(object sender, GridViewDeleteEventArgs e)
         {
-            // Get the contact ID to delete
+            // Get the ContactID of the row being deleted
             string contactID = gridEmergency.DataKeys[e.RowIndex].Value.ToString();
 
-            // Delete logic here, e.g., delete the contact from the database
-            string query = @"DELETE FROM EmergencyContacts WHERE ContactID = @ContactID";
+            // Perform the delete query
+            DeleteContact(contactID);
 
-            using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["connectionString"].ToString()))
-            using (SqlCommand cmd = new SqlCommand(query, conn))
+            // Rebind the GridView to reflect the changes
+            BindEmergencyGrid();
+        }
+
+        private void DeleteContact(string contactID)
+        {
+            try
             {
-                cmd.Parameters.AddWithValue("@ContactID", contactID);
+                string query = "DELETE FROM EmergencyContact WHERE ContactID = @ContactID";
 
-                conn.Open();
-                cmd.ExecuteNonQuery();
+                using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString))
+                {
+                    SqlCommand cmd = new SqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@ContactID", contactID);
+
+                    conn.Open();
+                    cmd.ExecuteNonQuery();
+                }
             }
-
-            LoadEmergencyContacts();  // Reload grid data after deleting
-        }
-
-        protected void btnAddNewContact_Click(object sender, EventArgs e)
-        {
-            // Redirect to a page where users can add a new emergency contact
-            Response.Redirect("AddEmergencyContact.aspx");
-        }
-
-        private void LoadEmergencyContacts()
-        {
-            string query = "SELECT ContactID, ContactName, Relationship, Phone, Email FROM EmergencyContacts WHERE PatientID = @PatientID";
-
-            using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["connectionString"].ToString()))
-            using (SqlCommand cmd = new SqlCommand(query, conn))
+            catch (Exception ex)
             {
-                // Assuming PatientID is available via session or cookie
-                string patientID = HttpContext.Current.Request.Cookies["PatientID"].Value;
-                cmd.Parameters.AddWithValue("@PatientID", patientID);
-
-                SqlDataAdapter adapter = new SqlDataAdapter(cmd);
-                DataTable dt = new DataTable();
-                adapter.Fill(dt);
-
-                gridEmergency.DataSource = dt;
-                gridEmergency.DataBind();
+                // Handle any exceptions that occur
+                Response.Write($"<script>alert('Error: {ex.Message}');</script>");
             }
         }
-
 
         private void LoadPaymentData()
         {
             HttpCookie IDCookie = HttpContext.Current.Request.Cookies["PatientID"];
             string patientID = IDCookie.Value;
             string query = @"SELECT 
-                            p.paymentID,
-                            p.paymentAmount,
-                            p.paymentMethod,
-                            p.paymentDate
-                        FROM
-                            Payment p
-                        JOIN
-                            Appointment a ON p.paymentID = a.paymentID
-                        WHERE
-                            a.patientID = @patientID";
+                    p.paymentID,
+                    p.paymentAmount,
+                    p.paymentMethod,
+                    p.paymentDate
+                FROM
+                    Payment p
+                JOIN
+                    Appointment a ON p.paymentID = a.paymentID
+                WHERE
+                    a.patientID = @patientID";
             using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ConnectionString"].ToString()))
             using (SqlCommand cmd = new SqlCommand(query, conn))
             {
@@ -654,7 +730,6 @@ namespace fyp1.Client
                 Response.Write($"<script>alert('Error: {ex.Message}');</script>");
             }
         }
-
         protected void btnCancel_Click(object sender, EventArgs e)
         {
             LoadProfileData();
@@ -663,7 +738,6 @@ namespace fyp1.Client
             btnCancel.CssClass = "hidden";
             btnEdit.CssClass = "bg-blue-500 text-white py-2 px-4 rounded";
         }
-
         private void SetFieldsReadOnly(bool isReadOnly)
         {
             txtName.ReadOnly = isReadOnly;
@@ -671,6 +745,68 @@ namespace fyp1.Client
             txtEmail.ReadOnly = isReadOnly;
             txtPhone.ReadOnly = isReadOnly;
             txtBloodType.ReadOnly = isReadOnly;
+        }
+        protected void btnAddContact_Click(object sender, EventArgs e)
+        {
+            panelAddContact.Visible = true;
+        }
+        protected void btnSaveContact_Click(object sender, EventArgs e)
+        {
+            string contactID = GenerateNextContactID();
+            string name = txtNewName.Text;
+            string relationship = txtNewRelationship.Text;
+            string phone = txtNewPhone.Text;
+            string email = txtNewEmail.Text;
+            HttpCookie IDCookie = Request.Cookies["PatientID"];
+            string patientID = IDCookie.Value;
+
+            using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString))
+            {
+                string query = "INSERT INTO EmergencyContact (ContactID, patientID, ContactName, Relationship, Phone, Email) VALUES (@ContactID, @PatientID, @ContactName, @Relationship, @Phone, @Email)";
+                SqlCommand cmd = new SqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@ContactID", contactID);
+                cmd.Parameters.AddWithValue("@PatientID", patientID);
+                cmd.Parameters.AddWithValue("@ContactName", name);
+                cmd.Parameters.AddWithValue("@Relationship", relationship);
+                cmd.Parameters.AddWithValue("@Phone", phone);
+                cmd.Parameters.AddWithValue("@Email", email);
+
+                conn.Open();
+                cmd.ExecuteNonQuery();
+                conn.Close();
+            }
+
+            panelAddContact.Visible = false;
+            BindEmergencyGrid();
+            txtNewName.Text = string.Empty;
+            txtNewRelationship.Text = string.Empty;
+            txtNewPhone.Text = string.Empty;
+            txtNewEmail.Text = string.Empty;
+        }
+
+        private string GenerateNextContactID()
+        {
+            string nextContactID = "EC0001";
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["connectionString"].ToString()))
+                {
+                    conn.Open();
+                    using (SqlCommand cmd = new SqlCommand("SELECT MAX(ContactID) FROM EmergencyContact", conn))
+                    {
+                        object result = cmd.ExecuteScalar();
+                        if (result != DBNull.Value && result != null)
+                        {
+                            int idNumber = int.Parse(result.ToString().Substring(2)) + 1;
+                            nextContactID = "EC" + idNumber.ToString("D4");
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+            return nextContactID;
         }
     }
 }

@@ -16,12 +16,21 @@ namespace fyp1.Client
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-
+            string appointmentID = Request.QueryString["appointmentID"];
+            if (!string.IsNullOrEmpty(appointmentID))
+            {
+                // Store it for use in CreateOrder
+                ViewState["AppointmentID"] = appointmentID;
+            }
+            else
+            {
+                // Handle missing or invalid appointmentID
+                Response.Redirect("ErrorPage.aspx?error=MissingAppointmentID");
+            }
         }
 
         private static string EnvironmentMode => ConfigurationManager.AppSettings["EnvironmentMode"];
         public string PayPalClientID => ConfigurationManager.AppSettings["PayPalClientID"];
-
         private static string PayPalSecret => ConfigurationManager.AppSettings["PayPalSecret"];
 
         private static PayPalEnvironment GetEnvironment()
@@ -34,55 +43,58 @@ namespace fyp1.Client
 
         private static PayPalHttpClient Client = new PayPalHttpClient(GetEnvironment());
 
-
         [WebMethod]
         public static string CreateOrder()
         {
-            var orderRequest = new OrdersCreateRequest();
-            orderRequest.RequestBody(new OrderRequest
+            var appointmentID = HttpContext.Current.Session["AppointmentID"] as string;
+
+            var orderRequest = new OrderRequest
             {
                 CheckoutPaymentIntent = "CAPTURE",
-                PurchaseUnits = new System.Collections.Generic.List<PurchaseUnitRequest>
+                PurchaseUnits = new List<PurchaseUnitRequest>
+        {
+            new PurchaseUnitRequest
             {
-                new PurchaseUnitRequest
+                AmountWithBreakdown = new AmountWithBreakdown
                 {
-                    AmountWithBreakdown = new AmountWithBreakdown
-                    {
-                        CurrencyCode = "MYR",
-                        Value = "30.00" // Example amount
-                    }
+                    CurrencyCode = "MYR",
+                    Value = "30.00"
+                },
+                CustomId = appointmentID // Attach appointment ID
+            }
+        }
+            };
+
+            try
+            {
+                var environment = new SandboxEnvironment(ConfigurationManager.AppSettings["PayPalClientID"], ConfigurationManager.AppSettings["PayPalSecret"]);
+                var client = new PayPalHttpClient(environment);
+                var request = new OrdersCreateRequest();
+                request.Prefer("return=representation");
+                request.RequestBody(orderRequest);
+
+                var response = client.Execute(request).Result;
+                var order = response.Result<Order>();
+
+                // Debug output for server-side logging
+                Console.WriteLine("Response: " + new JavaScriptSerializer().Serialize(order));
+
+                var approvalUrl = order.Links.FirstOrDefault(link => link.Rel == "approve")?.Href;
+
+                if (!string.IsNullOrEmpty(approvalUrl))
+                {
+                    return new JavaScriptSerializer().Serialize(new { approvalUrl = approvalUrl });
+                }
+                else
+                {
+                    throw new Exception("Approval URL is missing in the PayPal response.");
                 }
             }
-            });
-
-            try
-            {
-                var response = Client.Execute(orderRequest).Result;
-                var order = response.Result<Order>();
-                return new JavaScriptSerializer().Serialize(new { id = order.Id });
-            }
             catch (Exception ex)
             {
                 return new JavaScriptSerializer().Serialize(new { error = ex.Message });
             }
         }
 
-        [WebMethod]
-        public static string CaptureOrder(string orderId)
-        {
-            var request = new OrdersCaptureRequest(orderId);
-            request.RequestBody(new OrderActionRequest());
-
-            try
-            {
-                var response = Client.Execute(request).Result;
-                var capture = response.Result<Order>();
-                return new JavaScriptSerializer().Serialize(capture);
-            }
-            catch (Exception ex)
-            {
-                return new JavaScriptSerializer().Serialize(new { error = ex.Message });
-            }
-        }
     }
 }

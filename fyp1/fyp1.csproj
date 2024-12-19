@@ -286,7 +286,6 @@
     </Content>
     <Content Include="Client\BranchDoctorSelection.aspx" />
     <Content Include="Client\Checkout.aspx" />
-    <Content Include="Client\clientAppointment.aspx" />
     <Content Include="Client\clientChat.aspx" />
     <Content Include="Client\clientForgotPassword.aspx" />
     <Content Include="Client\clientHome.aspx" />
@@ -298,10 +297,10 @@
     <Content Include="Client\doctorAvailability.aspx" />
     <Content Include="Client\EditAppointment.aspx" />
     <Content Include="Client\EmergencyPage.aspx" />
+    <Content Include="Client\ErrorPage.aspx" />
     <Content Include="Client\FAQs.aspx" />
     <Content Include="Client\InsuranceInformation.aspx" />
     <Content Include="Client\SymptomChecker.aspx" />
-    <Content Include="Client\VideoCall.aspx" />
     <Content Include="CSS\clientAppointment.css" />
     <Content Include="CSS\clientProfile.css" />
     <Content Include="CSS\footer.css" />
@@ -516,13 +515,6 @@
     <Compile Include="Client\Checkout.aspx.designer.cs">
       <DependentUpon>Checkout.aspx</DependentUpon>
     </Compile>
-    <Compile Include="Client\clientAppointment.aspx.cs">
-      <DependentUpon>clientAppointment.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Client\clientAppointment.aspx.designer.cs">
-      <DependentUpon>clientAppointment.aspx</DependentUpon>
-    </Compile>
     <Compile Include="Client\clientChat.aspx.cs">
       <DependentUpon>clientChat.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -726,6 +718,13 @@
     <Compile Include="Admin\hospitalRecordDetails.aspx.designer.cs">
       <DependentUpon>hospitalRecordDetails.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Client\ErrorPage.aspx.cs">
+      <DependentUpon>ErrorPage.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Client\ErrorPage.aspx.designer.cs">
+      <DependentUpon>ErrorPage.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Client\FAQs.aspx.cs">
       <DependentUpon>FAQs.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -746,13 +745,6 @@
     </Compile>
     <Compile Include="Client\SymptomChecker.aspx.designer.cs">
       <DependentUpon>SymptomChecker.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="Client\VideoCall.aspx.cs">
-      <DependentUpon>VideoCall.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Client\VideoCall.aspx.designer.cs">
-      <DependentUpon>VideoCall.aspx</DependentUpon>
     </Compile>
     <Compile Include="NavFooter.Master.cs">
       <DependentUpon>NavFooter.Master</DependentUpon>

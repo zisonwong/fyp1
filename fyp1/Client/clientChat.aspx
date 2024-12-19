@@ -103,13 +103,6 @@
                             OnClick="btnSend_Click"
                             Text="Send"
                             UseSubmitBehavior="false" />
-                        <asp:Button
-                            ID="btnVideoCall"
-                            runat="server"
-                            CssClass="bg-green-600 text-white p-3 rounded-full hover:bg-green-700 flex items-center justify-center ml-2"
-                            OnClick="btnVideoCall_Click"
-                            Text="Video Call"
-                            UseSubmitBehavior="false" />
                     </div>
                 </div>
             </div>

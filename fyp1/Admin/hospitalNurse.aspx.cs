@@ -7,6 +7,8 @@ using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using OfficeOpenXml;
+using System.IO;
 
 namespace fyp1.Admin
 {
@@ -133,6 +135,85 @@ namespace fyp1.Admin
             {
                 string nurseID = e.CommandArgument.ToString();
                 Response.Redirect($"~/Admin/hospitalNurseEdit.aspx?nurseID={nurseID}");
+            }
+        }
+
+        protected void btnExportToExcel_Click(object sender, EventArgs e)
+        {
+            string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
+            DataTable nurseTable = new DataTable();
+
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                string query = @"
+            SELECT 
+                n.nurseID, 
+                n.ICNumber, 
+                n.name, 
+                CAST(n.DOB AS DATE) AS DOB, 
+                n.gender, 
+                n.role, 
+                n.email, 
+                n.contactInfo, 
+                n.status, 
+                n.date,
+                b.name AS BranchName
+            FROM 
+                Nurse n
+            LEFT JOIN 
+                Branch b ON n.branchID = b.branchID;
+        ";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    conn.Open();
+                    using (SqlDataAdapter adapter = new SqlDataAdapter(cmd))
+                    {
+                        adapter.Fill(nurseTable);
+                    }
+                }
+            }
+
+            if (nurseTable.Rows.Count > 0)
+            {
+                using (var package = new ExcelPackage())
+                {
+                    var worksheet = package.Workbook.Worksheets.Add("Nurses");
+
+                    worksheet.Cells["A1"].LoadFromDataTable(nurseTable, true);
+
+                    using (var range = worksheet.Cells["A1:J1"])
+                    {
+                        range.Style.Font.Bold = true;
+                        range.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                        range.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
+                    }
+
+                    var dobColumn = worksheet.Column(4);
+                    dobColumn.Style.Numberformat.Format = "yyyy-MM-dd";
+
+                    var dateColumn = worksheet.Column(10);
+                    dateColumn.Style.Numberformat.Format = "yyyy-MM-dd";
+
+                    worksheet.Cells[worksheet.Dimension.Address].AutoFitColumns();
+
+                    using (MemoryStream memoryStream = new MemoryStream())
+                    {
+                        package.SaveAs(memoryStream);
+                        byte[] byteArray = memoryStream.ToArray();
+
+                        Response.Clear();
+                        Response.Buffer = true;
+                        Response.ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+                        Response.AddHeader("content-disposition", "attachment;filename=NurseData.xlsx");
+                        Response.BinaryWrite(byteArray);
+                        Response.End();
+                    }
+                }
+            }
+            else
+            {
+                ClientScript.RegisterStartupScript(this.GetType(), "alert", "alert('No doctor data found to export.');", true);
             }
         }
     }

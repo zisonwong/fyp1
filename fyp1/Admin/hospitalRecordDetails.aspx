@@ -9,7 +9,7 @@
                 <div class="me-auto">
                     <h3>Record Details</h3>
                 </div>
-                 <% if (Session["Role"].ToString() == "Doctor" || Session["Role"].ToString() == "Admin")
+                 <% if (Session["Role"].ToString() == "Doctor")
                     { %>
                 <asp:LinkButton CssClass="btn btn-primary fw-bold"
                     ID="btnEditRecord" runat="server" OnClick="btnEditRecord_Click">

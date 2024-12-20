@@ -18,6 +18,10 @@ namespace hospital
             string doctorId = Session["DoctorId"]?.ToString();
             string nurseId = Session["nurseId"]?.ToString();
 
+            if(role == null)
+            {
+                Response.Redirect("~/Admin/error404.html");
+            }
             if (string.IsNullOrEmpty(role) && Request.Cookies["Role"] != null)
             {
                 role = Request.Cookies["Role"].Value.ToLower();
@@ -33,7 +37,6 @@ namespace hospital
                 nurseId = Request.Cookies["nurseID"].Value;
             }
 
-            // Redirect if user is not authenticated
             if (string.IsNullOrEmpty(role) || (role == "doctor" && string.IsNullOrEmpty(doctorId)) || (role == "nurse" && string.IsNullOrEmpty(nurseId)))
             {
                 Response.Redirect("~/Admin/error404.html");

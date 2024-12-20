@@ -11,34 +11,25 @@ namespace fyp1.Admin
 {
 
 
-    public partial class hospitalNurse
+    public partial class hospitalEmergencyAlert
     {
 
         /// <summary>
-        /// lbAddNurse control.
+        /// ddlFilterStatus control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton lbAddNurse;
+        protected global::System.Web.UI.WebControls.DropDownList ddlFilterStatus;
 
         /// <summary>
-        /// btnExportToExcel control.
+        /// lvEmergency control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnExportToExcel;
-
-        /// <summary>
-        /// lvStaff control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.ListView lvStaff;
+        protected global::System.Web.UI.WebControls.ListView lvEmergency;
     }
 }

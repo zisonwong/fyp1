@@ -7,6 +7,15 @@ using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Google.Apis.Auth.OAuth2;
+using Google.Apis.Calendar.v3.Data;
+using Google.Apis.Calendar.v3;
+using Google.Apis.Services;
+using System.IO;
+using System.Threading;
+using Google.Apis.Util.Store;
+using System.Web.Configuration;
+using Google.Apis.Auth.OAuth2.Flows;
 
 namespace fyp1.Admin
 {
@@ -22,7 +31,6 @@ namespace fyp1.Admin
                 {
                     LoadChatHistory(sessionID);
                 }
-
                 LoadPatientList();
             }
         }
@@ -168,7 +176,7 @@ namespace fyp1.Admin
         {
             if (string.IsNullOrEmpty(sessionID))
             {
-                return; // Exit if no sessionID is provided
+                return;
             }
 
             string connectionString = ConfigurationManager.ConnectionStrings["connectionString"].ConnectionString;
@@ -248,7 +256,6 @@ namespace fyp1.Admin
                     cmd.ExecuteNonQuery();
                 }
 
-                //TimerRefresh_Tick(sender, e);
                 LoadChatHistory(sessionID);
                 loadMessage();
             }
@@ -368,7 +375,7 @@ namespace fyp1.Admin
 
         private string GenerateNextMessageID()
         {
-            string nextAppointmentID = "M00001";
+            string nextMessageID = "M00001";
             try
             {
                 using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["connectionString"].ToString()))
@@ -380,7 +387,7 @@ namespace fyp1.Admin
                         if (result != DBNull.Value && result != null)
                         {
                             int idNumber = int.Parse(result.ToString().Substring(1)) + 1;
-                            nextAppointmentID = "M" + idNumber.ToString("D5");
+                            nextMessageID = "M" + idNumber.ToString("D5");
                         }
                     }
                 }
@@ -388,7 +395,36 @@ namespace fyp1.Admin
             catch (Exception ex)
             {
             }
-            return nextAppointmentID;
+            return nextMessageID;
+        }
+
+        protected void btnGenerateMeet_Click(object sender, EventArgs e)
+        {
+            string meetUrl = "https://meet.google.com/landing";
+            ClientScript.RegisterStartupScript(this.GetType(), "OpenNewTab", $"window.open('{meetUrl}', '_blank');", true);
+        }
+
+
+        private void SendMessage(string messageID, string sessionID, string content, string sender)
+        {
+            string connectionString = ConfigurationManager.ConnectionStrings["connectionString"].ConnectionString;
+
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                conn.Open();
+                string query = @"INSERT INTO Message (messageID, sessionID, content, timestamp, sender) 
+                               VALUES (@MessageID, @SessionID, @Content, @Timestamp, @Sender)";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@MessageID", messageID);
+                    cmd.Parameters.AddWithValue("@SessionID", sessionID);
+                    cmd.Parameters.AddWithValue("@Content", content);
+                    cmd.Parameters.AddWithValue("@Timestamp", DateTime.Now);
+                    cmd.Parameters.AddWithValue("@Sender", sender);
+                    cmd.ExecuteNonQuery();
+                }
+            }
         }
     }
 }

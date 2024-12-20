@@ -1,8 +1,9 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/NavFooter.Master" AutoEventWireup="true" CodeBehind="clientHome.aspx.cs" Inherits="fyp1.Client.clientHome" %>
+﻿<%@ Page Title="Home" Language="C#" MasterPageFile="~/NavFooter.Master" AutoEventWireup="true" CodeBehind="clientHome.aspx.cs" Inherits="fyp1.Client.clientHome" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
     <link href="../CSS/home.css" rel="stylesheet" />
     <link href="../CSS/footer.css" rel="stylesheet" />
+    <link rel="icon" href="Images/tabLogo.svg"/>
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
 

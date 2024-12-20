@@ -146,7 +146,29 @@ namespace fyp1.Admin
 
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
-                string query = "SELECT doctorID, ICNumber, name, CAST(DOB AS DATE) AS DOB, gender, role, email, contactInfo, status, date FROM Doctor";
+                string query = @"
+            SELECT 
+                d.doctorID, 
+                d.ICNumber, 
+                d.name, 
+                CAST(d.DOB AS DATE) AS DOB, 
+                d.gender, 
+                d.role, 
+                d.email, 
+                d.contactInfo, 
+                d.status, 
+                d.date,
+                dep.name AS DepartmentName,
+                br.name AS BranchName
+            FROM 
+                Doctor d
+            JOIN 
+                DoctorDepartment dd ON d.doctorID = dd.doctorID
+            JOIN 
+                Department dep ON dd.departmentID = dep.departmentID
+            LEFT JOIN 
+                Branch br ON dep.branchID = br.branchID;
+        ";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
@@ -166,7 +188,7 @@ namespace fyp1.Admin
 
                     worksheet.Cells["A1"].LoadFromDataTable(doctorTable, true);
 
-                    using (var range = worksheet.Cells["A1:J1"]) 
+                    using (var range = worksheet.Cells["A1:L1"])  
                     {
                         range.Style.Font.Bold = true;
                         range.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
@@ -200,5 +222,6 @@ namespace fyp1.Admin
                 ClientScript.RegisterStartupScript(this.GetType(), "alert", "alert('No doctor data found to export.');", true);
             }
         }
+
     }
 }

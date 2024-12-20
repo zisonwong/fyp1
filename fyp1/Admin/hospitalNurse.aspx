@@ -1,8 +1,9 @@
 ﻿<%@ Page Title="Nurse" Language="C#" MasterPageFile="~/Admin/adminSideBar.Master" AutoEventWireup="true" CodeBehind="hospitalNurse.aspx.cs" Inherits="fyp1.Admin.hospitalNurse" %>
+
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
-        <main class="content container">
+    <main class="content container">
         <div class="col-xxl-12 col-lg-12">
             <div class="mb-2">
                 <asp:LinkButton CssClass="btn btn-primary fw-bold"
@@ -17,7 +18,9 @@
             16c0 4.4 3.6 8 8 8l16 0 0 16c0 4.4 3.6 8 8 8l16 0c4.4 0 8-3.6 8-8l0-16 16 0c4.4 0 8-3.6 
             8-8l0-16c0-4.4-3.6-8-8-8l-16 0 0-16c0-4.4-3.6-8-8-8l-16 0c-4.4 0-8 3.6-8 8z"/></svg>
     Add Nurse
-</asp:LinkButton>
+                </asp:LinkButton>
+                <asp:Button ID="btnExportToExcel" runat="server" CssClass="btn btn-success fw-bold"
+                    Text="Export to Excel" OnClick="btnExportToExcel_Click" />
             </div>
             <div class="mt-5">
                 <h3>Nurse</h3>

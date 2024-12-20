@@ -276,6 +276,7 @@
     <Content Include="Admin\hospitalAddPrescription.aspx" />
     <Content Include="Admin\hospitalDoctorChat.aspx" />
     <Content Include="Admin\hospitalEditMedicalRecord.aspx" />
+    <Content Include="Admin\hospitalEmergencyAlert.aspx" />
     <Content Include="Admin\hospitalMedicalRecord.aspx" />
     <Content Include="Admin\hospitalStaffForgotPassword.aspx" />
     <Content Include="Admin\hospitalStaffResetPassword.aspx" />
@@ -471,6 +472,13 @@
     </Compile>
     <Compile Include="Admin\hospitalEditMedicalRecord.aspx.designer.cs">
       <DependentUpon>hospitalEditMedicalRecord.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\hospitalEmergencyAlert.aspx.cs">
+      <DependentUpon>hospitalEmergencyAlert.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\hospitalEmergencyAlert.aspx.designer.cs">
+      <DependentUpon>hospitalEmergencyAlert.aspx</DependentUpon>
     </Compile>
     <Compile Include="Admin\hospitalMedicalRecord.aspx.cs">
       <DependentUpon>hospitalMedicalRecord.aspx</DependentUpon>

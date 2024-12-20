@@ -37,7 +37,7 @@ namespace fyp1.Admin
                 string query = @"
 SELECT d.doctorID, d.name, d.DOB, d.ICNumber, d.gender, d.contactInfo, d.email, d.password,
        d.role, d.status, d.photo, 
-       STRING_AGG(dep.name + ' - ' + b.branchID, ', ') AS Departments
+       STRING_AGG(dep.name + ' - ' + b.name, ', ') AS Departments
 FROM Doctor d
 LEFT JOIN DoctorDepartment dd ON d.doctorID = dd.doctorID
 LEFT JOIN Department dep ON dd.departmentID = dep.departmentID

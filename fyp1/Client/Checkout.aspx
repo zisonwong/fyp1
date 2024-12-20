@@ -1,7 +1,8 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/NavFooter.Master" AutoEventWireup="true" CodeBehind="Checkout.aspx.cs" Inherits="fyp1.Client.Checkout" %>
+﻿<%@ Page Title="Payment" Language="C#" MasterPageFile="~/NavFooter.Master" AutoEventWireup="true" CodeBehind="Checkout.aspx.cs" Inherits="fyp1.Client.Checkout" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="icon" href="Images/tabLogo.svg"/>
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
     <form id="form1" runat="server">

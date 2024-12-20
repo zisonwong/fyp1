@@ -4,9 +4,10 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
+    <link rel="icon" href="Images/tabLogo.svg"/>
     <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="" />
 
-    <title></title>
+    <title>Profile</title>
     <link rel="icon" type="image/x-icon" href="data:image/x-icon;base64," />
     <link href="../CSS/clientProfile.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />

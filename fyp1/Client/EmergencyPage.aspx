@@ -1,6 +1,7 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/NavFooter.Master" AutoEventWireup="true" CodeBehind="EmergencyPage.aspx.cs" Inherits="fyp1.Client.EmergencyPage" %>
+﻿<%@ Page Title="Emergency" Language="C#" MasterPageFile="~/NavFooter.Master" AutoEventWireup="true" CodeBehind="EmergencyPage.aspx.cs" Inherits="fyp1.Client.EmergencyPage" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
+    <link rel="icon" href="Images/tabLogo.svg"/>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAbFkinyyHf8XwboZ1KHr7yupFq2yo_ufo&libraries=places"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </asp:Content>

@@ -1,6 +1,7 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/NavFooter.Master" AutoEventWireup="true" CodeBehind="clientResetPassword.aspx.cs" Inherits="fyp1.Client.clientResetPassword" %>
+﻿<%@ Page Title="Reset your password" Language="C#" MasterPageFile="~/NavFooter.Master" AutoEventWireup="true" CodeBehind="clientResetPassword.aspx.cs" Inherits="fyp1.Client.clientResetPassword" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
+    <link rel="icon" href="Images/tabLogo.svg"/>
     <link href="../layout/bootstrap.min.css" rel="stylesheet" />
     <script src="../layout/bootstrap.bundle.min.js"></script>
     <style>

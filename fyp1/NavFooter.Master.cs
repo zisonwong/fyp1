@@ -13,6 +13,7 @@ using System.Web.Script.Services;
 using System.IO;
 using System.Net;
 using System.Web.UI;
+using Stripe.Billing;
 
 namespace fyp1
 {
@@ -250,7 +251,6 @@ namespace fyp1
 
         private string GetUserAddress()
         {
-            // Check for the UserAddress cookie
             HttpCookie addressCookie = Request.Cookies["UserAddress"];
 
             if (addressCookie != null && !string.IsNullOrEmpty(addressCookie.Value))
@@ -406,6 +406,10 @@ namespace fyp1
         protected void EmergencyButton_Click(object sender, EventArgs e)
         {
             string userAddress = GetUserAddress();
+
+            HttpCookie patientCookie = Request.Cookies["patientID"];
+
+            string locationID = GetLocationIDByAddress(userAddress);
             if (string.IsNullOrEmpty(userAddress))
             {
                 lblEmergencyMessage.Text = "Please enable location permissions and try again.";
@@ -422,6 +426,10 @@ namespace fyp1
                     lblEmergencyMessage.Text = "Could not find the nearest branch.";
                     return;
                 }
+                string alertID = generateNextAlertID();
+                string patientID = patientCookie.Value;
+
+                SaveEmergencyAlert(alertID, patientID, locationID);
 
                 string redirectUrl = $"../Client/EmergencyPage.aspx?branchName={HttpUtility.UrlEncode(nearestBranch.Name)}" +
                                      $"&branchAddress={HttpUtility.UrlEncode(nearestBranch.Address)}" +
@@ -434,6 +442,60 @@ namespace fyp1
             {
                 lblEmergencyMessage.Text = "Unable to fetch the nearest branch. Please try again.";
                 System.Diagnostics.Debug.WriteLine($"Emergency Error: {ex.Message}");
+            }
+        }
+
+        private string GetLocationIDByAddress(string userAddress)
+        {
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["YourConnectionString"].ConnectionString))
+                {
+                    conn.Open();
+                    string query = "SELECT locationID FROM Location WHERE address = @userAddress";
+
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@userAddress", userAddress);
+
+                        object result = cmd.ExecuteScalar();
+                        return result != null ? result.ToString() : null;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Database Error: {ex.Message}");
+                throw;
+            }
+        }
+
+        private void SaveEmergencyAlert(string alertID, string patientID, string locationID)
+        {
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["connectionString"].ConnectionString))
+                {
+                    conn.Open();
+                    string query = @"
+                INSERT INTO EmergencyAlert (alertID, patientID, locationID, timestamp, status)
+                VALUES (@alertID, @patientID, @locationID, @timestamp, @status)";
+
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@alertID", alertID);
+                        cmd.Parameters.AddWithValue("@patientID",patientID);
+                        cmd.Parameters.AddWithValue("@locationID",locationID);
+                        cmd.Parameters.AddWithValue("@timestamp", DateTime.Now);
+                        cmd.Parameters.AddWithValue("@status", "Active");
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Database Error: {ex.Message}");
+                throw;
             }
         }
 
@@ -484,7 +546,6 @@ namespace fyp1
                     }
                 }
 
-                // Sort branches by distance and return the nearest one
                 var sortedBranches = branchDistances
                     .OrderBy(bd => bd.Distance)
                     .ToList();
@@ -506,8 +567,6 @@ namespace fyp1
             }
         }
 
-
-
         private static string generateNextLocationID()
         {
             string nextLocationID = "LOC00001";
@@ -521,7 +580,7 @@ namespace fyp1
                         object result = cmd.ExecuteScalar();
                         if (result != DBNull.Value && result != null)
                         {
-                            int idNumber = int.Parse(result.ToString().Substring(1)) + 1;
+                            int idNumber = int.Parse(result.ToString().Substring(3)) + 1;
                             nextLocationID = "LOC" + idNumber.ToString("D5");
                         }
                     }
@@ -531,6 +590,31 @@ namespace fyp1
             {
             }
             return nextLocationID;
+        }
+
+        private static string generateNextAlertID()
+        {
+            string nextAlertID = "A00001";
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["connectionString"].ToString()))
+                {
+                    conn.Open();
+                    using (SqlCommand cmd = new SqlCommand("SELECT MAX(AlertID) FROM EmergencyAlert", conn))
+                    {
+                        object result = cmd.ExecuteScalar();
+                        if (result != DBNull.Value && result != null)
+                        {
+                            int idNumber = int.Parse(result.ToString().Substring(1)) + 1;
+                            nextAlertID = "A" + idNumber.ToString("D5");
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+            return nextAlertID;
         }
 
         private void SetDefaultUserLocation()

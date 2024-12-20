@@ -1,8 +1,9 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/NavFooter.Master" AutoEventWireup="true" CodeBehind="clientForgotPassword.aspx.cs" Inherits="fyp1.Client.clientForgotPassword" %>
+﻿<%@ Page Title="Forgot Password" Language="C#" MasterPageFile="~/NavFooter.Master" AutoEventWireup="true" CodeBehind="clientForgotPassword.aspx.cs" Inherits="fyp1.Client.clientForgotPassword" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
     <script src="../layout/bootstrap.bundle.min.js"></script>
     <link href="../layout/bootstrap.min.css" rel="stylesheet" />
+    <link rel="icon" href="Images/tabLogo.svg"/>
     <style>
         main {
             display: flex;

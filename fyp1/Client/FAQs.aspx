@@ -1,5 +1,6 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/NavFooter.Master" AutoEventWireup="true" CodeBehind="FAQs.aspx.cs" Inherits="fyp1.Client.FAQs" %>
+﻿<%@ Page Title="FAQs" Language="C#" MasterPageFile="~/NavFooter.Master" AutoEventWireup="true" CodeBehind="FAQs.aspx.cs" Inherits="fyp1.Client.FAQs" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
+    <link rel="icon" href="Images/tabLogo.svg"/>
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
     <div class="bg-gray-50 py-16 px-6">

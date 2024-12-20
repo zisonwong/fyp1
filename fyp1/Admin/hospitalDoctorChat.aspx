@@ -1,4 +1,4 @@
-﻿<%@ Page Title="Chat" Language="C#" MasterPageFile="~/Admin/adminSidebar.Master" AutoEventWireup="true" CodeBehind="hospitalDoctorChat.aspx.cs" Inherits="fyp1.Admin.hospitalDoctorChat" %>
+﻿<%@ Page Title="Chat" Language="C#" MasterPageFile="~/Admin/adminSidebar.Master" AutoEventWireup="true" CodeBehind="hospitalDoctorChat.aspx.cs" Inherits="fyp1.Admin.hospitalDoctorChat" Async="true" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -95,25 +95,31 @@
                 </div>
 
                 <div id="chatInput" class="bg-light p-4 d-flex align-items-center justify-content-between mt-auto w-100">
-                    <asp:TextBox ID="txtMessage" runat="server" placeholder="Type your message..." onkeydown="checkEnter(event)" 
+                    <asp:TextBox ID="txtMessage" runat="server" placeholder="Type your message..." onkeydown="checkEnter(event)"
                         CssClass="form-control me-2"></asp:TextBox>
                     <asp:Button
                         ID="btnSend"
                         runat="server"
-                        CssClass="btn btn-primary rounded-circle d-flex align-items-center justify-content-center"
+                        CssClass="btn btn-primary d-flex align-items-center justify-content-center me-2"
                         OnClick="btnSend_Click"
                         Text="Send"
                         UseSubmitBehavior="false" />
+                    <asp:Button
+                        ID="btnGenerateMeet"
+                        runat="server"
+                        CssClass="btn btn-secondary ml-4"
+                        OnClick="btnGenerateMeet_Click"
+                        Text="Generate Meet Link" />
                 </div>
             </div>
         </div>
     </div>
-   <script type="text/javascript">
-       function checkEnter(event) {
-           if (event.key === "Enter" || event.keyCode === 13) {
-               event.preventDefault(); 
-               document.getElementById('<%= btnSend.ClientID %>').click(); 
-           }
-       }
-   </script>
+    <script type="text/javascript">
+        function checkEnter(event) {
+            if (event.key === "Enter" || event.keyCode === 13) {
+                event.preventDefault();
+                document.getElementById('<%= btnSend.ClientID %>').click();
+            }
+        }
+    </script>
 </asp:Content>

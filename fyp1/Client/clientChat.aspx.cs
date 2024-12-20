@@ -276,11 +276,5 @@ namespace fyp1.Client
             }
             return nextAppointmentID;
         }
-        protected void btnVideoCall_Click(object sender, EventArgs e)
-        {
-            string doctorID = Request.QueryString["doctorID"];
-            Response.Redirect("VideoCall.aspx?doctorId=" + doctorID);
-        }
-
     }
 }

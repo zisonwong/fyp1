@@ -1,6 +1,7 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/NavFooter.Master" AutoEventWireup="true" CodeBehind="clientSignUp.aspx.cs" Inherits="fyp1.Client.clientSignUp" %>
+﻿<%@ Page Title="Sign Up" Language="C#" MasterPageFile="~/NavFooter.Master" AutoEventWireup="true" CodeBehind="clientSignUp.aspx.cs" Inherits="fyp1.Client.clientSignUp" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
+    <link rel="icon" href="Images/tabLogo.svg"/>
     <link href="../CSS/signup.css" rel="stylesheet" />
     <link href="../CSS/home.css" rel="stylesheet" />
     <link href="../CSS/footer.css" rel="stylesheet" />

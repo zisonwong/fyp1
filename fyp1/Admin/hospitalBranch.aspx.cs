@@ -60,19 +60,16 @@ namespace fyp1.Admin
                             OpenTime = reader["openTime"].ToString(),
                             CloseTime = reader["closeTime"].ToString()
                         };
-                        // Debugging output for loaded data
                         System.Diagnostics.Debug.WriteLine($"Loaded Branch: {branch.BranchID}, {branch.Name}, {branch.Address}, {branch.OpenTime}, {branch.CloseTime}");
                         branches.Add(branch);
                     }
                     if (branches.Count == 0)
                     {
-                        // Log or display a message indicating no data was found
                         System.Diagnostics.Debug.WriteLine("No branches found in the database.");
                     }
                 }
                 catch (Exception ex)
                 {
-                    // Log the exception message for debugging
                     System.Diagnostics.Debug.WriteLine("Error loading data: " + ex.Message);
                 }
             }
@@ -130,7 +127,6 @@ namespace fyp1.Admin
                 cmd.ExecuteNonQuery();
             }
             lvBranch.InsertItemPosition = InsertItemPosition.None;
-            // Use the search term stored in ViewState to filter the data again
             string searchTerm = ViewState["SearchTerm"] as string;
             if (!string.IsNullOrEmpty(searchTerm))
             {
@@ -178,12 +174,11 @@ namespace fyp1.Admin
                     latestBranchID = reader["branchID"].ToString();
                 }
             }
-            // Generate new ID (increment the last number)
             if (int.TryParse(latestBranchID.Substring(2), out int lastNumber))
             {
                 return "BH" + (lastNumber + 1).ToString("D3");
             }
-            return "BH001"; // Fallback to first ID
+            return "BH001"; 
         }
         protected void lvBranch_ItemEditing(object sender, ListViewEditEventArgs e)
         {
@@ -222,7 +217,8 @@ namespace fyp1.Admin
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 conn.Open();
-                string updateQuery = "UPDATE Branch SET name = @name, address = @address, openTime = @openTime, closeTime = @closeTime WHERE branchID = @branchID";
+                string updateQuery = "UPDATE Branch SET name = @name, address = @address, openTime = @openTime, closeTime = @closeTime " +
+                    "WHERE branchID = @branchID";
                 SqlCommand cmd = new SqlCommand(updateQuery, conn);
                 cmd.Parameters.AddWithValue("@branchID", branchID);
                 cmd.Parameters.AddWithValue("@name", name);
@@ -231,8 +227,8 @@ namespace fyp1.Admin
                 cmd.Parameters.AddWithValue("@closeTime", closeTime);
                 cmd.ExecuteNonQuery();
             }
-            lvBranch.EditIndex = -1; // Reset the edit index to end edit mode
-                                     // Use the search term stored in ViewState
+            lvBranch.EditIndex = -1; 
+                                    
             string searchTerm = ViewState["SearchTerm"] as string;
             if (!string.IsNullOrEmpty(searchTerm))
             {

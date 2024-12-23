@@ -27,6 +27,12 @@ namespace fyp1.Admin
             string password = txtPassword.Text;
             bool isValidUser = IsValidUser(loginInput, password, out string userID);
 
+            if (ContainsSqlInjection(loginInput) || ContainsSqlInjection(password))
+            {
+                Response.Redirect("../Admin/ErrorSqlInjection.aspx");
+                return; 
+            }
+
             if (isValidUser)
             {
                 string role;
@@ -113,7 +119,6 @@ namespace fyp1.Admin
             userID = null;
             string hashedPassword = HashPassword(password);
 
-            // Hardcoded admin credentials
             const string adminEmail = "admin@gmail.com";
             const string adminPassword = "admin123";
 
@@ -124,7 +129,6 @@ namespace fyp1.Admin
                 return isValid;
             }
 
-            // If not admin, check against database
             string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
 
             using (SqlConnection con = new SqlConnection(connectionString))
@@ -161,6 +165,30 @@ namespace fyp1.Admin
                 return BitConverter.ToString(hashedBytes).Replace("-", "").ToLower();
             }
         }
+        public static bool ContainsSqlInjection(string input)
+        {
+            if (string.IsNullOrEmpty(input))
+            {
+                return false;
+            }
+            string lowerInput = input.ToLower();
 
+            string[] sqlInjectionPatterns = new string[]
+            {
+            "select", "insert", "update", "delete", "drop", "alter", "union", "create", "grant", "truncate",
+            "exec", "xp_", "sp_", "benchmark", "sleep", "or 1=1", "or 'a'='a'", "/*", "*/",
+            "' OR 'x'='x'", "' OR 1=1 --", "xp_cmdshell", "master.dbo", "net user", "net localgroup", "cmd",
+            "execute", "declare", "waitfor delay", "system", "select * from", "1=1", "drop table"
+            };
+
+            foreach (var pattern in sqlInjectionPatterns)
+            {
+                if (lowerInput.Contains(pattern))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 }

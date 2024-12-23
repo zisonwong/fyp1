@@ -53,7 +53,7 @@ namespace fyp1.Admin
                         {
                             MedicineID = reader["medicineID"].ToString(),
                             Name = reader["name"].ToString(),
-                            Quantity = Convert.ToInt32(reader["quantity"]), // Convert to int
+                            Quantity = Convert.ToInt32(reader["quantity"]), 
                             Type = reader["type"].ToString(),
                             Description = reader["description"].ToString(),
                             Dosage = reader["dosage"].ToString(),
@@ -196,7 +196,6 @@ namespace fyp1.Admin
             string description = (e.Item.FindControl("txtDescription") as TextBox).Text;
             string dosage = (e.Item.FindControl("txtDosage") as TextBox).Text;
             string newMedicineID = GenerateNextMedicineID();
-            // Ensure proper parsing of integers for quantity
             if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(type) || string.IsNullOrEmpty(description) || string.IsNullOrEmpty(dosage) 
                 || string.IsNullOrEmpty(quantityText))
             {
@@ -229,7 +228,6 @@ namespace fyp1.Admin
             }
             lvMedicine.InsertItemPosition = InsertItemPosition.None;
             LoadMedicineTypes();
-            // Use the search term stored in ViewState to filter the data again
             string searchTerm = ViewState["SearchTerm"] as string;
             if (!string.IsNullOrEmpty(searchTerm))
             {
@@ -262,17 +260,16 @@ namespace fyp1.Admin
         }
         protected void lvBranch_ItemEditing(object sender, ListViewEditEventArgs e)
         {
-            lvMedicine.EditIndex = e.NewEditIndex; // Set the index of the item being edited
+            lvMedicine.EditIndex = e.NewEditIndex; 
 
-            // Check if a search term exists in ViewState
             string searchTerm = ViewState["SearchTerm"] as string;
             if (!string.IsNullOrEmpty(searchTerm))
             {
-                LoadFilteredData(searchTerm); // Load filtered data using the search term
+                LoadFilteredData(searchTerm); 
             }
             else
             {
-                LoadMedicineData(); // Load all data if no search term
+                LoadMedicineData(); 
             }
             LoadFilteredData(ViewState["SearchTerm"] as string);
             ReloadMedicineData();
@@ -313,9 +310,8 @@ namespace fyp1.Admin
                 cmd.Parameters.AddWithValue("@dosage", dosage);
                 cmd.ExecuteNonQuery();
             }
-            lvMedicine.EditIndex = -1; // Reset the edit index to end edit mode
+            lvMedicine.EditIndex = -1; 
             LoadMedicineTypes();
-            // Use the search term stored in ViewState
             string searchTerm = ViewState["SearchTerm"] as string;
             if (!string.IsNullOrEmpty(searchTerm))
             {
@@ -435,6 +431,49 @@ namespace fyp1.Admin
                 LoadMedicineData();
             }
         }
+        protected void lvMedicine_ItemDeleting(object sender, ListViewDeleteEventArgs e)
+        {
+            string medicineID = e.Keys["medicineID"]?.ToString();
+            if (!string.IsNullOrEmpty(medicineID))
+            {
+                string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
+                string query = "DELETE FROM Medicine WHERE medicineID = @medicineID";
+
+                using (SqlConnection connection = new SqlConnection(connectionString))
+                {
+                    using (SqlCommand command = new SqlCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@medicineID", medicineID);
+
+                        try
+                        {
+                            connection.Open();
+                            int rowsAffected = command.ExecuteNonQuery();
+                            if (rowsAffected > 0)
+                            {
+                                ScriptManager.RegisterStartupScript(this, this.GetType(), "alert",
+                                    $"alert('Medicine {medicineID} has been successfully deleted.');", true);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine("Error deleting medicine: " + ex.Message);
+                        }
+                    }
+
+                    string searchTerm = ViewState["SearchTerm"] as string;
+                    if (!string.IsNullOrEmpty(searchTerm))
+                    {
+                        LoadFilteredData(searchTerm);
+                    }
+                    else
+                    {
+                        LoadMedicineData();
+                    }
+                }
+            }
+        }
+
         public class Medicine
         {
             public string MedicineID { get; set; }

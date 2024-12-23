@@ -1,4 +1,5 @@
-﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="adminSideBar.Master.cs" Inherits="hospital.adminSideBar" %>
+﻿
+<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="adminSideBar.Master.cs" Inherits="hospital.adminSideBar" %>
 
 <!DOCTYPE html>
 
@@ -172,7 +173,7 @@
                         <div class="d-flex me-auto">
                             <li class="nav-item">
                                 <asp:Panel ID="panelSearch" runat="server" CssClass="position-relative d-inline-block ml-auto" DefaultButton="lBtnSearch">
-                                    <asp:TextBox placeholder="Search Whatever..."
+                                    <asp:TextBox placeholder="Search"
                                         CssClass="form-control rounded-pill pl-4 pr-5"
                                         ID="txtSearch" runat="server" />
                                     <asp:LinkButton OnClick="lBtnSearch_Click" CssClass="position-absolute top-50 translate-middle-y right-0 px-2 end-0 pb-2"

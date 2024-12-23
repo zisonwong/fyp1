@@ -274,17 +274,14 @@ namespace fyp1.Admin
                 return;
             }
 
-            // Validate IC and DOB
             if (!ValidateICAndDOB(icNumber, dob))
             {
-                // If validation fails, show an error and return
                 Page.ClientScript.RegisterStartupScript(GetType(), "Invalid IC",
                     "document.addEventListener('DOMContentLoaded', ()=> alert('IC Number does not match the date of " +
                     "birth or is in the wrong format.'));", true);
                 return;
             }
 
-            // Validate phone
             if (!ValidatePhone(contactInfo))
             {
                 Page.ClientScript.RegisterStartupScript(GetType(), "Invalid Phone",
@@ -293,7 +290,6 @@ namespace fyp1.Admin
                 return;
             }
 
-            // Validate email
             if (!ValidateEmailFormat(email))
             {
                 Page.ClientScript.RegisterStartupScript(GetType(), "Invalid Email",

@@ -1,4 +1,4 @@
-﻿using System;
+﻿    using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data.SqlClient;
@@ -41,10 +41,8 @@ namespace fyp1.Admin
                             DataTable dataTable = new DataTable();
                             dataTable.Load(reader);
 
-                            // Add a new column for the Base64 image string
                             dataTable.Columns.Add("doctorPhoto", typeof(string));
 
-                            // Convert binary photo to Base64 string
                             foreach (DataRow row in dataTable.Rows)
                             {
                                 if (row["photo"] != DBNull.Value)
@@ -52,25 +50,21 @@ namespace fyp1.Admin
                                     if (row["photo"] is byte[] photoData)
                                     {
                                         string base64String = Convert.ToBase64String(photoData);
-                                        string mimeType = "image/png"; // Adjust accordingly if you store file type
+                                        string mimeType = "image/png"; 
 
-                                        // Assign to the new column
                                         row["doctorPhoto"] = $"data:{mimeType};base64,{base64String}";
                                     }
                                     else
                                     {
-                                        // Handle unexpected types if necessary
-                                        row["doctorPhoto"] = ""; // or set a default image
+                                        row["doctorPhoto"] = ""; 
                                     }
                                 }
                                 else
                                 {
-                                    // Handle the case where there is no photo
-                                    row["doctorPhoto"] = ""; // or set to a default image URL
+                                    row["doctorPhoto"] = ""; 
                                 }
                             }
 
-                            // Bind to the ListView using the new column for the image
                             lvStaff.DataSource = dataTable;
                             lvStaff.DataBind();
                         }

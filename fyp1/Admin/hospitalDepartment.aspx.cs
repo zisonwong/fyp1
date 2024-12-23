@@ -325,7 +325,6 @@ namespace fyp1.Admin
                 cmd.ExecuteNonQuery();
             }
             lvDepartment.InsertItemPosition = InsertItemPosition.None;
-            // Use the search term stored in ViewState to filter the data again
             string searchTerm = ViewState["SearchTerm"] as string;
             string selectBranchID = ViewState["SelectedBranch"] as string;
             if (!string.IsNullOrEmpty(searchTerm))
@@ -377,12 +376,9 @@ namespace fyp1.Admin
 
         protected void lvDepartment_ItemUpdating(object sender, ListViewUpdateEventArgs e)
         {
-            // Retrieve department data from the edit controls in the ListView
             string departmentID = (lvDepartment.Items[e.ItemIndex].FindControl("lblDepartmentId") as Label).Text;
             string name = (lvDepartment.Items[e.ItemIndex].FindControl("txtEditDepartmentName") as TextBox).Text;
             string branchID = (lvDepartment.Items[e.ItemIndex].FindControl("ddlEditAssignToBranch") as DropDownList).SelectedValue;
-
-            // Validate that all fields are filled in
             if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(branchID))
             {
                 Page.ClientScript.RegisterStartupScript(GetType(), "Update Failed",
@@ -391,7 +387,6 @@ namespace fyp1.Admin
                 return;
             }
 
-            // Update the Department table in the database
             string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
@@ -404,10 +399,8 @@ namespace fyp1.Admin
                 cmd.ExecuteNonQuery();
             }
 
-            // Reset the edit index to exit edit mode
             lvDepartment.EditIndex = -1;
 
-            // Reload data based on any search term stored in ViewState
             string searchTerm = ViewState["SearchTerm"] as string;
             string selectBranchID = ViewState["SelectedBranch"] as string;
             if (!string.IsNullOrEmpty(searchTerm))

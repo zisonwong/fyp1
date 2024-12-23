@@ -142,7 +142,8 @@ namespace fyp1.Admin
 
             if (string.IsNullOrEmpty(doctorID))
             {
-                ClientScript.RegisterStartupScript(this.GetType(), "alert", "alert('Doctor ID not found. Please select a doctor or log in again.');", true);
+                ClientScript.RegisterStartupScript(this.GetType(), "alert", "alert('Doctor ID not found. Please " +
+                    "select a doctor or log in again.');", true);
                 return;
             }
 
@@ -155,33 +156,28 @@ namespace fyp1.Admin
 
             List<CalendarDay> calendarDays = new List<CalendarDay>();
 
-            // Add placeholders for days before the 1st
             for (int i = 0; i < startDay; i++)
             {
                 calendarDays.Add(new CalendarDay { Day = "", IsPlaceholder = true });
             }
 
-            // Add days of the month and retrieve availability data for each day
             for (int day = 1; day <= daysInMonth; day++)
             {
                 DateTime currentDate = new DateTime(currentYear, currentMonth, day);
 
-                // Retrieve only the availability slots for the specific doctor and date
                 List<AvailabilitySlot> availabilitySlots = GetAvailabilityTimes(currentDate, doctorID);
 
-                // Create a badge text for the day (e.g., time slots available)
                 string badgeText = string.Join(", ", availabilitySlots.Select(slot => slot.TimeSlot));
 
                 calendarDays.Add(new CalendarDay
                 {
                     Day = day.ToString(),
                     IsPlaceholder = false,
-                    AvailabilityTimes = availabilitySlots, // Assign retrieved AvailabilitySlot objects
-                    Badge = badgeText // Assign the badge text for the day
+                    AvailabilityTimes = availabilitySlots, 
+                    Badge = badgeText 
                 });
             }
 
-            // Add placeholders for remaining days in the last week
             int totalDays = startDay + daysInMonth;
             int remainingDays = (7 - (totalDays % 7)) % 7;
             for (int i = 0; i < remainingDays; i++)
@@ -504,19 +500,14 @@ namespace fyp1.Admin
         {
             DateTime currentStartTime = availableFrom;
 
-            // Generate records for each interval between availableFrom and availableTo
             while (currentStartTime.AddMinutes(interval) <= availableTo)
             {
-                // Generate the availability ID (calls your GenerateNextAvailabilityID method)
                 string availabilityID = GenerateNextAvailabilityID();
 
-                // Calculate the end time for this interval
                 DateTime currentEndTime = currentStartTime.AddMinutes(interval);
 
-                // Save this availability record into the database
                 SaveRecordToDatabase(availabilityID, doctorID, branchID, date, currentStartTime, currentEndTime, interval);
 
-                // Update the start time for the next interval
                 currentStartTime = currentEndTime;
             }
         }
@@ -574,8 +565,8 @@ namespace fyp1.Admin
                     cmd.Parameters.AddWithValue("@availableFrom", fromTime.TimeOfDay);
                     cmd.Parameters.AddWithValue("@availableTo", toTime.TimeOfDay);
                     cmd.Parameters.AddWithValue("@intervalTime", TimeSpan.FromMinutes(interval));
-                    cmd.Parameters.AddWithValue("@status", "Available"); // Default status
-                    cmd.Parameters.AddWithValue("@type", availabilityType); // Set the type
+                    cmd.Parameters.AddWithValue("@status", "Available"); 
+                    cmd.Parameters.AddWithValue("@type", availabilityType);
                     cmd.ExecuteNonQuery();
                 }
             }
@@ -785,7 +776,6 @@ namespace fyp1.Admin
                 TimeSpan newFromTime = fromTime.TimeOfDay;
                 TimeSpan newToTime = toTime.TimeOfDay;
 
-                // Retrieve the list of availability IDs from the hidden field
                 string[] availableIDs = hdnAvailableIDs.Value.Split(',');
 
                 string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
@@ -796,7 +786,7 @@ namespace fyp1.Admin
                     List<string> idsToRemove = new List<string>();
                     List<string> unavailableTimes = new List<string>();
 
-                    bool anyChangesMade = false; // Flag to track if any changes were made
+                    bool anyChangesMade = false;
 
                     foreach (string id in availableIDs)
                     {
@@ -812,32 +802,28 @@ namespace fyp1.Admin
                                     TimeSpan dbToTime = reader.GetTimeSpan(1);
                                     string status = reader.GetString(2);
 
-                                    // If the status is not "Available", store the time and status
                                     if (status != "Available")
                                     {
-                                        unavailableTimes.Add($"{dbFromTime:hh\\:mm} - {dbToTime:hh\\:mm}"); // Format for time range
+                                        unavailableTimes.Add($"{dbFromTime:hh\\:mm} - {dbToTime:hh\\:mm}"); 
                                     }
 
-                                    // Check if the current time interval falls outside the new range and should be removed
                                     if (dbFromTime >= newToTime || dbToTime <= newFromTime)
                                     {
-                                        idsToRemove.Add(id); // Mark this ID for removal
-                                        anyChangesMade = true; // A change is being made
+                                        idsToRemove.Add(id); 
+                                        anyChangesMade = true; 
                                     }
                                 }
                             }
                         }
                     }
 
-                    // If there are any unavailable times, display an error and exit
                     if (unavailableTimes.Count > 0)
                     {
                         string unavailableTimesMessage = string.Join(", ", unavailableTimes);
                         ClientScript.RegisterStartupScript(this.GetType(), "error", $"alert('The following times are not available for editing: {unavailableTimesMessage}');", true);
-                        return; // Stop further processing
+                        return; 
                     }
 
-                    // Remove all IDs that are no longer within the specified range
                     foreach (string idToRemove in idsToRemove)
                     {
                         string deleteQuery = "DELETE FROM Availability WHERE availabilityID = @availabilityID";
@@ -848,27 +834,22 @@ namespace fyp1.Admin
                         }
                     }
 
-                    // Check if any changes were made (deletion or update)
                     if (anyChangesMade)
                     {
-                        // Confirmation message on successful update
                         ClientScript.RegisterStartupScript(this.GetType(), "success", "alert('Availability updated successfully!');", true);
                     }
                     else
                     {
-                        // If no changes were made, inform the user
                         ClientScript.RegisterStartupScript(this.GetType(), "info", "alert('No availability records were changed.');", true);
                     }
                 }
             }
             catch (FormatException)
             {
-                // Error handling for invalid date/time formats
                 ClientScript.RegisterStartupScript(this.GetType(), "error", "alert('Time format error. Please ensure times are in HH:mm or hh:mm tt format.');", true);
             }
             catch (Exception ex)
             {
-                // General error handling
                 ClientScript.RegisterStartupScript(this.GetType(), "error", $"alert('Error: {ex.Message}');", true);
             }
             DisplayCalendar();
@@ -876,14 +857,12 @@ namespace fyp1.Admin
 
         protected void btnDelete_Click(object sender, EventArgs e)
         {
-            // Retrieve the availability IDs from the hidden field
             string[] availableIDs = hdnAvailableIDs.Value.Split(',');
 
-            // Ensure that there are IDs to delete
             if (availableIDs.Length == 0 || string.IsNullOrWhiteSpace(availableIDs[0]))
             {
                 ClientScript.RegisterStartupScript(this.GetType(), "error", "alert('No availability records selected for deletion.');", true);
-                return; // Exit if no IDs are selected
+                return; 
             }
 
             string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
@@ -892,14 +871,12 @@ namespace fyp1.Admin
             {
                 conn.Open();
 
-                // Start a transaction for atomicity
                 using (SqlTransaction transaction = conn.BeginTransaction())
                 {
                     try
                     {
                         foreach (string availabilityID in availableIDs)
                         {
-                            // Delete query to remove the availability record
                             string deleteQuery = "DELETE FROM Availability WHERE availabilityID = @availabilityID";
                             using (SqlCommand deleteCmd = new SqlCommand(deleteQuery, conn, transaction))
                             {
@@ -908,13 +885,11 @@ namespace fyp1.Admin
                             }
                         }
 
-                        // Commit the transaction if all deletions are successful
                         transaction.Commit();
                         ClientScript.RegisterStartupScript(this.GetType(), "success", "alert('Selected availability records have been deleted successfully.');", true);
                     }
                     catch (Exception ex)
                     {
-                        // Rollback the transaction if any error occurs
                         transaction.Rollback();
                         ClientScript.RegisterStartupScript(this.GetType(), "error", $"alert('Error deleting records: {ex.Message}');", true);
                     }

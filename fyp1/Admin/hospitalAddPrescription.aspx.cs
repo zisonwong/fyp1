@@ -186,7 +186,7 @@ namespace fyp1.Admin
         {
             string prescriptionID = GenerateNextPrescriptionID();
             string recordID = ddlRecordID.SelectedValue;
-            string medicineID = ViewState["SelectedMedicineID"]?.ToString(); // Get medicineID from ViewState
+            string medicineID = ViewState["SelectedMedicineID"]?.ToString(); 
             string details = txtDetails.Text;
             int quantity = 0;
 
@@ -240,14 +240,13 @@ namespace fyp1.Admin
 
                         if (rowsAffected == 0)
                         {
-                            // Rollback if quantity update fails, example like not enuf stock
                             transaction.Rollback();
                             ClientScript.RegisterStartupScript(this.GetType(), "StockError", "alert('Error: Insufficient stock for the selected medicine.');", true);
                             return;
                         }
                     }
 
-                    transaction.Commit(); // Commit the transaction
+                    transaction.Commit();
                     ClientScript.RegisterStartupScript(this.GetType(), "SaveSuccess", "alert('Prescription added successfully.');", true);
 
                     ClearForm();
@@ -256,7 +255,7 @@ namespace fyp1.Admin
                 }
                 catch (Exception ex)
                 {
-                    transaction.Rollback(); // Rollback in case of any error
+                    transaction.Rollback(); 
                     ClientScript.RegisterStartupScript(this.GetType(), "SaveError", $"alert('Error: {ex.Message}');", true);
                 }
             }

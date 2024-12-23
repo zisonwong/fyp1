@@ -39,10 +39,8 @@ namespace fyp1.Admin
                             DataTable dataTable = new DataTable();
                             dataTable.Load(reader);
 
-                            // Add a new column for the Base64 image string
                             dataTable.Columns.Add("nursePhoto", typeof(string));
 
-                            // Convert binary photo to Base64 string
                             foreach (DataRow row in dataTable.Rows)
                             {
                                 if (row["photo"] != DBNull.Value)
@@ -50,25 +48,21 @@ namespace fyp1.Admin
                                     if (row["photo"] is byte[] photoData)
                                     {
                                         string base64String = Convert.ToBase64String(photoData);
-                                        string mimeType = "image/png"; // Adjust accordingly if you store file type
+                                        string mimeType = "image/png"; 
 
-                                        // Assign to the new column
                                         row["nursePhoto"] = $"data:{mimeType};base64,{base64String}";
                                     }
                                     else
                                     {
-                                        // Handle unexpected types if necessary
-                                        row["nursePhoto"] = ""; // or set a default image
+                                        row["nursePhoto"] = ""; 
                                     }
                                 }
                                 else
                                 {
-                                    // Handle the case where there is no photo
-                                    row["nursePhoto"] = ""; // or set to a default image URL
+                                    row["nursePhoto"] = ""; 
                                 }
                             }
 
-                            // Bind to the ListView using the new column for the image
                             lvStaff.DataSource = dataTable;
                             lvStaff.DataBind();
                         }

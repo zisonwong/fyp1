@@ -96,14 +96,14 @@ namespace fyp1.Admin
             string fullName = firstName + " " + lastName;
             string dob = txtDateOfBirth.Text.Trim();
             string icNumber = txtIc.Text.Trim();
-            string gender = ddlGender.SelectedValue; // "M" or "F"
+            string gender = ddlGender.SelectedValue; 
             string contactInfo = txtContactInfo.Text.Trim();
             string email = txtEmail.Text.Trim();
             string password = txtPassword.Text.Trim();
             string branchID = ddlBranchId.SelectedValue;
             string role = txtRole.Text.Trim();
-            string status = ddlStatus.SelectedValue; // "Activated", "Deactivated"
-            byte[] avatarData = null; // To store the image binary data
+            string status = ddlStatus.SelectedValue;
+            byte[] avatarData = null; 
             DateTime joinDate = DateTime.Now;
 
             if (!CheckFields())
@@ -114,17 +114,14 @@ namespace fyp1.Admin
                 return;
             }
 
-            // Validate IC and DOB
             if (!ValidateICAndDOB(icNumber, dob))
             {
-                // If validation fails, show an error and return
                 Page.ClientScript.RegisterStartupScript(GetType(), "Invalid IC",
                     "document.addEventListener('DOMContentLoaded', ()=> alert('IC Number does not match the date of " +
                     "birth or is in the wrong format.'));", true);
                 return;
             }
 
-            // Validate phone
             if (!ValidatePhone(contactInfo))
             {
                 Page.ClientScript.RegisterStartupScript(GetType(), "Invalid Phone",
@@ -133,7 +130,6 @@ namespace fyp1.Admin
                 return;
             }
 
-            // Validate email
             if (!ValidateEmailFormat(email))
             {
                 Page.ClientScript.RegisterStartupScript(GetType(), "Invalid Email",
@@ -151,7 +147,6 @@ namespace fyp1.Admin
                 return;
             }
 
-            // Check if an avatar is uploaded
             if (FileUploadAvatar.HasFile)
             {
                 using (System.IO.Stream fs = FileUploadAvatar.PostedFile.InputStream)
@@ -164,7 +159,6 @@ namespace fyp1.Admin
             }
             else
             {
-                // Load the default avatar image into a byte array if no file is uploaded
                 string defaultImagePath = Server.MapPath("~/hospitalImg/defaultAvatar.jpg");
                 avatarData = System.IO.File.ReadAllBytes(defaultImagePath);
             }
@@ -192,7 +186,6 @@ namespace fyp1.Admin
                     command.Parameters.AddWithValue("@Status", status);
                     command.Parameters.AddWithValue("@JoinDate", joinDate);
 
-                    // Add the avatar data (either the uploaded image or the default image)
                     command.Parameters.Add("@Photo", SqlDbType.VarBinary).Value = avatarData;
 
                     connection.Open();

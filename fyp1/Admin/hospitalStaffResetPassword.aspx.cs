@@ -22,7 +22,6 @@ namespace fyp1.Admin
         {
             string conn = System.Configuration.ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
 
-            // Check which session is set
             string userId = null;
             string userTable = null;
 
@@ -61,7 +60,6 @@ namespace fyp1.Admin
                 {
                     try
                     {
-                        // Hash the new password
                         string hashedPassword = HashPassword(newPassword);
 
                         using (SqlConnection sqlConnection = new SqlConnection(conn))

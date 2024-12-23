@@ -110,13 +110,13 @@ namespace fyp1.Admin
             string fullName = lastName + " " + firstName;
             string dob = txtDateOfBirth.Text.Trim();
             string icNumber = txtIc.Text.Trim();
-            string gender = ddlGender.SelectedValue; // "M" or "F"
+            string gender = ddlGender.SelectedValue;
             string contactInfo = txtContactInfo.Text.Trim();
             string email = txtEmail.Text.Trim();
             string password = txtPassword.Text.Trim();
             string role = txtRole.Text.Trim();
             string status = ddlStatus.SelectedValue; 
-            byte[] avatarData = null; // To store the image binary data
+            byte[] avatarData = null; 
             DateTime joinDate = DateTime.Now;
 
             if (!CheckFields())
@@ -127,7 +127,6 @@ namespace fyp1.Admin
                 return;
             }
 
-            // Validate IC and DOB
             if (!ValidateICAndDOB(icNumber, dob))
             {
                 Page.ClientScript.RegisterStartupScript(GetType(), "Invalid IC",
@@ -136,7 +135,6 @@ namespace fyp1.Admin
                 return;
             }
 
-            // Validate phone
             if (!ValidatePhone(contactInfo))
             {
                 Page.ClientScript.RegisterStartupScript(GetType(), "Invalid Phone",
@@ -145,7 +143,6 @@ namespace fyp1.Admin
                 return;
             }
 
-            // Validate email
             if (!ValidateEmailFormat(email))
             {
                 Page.ClientScript.RegisterStartupScript(GetType(), "Invalid Email",
@@ -163,7 +160,6 @@ namespace fyp1.Admin
                 return;
             }
 
-            // Check if an avatar is uploaded
             if (FileUploadAvatar.HasFile)
             {
                 using (System.IO.Stream fs = FileUploadAvatar.PostedFile.InputStream)
@@ -176,7 +172,6 @@ namespace fyp1.Admin
             }
             else
             {
-                // Load the default avatar image into a byte array if no file is uploaded
                 string defaultImagePath = Server.MapPath("~/hospitalImg/defaultAvatar.jpg");
                 avatarData = System.IO.File.ReadAllBytes(defaultImagePath);
             }
@@ -188,7 +183,6 @@ namespace fyp1.Admin
             {
                 connection.Open();
 
-                // Insert into Doctor table
                 string insertDoctorQuery = "INSERT INTO Doctor (doctorID, name, DOB, ICNumber, gender, contactInfo, email, password, role, status, photo, date) " +
                                             "VALUES (@DoctorID, @Name, @DOB, @ICNumber, @Gender, @ContactInfo, @Email, @Password, @Role, @Status, @Photo, @JoinDate)";
                 using (SqlCommand doctorCommand = new SqlCommand(insertDoctorQuery, connection))
@@ -326,7 +320,7 @@ namespace fyp1.Admin
                 StringBuilder builder = new StringBuilder();
                 foreach (byte b in bytes)
                 {
-                    builder.Append(b.ToString("x2")); // Convert byte to hexadecimal
+                    builder.Append(b.ToString("x2")); 
                 }
                 return builder.ToString();
             }

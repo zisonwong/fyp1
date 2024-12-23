@@ -149,13 +149,13 @@ namespace fyp1.Admin
             string fullName = firstName + " " + lastName;
             string dob = txtDateOfBirth.Text.Trim();
             string icNumber = txtIc.Text.Trim();
-            string gender = ddlGender.SelectedValue; // "M" or "F"
+            string gender = ddlGender.SelectedValue; 
             string contactInfo = txtContactInfo.Text.Trim();
             string email = txtEmail.Text.Trim();
             string branchID = ddlBranchId.SelectedValue;
             string role = txtRole.Text.Trim();
-            string status = ddlStatus.SelectedValue; // "Activated", "Deactivated"
-            byte[] avatarData = null; // To store the image binary data
+            string status = ddlStatus.SelectedValue;
+            byte[] avatarData = null;
 
             if (!CheckFields())
             {
@@ -165,17 +165,14 @@ namespace fyp1.Admin
                 return;
             }
 
-            // Validate IC and DOB
             if (!ValidateICAndDOB(icNumber, dob))
             {
-                // If validation fails, show an error and return
                 Page.ClientScript.RegisterStartupScript(GetType(), "Invalid IC",
                     "document.addEventListener('DOMContentLoaded', ()=> alert('IC Number does not match the date of " +
                     "birth or is in the wrong format.'));", true);
                 return;
             }
 
-            // Validate phone
             if (!ValidatePhone(contactInfo))
             {
                 Page.ClientScript.RegisterStartupScript(GetType(), "Invalid Phone",
@@ -184,7 +181,6 @@ namespace fyp1.Admin
                 return;
             }
 
-            // Validate email
             if (!ValidateEmailFormat(email))
             {
                 Page.ClientScript.RegisterStartupScript(GetType(), "Invalid Email",
@@ -213,25 +209,22 @@ namespace fyp1.Admin
             }
             else
             {
-                // No new photo uploaded, keep the current image in the database
                 avatarData = null;
             }
 
             string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
-                // Dynamically build query based on whether password is "***********"
                 string query = "UPDATE Nurse SET name = @Name, DOB = @DOB, ICNumber = @ICNumber, gender = @Gender, " +
                                "contactInfo = @ContactInfo, email = @Email, branchID = @BranchID, role = @Role, " +
                                "status = @Status";
 
-                // Add photo field only if a new photo is provided
                 if (avatarData != null)
                 {
                     query += ", photo = @Photo";
                 }
 
-                query += " WHERE nurseID = @NurseID"; // Finalize the query
+                query += " WHERE nurseID = @NurseID"; 
 
                 using (SqlCommand command = new SqlCommand(query, connection))
                 {
@@ -251,7 +244,6 @@ namespace fyp1.Admin
                         command.Parameters.Add("@Photo", SqlDbType.VarBinary).Value = avatarData;
                     }
 
-                    // Add the actual password only if it's not "***********"
                     if (txtPassword.Text.Trim() != "***********")
                     {
                         command.Parameters.AddWithValue("@Password", txtPassword.Text.Trim());

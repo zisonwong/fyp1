@@ -62,7 +62,7 @@ namespace fyp1.Client
                 WHERE (d.name LIKE @filter OR @filter = '' OR @filter IS NULL)
                   AND (@departmentID = '' OR @departmentID IS NULL OR dept.departmentID = @departmentID)
                   AND (@branchID = '' OR @branchID IS NULL OR b.branchID = @branchID)
-                  AND d.status = 'Activated'
+                  AND d.status = 'Activate'
                 GROUP BY 
                     d.doctorID, 
                     d.name, 

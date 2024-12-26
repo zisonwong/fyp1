@@ -314,6 +314,31 @@ namespace fyp1.Client
                 string availabilityId = e.CommandArgument.ToString();
                 using (SqlConnection conn = new SqlConnection(connectionString))
                 {
+                    conn.Open();
+
+                    // First check if the slot is still available
+                    string checkQuery = @"
+                SELECT 1
+                FROM Availability a
+                LEFT JOIN Appointment apt ON a.availabilityID = apt.availabilityID
+                WHERE a.availabilityID = @AvailabilityID 
+                AND a.status = 'Available'
+                AND apt.availabilityID IS NULL";
+
+                    using (SqlCommand checkCmd = new SqlCommand(checkQuery, conn))
+                    {
+                        checkCmd.Parameters.AddWithValue("@AvailabilityID", availabilityId);
+                        object result = checkCmd.ExecuteScalar();
+
+                        if (result == null)
+                        {
+                            lblError.Text = "Sorry, this slot is no longer available. Please select another time.";
+                            LoadAvailableSlots(); // Refresh the available slots
+                            return;
+                        }
+                    }
+
+                    // Continue with existing slot selection logic
                     string query = @"
                 SELECT 
                     a.availableDate, 
@@ -332,69 +357,70 @@ namespace fyp1.Client
                     a.availabilityID = @AvailabilityID AND 
                     a.status = 'Available'";
 
-                    SqlCommand cmd = new SqlCommand(query, conn);
-                    cmd.Parameters.AddWithValue("@AvailabilityID", availabilityId);
-
-                    conn.Open();
-                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
-                        if (reader.Read())
+                        cmd.Parameters.AddWithValue("@AvailabilityID", availabilityId);
+
+                        using (SqlDataReader reader = cmd.ExecuteReader())
                         {
-                            try
+                            if (reader.Read())
                             {
-                                DateTime availableDate = Convert.ToDateTime(reader["availableDate"]);
-
-                                string availableFromStr = reader["availableFrom"].ToString();
-                                string availableToStr = reader["availableTo"].ToString();
-
-                                TimeSpan availableFrom = DateTime.ParseExact(availableFromStr, "HH:mm:ss", CultureInfo.InvariantCulture).TimeOfDay;
-                                TimeSpan availableTo = DateTime.ParseExact(availableToStr, "HH:mm:ss", CultureInfo.InvariantCulture).TimeOfDay;
-
-                                if (!TimeSpan.TryParse(availableFromStr, out availableFrom))
+                                try
                                 {
-                                    availableFrom = TimeSpan.ParseExact(availableFromStr, "hh\\:mm\\:ss", null);
-                                }
+                                    DateTime availableDate = Convert.ToDateTime(reader["availableDate"]);
 
-                                if (!TimeSpan.TryParse(availableToStr, out availableTo))
+                                    string availableFromStr = reader["availableFrom"].ToString();
+                                    string availableToStr = reader["availableTo"].ToString();
+
+                                    TimeSpan availableFrom = DateTime.ParseExact(availableFromStr, "HH:mm:ss", CultureInfo.InvariantCulture).TimeOfDay;
+                                    TimeSpan availableTo = DateTime.ParseExact(availableToStr, "HH:mm:ss", CultureInfo.InvariantCulture).TimeOfDay;
+
+                                    if (!TimeSpan.TryParse(availableFromStr, out availableFrom))
+                                    {
+                                        availableFrom = TimeSpan.ParseExact(availableFromStr, "hh\\:mm\\:ss", null);
+                                    }
+
+                                    if (!TimeSpan.TryParse(availableToStr, out availableTo))
+                                    {
+                                        availableTo = TimeSpan.ParseExact(availableToStr, "hh\\:mm\\:ss", null);
+                                    }
+
+                                    DateTime fullDateTime = availableDate.Date + availableFrom;
+
+                                    if (fullDateTime < DateTime.Now)
+                                    {
+                                        lblError.Text = "The selected time is no longer available. Please choose another slot.";
+                                        return;
+                                    }
+
+                                    // Format with explicit culture
+                                    System.Globalization.CultureInfo culture = System.Globalization.CultureInfo.CreateSpecificCulture("en-US");
+                                    lblSelectedAppointment.Text = string.Format(culture, @"
+                                <br/>Date: {0:dddd, MMMM dd, yyyy}
+                                <br/>Time: {1:hh\:mm} {1:tt} - {2:hh\:mm} {2:tt}
+                                <br/>Consultation Type: {3}
+                                ",
+                                        availableDate,
+                                        new DateTime(availableDate.Year, availableDate.Month, availableDate.Day, availableFrom.Hours, availableFrom.Minutes, 0),
+                                        new DateTime(availableDate.Year, availableDate.Month, availableDate.Day, availableTo.Hours, availableTo.Minutes, 0),
+                                        reader["ConsultationType"]?.ToString() ?? "N/A");
+
+                                    // Store the availability ID in ViewState for later use
+                                    ViewState["SelectedAvailabilityId"] = availabilityId;
+
+                                    // Show confirmation button
+                                    btnConfirmAppointment.Visible = true;
+                                }
+                                catch (Exception ex)
                                 {
-                                    availableTo = TimeSpan.ParseExact(availableToStr, "hh\\:mm\\:ss", null);
+                                    // Log the full exception details
+                                    lblError.Text = $"Error processing slot details: {ex.Message}\n{ex.StackTrace}";
                                 }
-
-                                DateTime fullDateTime = availableDate.Date + availableFrom;
-
-                                if (fullDateTime < DateTime.Now)
-                                {
-                                    lblError.Text = "The selected time is no longer available. Please choose another slot.";
-                                    return;
-                                }
-
-                                // Format with explicit culture
-                                System.Globalization.CultureInfo culture = System.Globalization.CultureInfo.CreateSpecificCulture("en-US");
-                                lblSelectedAppointment.Text = string.Format(culture, @"
-                                    <br/>Date: {0:dddd, MMMM dd, yyyy}
-                                    <br/>Time: {1:hh\:mm} {1:tt} - {2:hh\:mm} {2:tt}
-                                    <br/>Consultation Type: {3}
-                                    ",
-                                    availableDate,
-                                    new DateTime(availableDate.Year, availableDate.Month, availableDate.Day, availableFrom.Hours, availableFrom.Minutes, 0),
-                                    new DateTime(availableDate.Year, availableDate.Month, availableDate.Day, availableTo.Hours, availableTo.Minutes, 0),
-                                    reader["ConsultationType"]?.ToString() ?? "N/A");
-
-                                // Store the availability ID in ViewState for later use
-                                ViewState["SelectedAvailabilityId"] = availabilityId;
-
-                                // Show confirmation button
-                                btnConfirmAppointment.Visible = true;
                             }
-                            catch (Exception ex)
+                            else
                             {
-                                // Log the full exception details
-                                lblError.Text = $"Error processing slot details: {ex.Message}\n{ex.StackTrace}";
+                                lblError.Text = "No matching slot found.";
                             }
-                        }
-                        else
-                        {
-                            lblError.Text = "No matching slot found.";
                         }
                     }
                 }

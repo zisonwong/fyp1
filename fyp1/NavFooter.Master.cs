@@ -449,7 +449,7 @@ namespace fyp1
         {
             try
             {
-                using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["YourConnectionString"].ConnectionString))
+                using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["connectionString"].ConnectionString))
                 {
                     conn.Open();
                     string query = "SELECT locationID FROM Location WHERE address = @userAddress";

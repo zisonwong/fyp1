@@ -34,38 +34,32 @@ namespace fyp1.Client
         {
             if (!IsPostBack)
             {
-                try
+                // Handle PayPal return
+                string status = Request.QueryString["status"];
+                string appointmentId = Request.QueryString["appointmentID"];
+                string paymentSuccess = Request.QueryString["paymentSuccess"];
+
+                if (status == "success" && !string.IsNullOrEmpty(appointmentId))
                 {
-                    creditCard.Checked = false;
-                    paypal.Checked = false;
-                    creditCardForm.Visible = false;
-                    string appointmentId = Request.QueryString["appointmentID"];
-                    if (string.IsNullOrEmpty(appointmentId)) 
-                    { 
-                        Response.Redirect("clientProfile.aspx");
+                    if (ProcessPayPalPayment(appointmentId))
+                    {
+                        // Store success in session to persist across redirect
+                        Session["PaymentSuccessful"] = true;
+                        Response.Redirect($"Checkout.aspx?appointmentID={appointmentId}&paymentSuccess=true");
+                        return;
                     }
-
-                    appointmentId = Request.QueryString["appointmentID"];
-
-                    DisplayAppointmentDetails();
-                    UpdatePaymentSummary();
                 }
-                catch (Exception ex)
+
+                // Check for payment success message after redirect
+                if (Session["PaymentSuccessful"] != null && (bool)Session["PaymentSuccessful"])
                 {
-                    lblError.Text = "Error loading payment page: " + ex.Message;
-                    Response.Redirect("clientHome.aspx");
+                    ShowPaymentModal();
+                    Session["PaymentSuccessful"] = null; // Clear the session
                 }
 
-                HttpCookie cookieID = Request.Cookies["PatientID"];
-                string patientID = cookieID.Value;
-
-                if (patientID == null)
-                {
-                    Response.Redirect("clientLogin.aspx");
-                }
+                InitializeCheckoutPage(appointmentId);
             }
         }
-
         private void DisplayAppointmentDetails()
         {
             string appointmentId = Request.QueryString["appointmentID"];
@@ -97,38 +91,128 @@ namespace fyp1.Client
             }
         }
 
+        private void InitializeCheckoutPage(string appointmentId)
+        {
+            try
+            {
+                creditCard.Checked = false;
+                paypal.Checked = false;
+                creditCardForm.Visible = false;
+
+                if (string.IsNullOrEmpty(appointmentId))
+                {
+                    Response.Redirect("clientProfile.aspx");
+                    return;
+                }
+
+                DisplayAppointmentDetails();
+                UpdatePaymentSummary();
+
+                HttpCookie cookieID = Request.Cookies["PatientID"];
+                if (cookieID == null || string.IsNullOrEmpty(cookieID.Value))
+                {
+                    Response.Redirect("clientLogin.aspx");
+                }
+            }
+            catch (Exception ex)
+            {
+                lblError.Text = "Error loading payment page: " + ex.Message;
+                Response.Redirect("clientHome.aspx");
+            }
+        }
+
         protected void btnSubmitPayment_Click(object sender, EventArgs e)
         {
+            string appointmentId = Request.QueryString["appointmentID"];
+
             if (paypal.Checked)
             {
-                // PayPal integration
-                string returnURL = "http://localhost:44338/Client/clientProfile.aspx?status=success";
-                string cancelURL = "http://localhost:44338/Client/clientHome.aspx";
+                // Get the current page's URL
+                string baseUrl = Request.Url.GetLeftPart(UriPartial.Authority) + Request.ApplicationPath.TrimEnd('/');
+
+                // Construct return URLs using the base URL
+                string returnURL = $"{baseUrl}/Client/Checkout.aspx?status=success&appointmentID={appointmentId}";
+                string cancelURL = $"{baseUrl}/Client/Checkout.aspx?appointmentID={appointmentId}";
+
                 string paypalSandboxEmail = "zisonwong25@gmail.com";
                 string paypalURL = $"https://www.sandbox.paypal.com/cgi-bin/webscr?" +
-                                  $"cmd=_xclick&business={paypalSandboxEmail}" +
-                                  $"&amount={CONSULTATION_FEE}" +
-                                  $"&currency_code=MYR" +
-                                  $"&return={returnURL}" +
-                                  $"&cancel_return={cancelURL}";
+                                 $"cmd=_xclick&business={HttpUtility.UrlEncode(paypalSandboxEmail)}" +
+                                 $"&amount={CONSULTATION_FEE}" +
+                                 $"&currency_code=MYR" +
+                                 $"&return={HttpUtility.UrlEncode(returnURL)}" +
+                                 $"&cancel_return={HttpUtility.UrlEncode(cancelURL)}";
 
                 Response.Redirect(paypalURL);
             }
-            else
+            else if (creditCard.Checked)
             {
-                // Credit card validation
+                // Existing credit card processing code...
                 if (!ValidateCardInputs())
                 {
                     return;
                 }
 
-                // Process credit card payment
                 if (ProcessCreditCardPayment())
                 {
-                    paymentSuccessModal.Visible = true;
-                    ScriptManager.RegisterStartupScript(this, GetType(), "ShowModal",
-                        "document.getElementById('" + paymentSuccessModal.ClientID + "').style.display='block';", true);
+                    ShowPaymentModal();
                 }
+            }
+        }
+
+        private bool ProcessPayPalPayment(string appointmentId)
+        {
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                {
+                    conn.Open();
+                    using (SqlTransaction transaction = conn.BeginTransaction())
+                    {
+                        try
+                        {
+                            string paymentId = GenerateNextPaymentID();
+
+                            string insertPaymentQuery = @"
+                    INSERT INTO Payment (PaymentID, PaymentAmount, PaymentMethod, PaymentDate, Status)
+                    VALUES (@PaymentID, @PaymentAmount, @PaymentMethod, @PaymentDate, @Status)";
+
+                            using (SqlCommand cmd = new SqlCommand(insertPaymentQuery, conn, transaction))
+                            {
+                                cmd.Parameters.AddWithValue("@PaymentID", paymentId);
+                                cmd.Parameters.AddWithValue("@PaymentAmount", CONSULTATION_FEE);
+                                cmd.Parameters.AddWithValue("@PaymentMethod", "PayPal");
+                                cmd.Parameters.AddWithValue("@PaymentDate", DateTime.Now);
+                                cmd.Parameters.AddWithValue("@Status", "Completed");
+                                cmd.ExecuteNonQuery();
+                            }
+
+                            string updateAppointmentQuery = @"
+                    UPDATE Appointment 
+                    SET PaymentID = @PaymentID, Status = 'Accepted'
+                    WHERE AppointmentID = @AppointmentID";
+
+                            using (SqlCommand cmd = new SqlCommand(updateAppointmentQuery, conn, transaction))
+                            {
+                                cmd.Parameters.AddWithValue("@PaymentID", paymentId);
+                                cmd.Parameters.AddWithValue("@AppointmentID", appointmentId);
+                                cmd.ExecuteNonQuery();
+                            }
+
+                            transaction.Commit();
+                            return true;
+                        }
+                        catch
+                        {
+                            transaction.Rollback();
+                            throw;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                lblError.Text = "PayPal payment processing failed: " + ex.Message;
+                return false;
             }
         }
 

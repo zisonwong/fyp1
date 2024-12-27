@@ -15,6 +15,7 @@
                 <div class="card-body p-3">
                     <div class="table-responsive-md">
                         <asp:ListView
+                            OnSorting="lvAppointment_Sorting"
                             OnItemCommand="lvAppointment_ItemCommand"
                             OnPagePropertiesChanging="lvAppointment_PagePropertiesChanging"
                             ID="lvAppointment" runat="server">
@@ -23,17 +24,24 @@
                                     <thead>
                                         <tr>
                                             <th>
-                                                <asp:LinkButton runat="server" CssClass="sortable-header">Appointment ID</asp:LinkButton></th>
+                                                <asp:LinkButton runat="server" CommandName="Sort" CommandArgument="appointmentID" CssClass="sortable-header">Appointment ID</asp:LinkButton>
+                                            </th>
                                             <th>
-                                                <asp:LinkButton runat="server" CssClass="sortable-header">Patient ID</asp:LinkButton></th>
+                                                <asp:LinkButton runat="server" CommandName="Sort" CommandArgument="patientID" CssClass="sortable-header">Patient ID</asp:LinkButton>
+                                            </th>
                                             <th>
-                                                <asp:LinkButton runat="server" CssClass="sortable-header">Doctor ID</asp:LinkButton></th>
+                                                <asp:LinkButton runat="server" CommandName="Sort" CommandArgument="doctorID" CssClass="sortable-header">Doctor ID</asp:LinkButton>
+                                            </th>
                                             <th>
-                                                <asp:LinkButton runat="server" CssClass="sortable-header">Time</asp:LinkButton></th>
+                                                <asp:LinkButton runat="server" CommandName="Sort" CommandArgument="time" CssClass="sortable-header">Time</asp:LinkButton>
+                                            </th>
                                             <th>
-                                                <asp:LinkButton runat="server" CssClass="sortable-header">Date</asp:LinkButton></th>
+                                                <asp:LinkButton runat="server" CommandName="Sort" CommandArgument="date" CssClass="sortable-header">Date</asp:LinkButton>
+                                            </th>
                                             <th>
-                                                <asp:LinkButton runat="server" CssClass="sortable-header">Status</asp:LinkButton></th>
+                                                <asp:LinkButton runat="server" CommandName="Sort" CommandArgument="status" CssClass="sortable-header">Status</asp:LinkButton>
+                                            </th>
+
                                         </tr>
                                     </thead>
                                     <tbody>

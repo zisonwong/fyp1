@@ -518,23 +518,37 @@ namespace fyp1.Admin
         {
             string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
 
-            string availabilityType;
-            if (fromTime.TimeOfDay >= new TimeSpan(8, 0, 0) && toTime.TimeOfDay <= new TimeSpan(13, 0, 0))
-            {
-                availabilityType = "Walk-in";
-            }
-            else if (fromTime.TimeOfDay >= new TimeSpan(14, 0, 0) && toTime.TimeOfDay <= new TimeSpan(18, 0, 0))
-            {
-                availabilityType = "Online Consultation";
-            }
-            else
-            {
-                availabilityType = "Undefined"; 
-            }
-
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
-                string checkQuery = "SELECT COUNT(1) FROM Availability WHERE doctorID = @doctorID AND branchID = @branchID AND availableDate = @date AND availableFrom = @availableFrom AND availableTo = @availableTo";
+                conn.Open();
+
+                string branchConflictQuery = @"
+            SELECT COUNT(1) 
+            FROM Availability 
+            WHERE availableDate = @date AND branchID != @branchID";
+
+                using (SqlCommand branchConflictCmd = new SqlCommand(branchConflictQuery, conn))
+                {
+                    branchConflictCmd.Parameters.AddWithValue("@date", date);
+                    branchConflictCmd.Parameters.AddWithValue("@branchID", branchID);
+
+                    int conflictCount = (int)branchConflictCmd.ExecuteScalar();
+
+                    if (conflictCount > 0)
+                    {
+                        ClientScript.RegisterStartupScript(this.GetType(), "alert", "alert('Another branch already has availability on this date. Cannot add availability.');", true);
+                        return;
+                    }
+                }
+
+                string checkQuery = @"
+            SELECT COUNT(1) 
+            FROM Availability 
+            WHERE doctorID = @doctorID 
+              AND branchID = @branchID 
+              AND availableDate = @date 
+              AND availableFrom = @availableFrom 
+              AND availableTo = @availableTo";
 
                 using (SqlCommand checkCmd = new SqlCommand(checkQuery, conn))
                 {
@@ -544,7 +558,6 @@ namespace fyp1.Admin
                     checkCmd.Parameters.AddWithValue("@availableFrom", fromTime.TimeOfDay);
                     checkCmd.Parameters.AddWithValue("@availableTo", toTime.TimeOfDay);
 
-                    conn.Open();
                     int count = (int)checkCmd.ExecuteScalar();
 
                     if (count > 0)
@@ -553,8 +566,9 @@ namespace fyp1.Admin
                     }
                 }
 
-                string insertQuery = "INSERT INTO Availability (availabilityID, doctorID, branchID, availableDate, availableFrom, availableTo, intervalTime, status, type) " +
-                                     "VALUES (@availabilityID, @doctorID, @branchID, @date, @availableFrom, @availableTo, @intervalTime, @status, @type)";
+                string insertQuery = @"
+            INSERT INTO Availability (availabilityID, doctorID, branchID, availableDate, availableFrom, availableTo, intervalTime, status, type) 
+            VALUES (@availabilityID, @doctorID, @branchID, @date, @availableFrom, @availableTo, @intervalTime, @status, @type)";
 
                 using (SqlCommand cmd = new SqlCommand(insertQuery, conn))
                 {
@@ -565,8 +579,9 @@ namespace fyp1.Admin
                     cmd.Parameters.AddWithValue("@availableFrom", fromTime.TimeOfDay);
                     cmd.Parameters.AddWithValue("@availableTo", toTime.TimeOfDay);
                     cmd.Parameters.AddWithValue("@intervalTime", TimeSpan.FromMinutes(interval));
-                    cmd.Parameters.AddWithValue("@status", "Available"); 
-                    cmd.Parameters.AddWithValue("@type", availabilityType);
+                    cmd.Parameters.AddWithValue("@status", "Available");
+                    cmd.Parameters.AddWithValue("@type", "Walk-in");
+
                     cmd.ExecuteNonQuery();
                 }
             }
@@ -1203,17 +1218,25 @@ namespace fyp1.Admin
             ddlSelectDoctor.Items.Clear();
             ddlSelectDoctor.Items.Add(new ListItem("Select Doctor", ""));
 
+            string userRole = Request.Cookies["Role"]?.Value.ToLower();
+            string nurseID = GetUserID();
+            string nurseBranchID = GetBranchIDForNurse(nurseID);
+
             string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
 
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 string query = @"
-            SELECT doctorID, name 
-            FROM Doctor
-            WHERE status = 'Activate'";
+            SELECT DISTINCT d.doctorID, d.name 
+            FROM Doctor d
+            INNER JOIN DoctorDepartment dd ON d.doctorID = dd.doctorID
+            INNER JOIN Department dept ON dd.departmentID = dept.departmentID
+            WHERE dept.branchID = @branchID AND d.status = 'Activate'";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
+                    cmd.Parameters.AddWithValue("@branchID", nurseBranchID);
+
                     try
                     {
                         conn.Open();
@@ -1231,6 +1254,50 @@ namespace fyp1.Admin
                     catch (Exception ex)
                     {
                         Console.WriteLine($"Error populating doctor dropdown: {ex.Message}");
+                    }
+                }
+            }
+        }
+
+        private string GetUserID()
+        {
+            if (Request.Cookies["Role"] != null)
+            {
+                string userRole = Request.Cookies["Role"].Value.ToLower();
+
+                if (userRole == "doctor" && Request.Cookies["DoctorID"] != null)
+                {
+                    return Request.Cookies["DoctorID"].Value;
+                }
+                else if (userRole == "nurse" && Request.Cookies["nurseID"] != null)
+                {
+                    return Request.Cookies["nurseID"].Value;
+                }
+            }
+
+            return null;
+        }
+        private string GetBranchIDForNurse(string nurseID)
+        {
+            string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
+
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                string query = "SELECT branchID FROM Nurse WHERE nurseID = @nurseID";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@nurseID", nurseID);
+
+                    try
+                    {
+                        conn.Open();
+                        return cmd.ExecuteScalar()?.ToString();
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error retrieving nurse branch ID: {ex.Message}");
+                        return null;
                     }
                 }
             }

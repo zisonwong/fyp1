@@ -17,7 +17,8 @@ namespace fyp1.Admin
         {
             if (!IsPostBack)
             {
-                
+                ViewState["SortColumn"] = "date";
+                ViewState["SortOrder"] = "ASC";
                 string searchTerm = Request.QueryString["q"];
                 if (!string.IsNullOrEmpty(searchTerm))
                 {
@@ -31,22 +32,31 @@ namespace fyp1.Admin
                 }
             }
         }
-        private void LoadAppointments()
+        private void LoadAppointments(string sortExpression = null, string sortDirection = "ASC")
         {
             string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
 
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 string query = @"
-                SELECT a.appointmentID, 
-                       a.patientID, 
-                       a.doctorID, 
-                       ab.availableFrom AS time, 
-                       CONVERT(DATE, ab.availableDate) AS date,
-                       a.status
-                       FROM Appointment a
-                       INNER JOIN Availability ab ON a.availabilityID = ab.availabilityID
-                       ORDER BY ab.availableDate, ab.availableFrom";
+            SELECT a.appointmentID, 
+                   a.patientID, 
+                   a.doctorID, 
+                   ab.availableFrom AS time, 
+                   CONVERT(DATE, ab.availableDate) AS date,
+                   a.status
+            FROM Appointment a
+            INNER JOIN Availability ab ON a.availabilityID = ab.availabilityID";
+
+                // Apply sorting if a sort expression is provided
+                if (!string.IsNullOrEmpty(sortExpression))
+                {
+                    query += $" ORDER BY {sortExpression} {sortDirection}";
+                }
+                else
+                {
+                    query += " ORDER BY ab.availableDate, ab.availableFrom";
+                }
 
                 SqlCommand cmd = new SqlCommand(query, conn);
                 SqlDataAdapter da = new SqlDataAdapter(cmd);
@@ -60,8 +70,8 @@ namespace fyp1.Admin
                 lvAppointment.DataBind();
             }
         }
-       
-        private void LoadFilteredData(string searchTerm)
+
+        private void LoadFilteredData(string searchTerm, string sortExpression = null, string sortDirection = "ASC")
         {
             string query = @"
         SELECT a.appointmentID, 
@@ -72,7 +82,7 @@ namespace fyp1.Admin
                a.status
         FROM Appointment a
         INNER JOIN Availability ab ON a.availabilityID = ab.availabilityID
-        WHERE 1=1";  
+        WHERE 1=1";
 
             var parameters = new List<SqlParameter>();
 
@@ -82,7 +92,15 @@ namespace fyp1.Admin
                 parameters.Add(new SqlParameter("@searchTerm", "%" + searchTerm + "%"));
             }
 
-            query += " ORDER BY ab.availableDate, ab.availableFrom";
+            // Apply sorting if a sort expression is provided
+            if (!string.IsNullOrEmpty(sortExpression))
+            {
+                query += $" ORDER BY {sortExpression} {sortDirection}";
+            }
+            else
+            {
+                query += " ORDER BY ab.availableDate, ab.availableFrom";
+            }
 
             DataTable branchTable = new DataTable();
             using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString))
@@ -92,12 +110,13 @@ namespace fyp1.Admin
 
                 SqlDataAdapter adapter = new SqlDataAdapter(cmd);
                 conn.Open();
-                adapter.Fill(branchTable); 
+                adapter.Fill(branchTable);
             }
 
             lvAppointment.DataSource = branchTable;
             lvAppointment.DataBind();
         }
+
         protected void lvAppointment_ItemCommand(object sender, ListViewCommandEventArgs e)
         {
             if (e.CommandName == "SelectAppointment")
@@ -120,5 +139,30 @@ namespace fyp1.Admin
                 LoadAppointments();
             }
         }
+        protected void lvAppointment_Sorting(object sender, ListViewSortEventArgs e)
+        {
+            string currentSortExpression = ViewState["SortExpression"] as string;
+            string currentSortDirection = ViewState["SortDirection"] as string;
+
+            string newSortDirection = "ASC";
+            if (currentSortExpression == e.SortExpression && currentSortDirection == "ASC")
+            {
+                newSortDirection = "DESC";
+            }
+
+            ViewState["SortExpression"] = e.SortExpression;
+            ViewState["SortDirection"] = newSortDirection;
+
+            string searchTerm = ViewState["SearchTerm"] as string;
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                LoadFilteredData(searchTerm, e.SortExpression, newSortDirection);
+            }
+            else
+            {
+                LoadAppointments(e.SortExpression, newSortDirection);
+            }
+        }
+
     }
 }
